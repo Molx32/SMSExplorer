@@ -40,5 +40,4 @@ sudo -u postgres psql
 
 -- List all tables in the database
 # \dt
-TEST
 ```
