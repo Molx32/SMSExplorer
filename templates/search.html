@@ -9,14 +9,18 @@
 <body>
     <div class="content">
         <h1>Search SMS</h1>
+            <form action="/clean" method="GET">
+                <input class="clean" type="submit" value="Clean database"></button>
+            </form>
+            <br>
             <form action="/search" method="GET">
-                {{ form.text }}
+                <input name="search" placeholder="Enter a key word" value="">
                 <input type="submit" value="Submit"></button>
             </form>
             <div>
                 <h1>Explore</h1>
-                Explore the data you searched for.
-                <table style="height: 25%; width: auto; overflow: auto">
+                Explore the data you searched for among a total of {{ count }} SMSs.
+                <table style="height: 25%; width: 100%; overflow: auto">
                     <tr onclick="window.location='#';">
                         <th>Id</th>
                         <th>Sender</th>

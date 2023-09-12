@@ -1,6 +1,8 @@
 # System
 from datetime import datetime, timedelta
 import re
+import time
+from io import StringIO
 
 
 
@@ -20,8 +22,10 @@ class ReceiveSMSS(Target):
         self.phone_urls = []
 
         # Run the worker
-        self.fetch_phones()
-        self.fetch_smss()
+        while 1:
+            self.fetch_phones()
+            self.fetch_smss()
+            time.sleep(60)
 
     def fetch_phones(self):
         # Send request
@@ -42,7 +46,11 @@ class ReceiveSMSS(Target):
 
             # Insert new SMSs into database
             for sms in smss:
-                DatabaseInterface.sms_insert(sms)
+                try:
+                    DatabaseInterface.sms_insert(sms)
+                except:
+                    time.sleep(5)
+                    continue
 
 class ReceiveSMSSParserPhone(HTMLParser):
     
@@ -90,7 +98,7 @@ class ReceiveSMSSParserSMS:
         self.smss_temp  = []
 
         # Get new SMSs and populate list
-        table = pd.read_html(html)[0]
+        table = pd.read_html(StringIO(html))[0]
         for tuple in table.itertuples():
             sender      = tuple[1]
             msg         = tuple[2]
@@ -115,9 +123,12 @@ class ReceiveSMSSParserSMS:
     def compute_date(self, date_str):
         date = datetime.now()
         if re.search("[0-9]+ hour", date_str):
-            date - timedelta(hours=int(date_str.split(' ')[0]))
+            date = date - timedelta(hours=int(date_str.split(' ')[0]))
             return date.strftime("%d/%m/%Y, %H:%M:%S")
         if re.match("[0-9]+ minute", date_str):
-            date - timedelta(minutes=int(date_str.split(' ')[0]))
+            date = date - timedelta(minutes=int(date_str.split(' ')[0]))
+            return date.strftime("%d/%m/%Y, %H:%M:%S")
+        if re.match("[0-9]+ second", date_str):
+            date = date - timedelta(seconds=int(date_str.split(' ')[0]))
             return date.strftime("%d/%m/%Y, %H:%M:%S")
         return date.strftime("%d/%m/%Y, %H:%M:%S")

@@ -19,9 +19,11 @@ class SMS:
         return "'" + "', '".join(list(self.__dict__.values()))  + "'"
 
     def getValuesForDatabase(self):
-        text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + self.receive_date + "'"
+        try:
+            text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + self.receive_date + "'"
+        except Exception as error:
+            raise Exception("Message content unsafe, don't add to database.")
         text.replace('&', '%26')
-        print(text)
         return text
     
     def getAttributeValue(self, attribute):
@@ -33,7 +35,6 @@ class SMS:
     def setAttributes(self, dict):
         for k, v in dict.items():
             setattr(self, k, v)
-            print(str(k) + ',' + str(v))
 
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))
@@ -41,4 +42,4 @@ class SMS:
         return keys + '\n' + values
 
     def __eq__(self, obj):
-        return isinstance(obj, SMS) and obj.receiver == self.receiver and obj.sender == self.sender and obj.msg == self.msg and obj.receive_date == self.receive_date
+        return isinstance(obj, SMS) and obj.receiver == self.receiver and obj.sender == self.sender and obj.msg == self.msg

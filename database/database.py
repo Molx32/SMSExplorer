@@ -44,6 +44,11 @@ class Database:
     ###
 class DatabaseInterface:
     # GETTERS
+    def sms_count():
+        cursor = Database().connect()
+        cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
+        return cursor.fetchone()
+
     def sms_get():
         cursor = Database().connect()
         cursor.execute("""SELECT * FROM SMSS WHERE id=%s""", (id))
@@ -51,7 +56,7 @@ class DatabaseInterface:
     
     def sms_get_all():
         cursor = Database().connect()
-        cursor.execute("""select id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS') FROM SMSS""")
+        cursor.execute("""select id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS') FROM SMSS LIMIT 3000""")
         return cursor.fetchall()
     
     def sms_get_by_sender(sender):
@@ -74,24 +79,24 @@ class DatabaseInterface:
     def sms_insert(sms):
         # Handle data
         columns = sms.getAttributes()
-        values  = sms.getValuesForDatabase()
+        try:
+            values  = sms.getValuesForDatabase()
+        except:
+            raise
         query   = """ INSERT INTO SMSS(%s) VALUES(%s); """ % (columns, values)
+        print(values)
 
         # Database call
         cursor = Database().connect()
-        cursor.execute(query)
-        print("Call done")
+        try:
+            cursor.execute(query)
+        except Exception as error:
+            raise
+
 
     # CLEANERS
     def clean_database():
         cursor = Database().connect()
-        query = """DROP DATABASE IF EXISTS SMSS"""
+        query = """DELETE FROM SMSS;"""
         cursor.execute(query)
-        query = """CREATE TABLE SMSS(
-                ID SERIAL PRIMARY KEY,
-                SENDER VARCHAR(100),
-                RECEIVER VARCHAR(100),
-                MSG VARCHAR(5000),
-                RECEIVE_DATE DATE
-                );"""
         print("Database cleaned!")    
