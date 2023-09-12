@@ -33,3 +33,5 @@ services:
             - database
         build: .
         restart: on-failure
+        ports:
+            - 9000:9000

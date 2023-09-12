@@ -1,48 +1,48 @@
+# System
+from datetime import datetime, timedelta
+import re
+
+
+
 # Project
 from modules.target.target import Target
 from database.database import DatabaseInterface
+from database.models import SMS
 # Parsing
 from html.parser import HTMLParser
 import pandas as pd
 
-class ReceiveSMSS(Target):
-    
+class ReceiveSMSS(Target):    
     def __init__(self):
         self.base_url = "https://receive-smss.com"
         self.parser_phone   = ReceiveSMSSParserPhone()
         self.parser_sms     = ReceiveSMSSParserSMS()
-
         self.phone_urls = []
-
-        # SMS history
-        self.sms_history = {}
 
         # Run the worker
         self.fetch_phones()
         self.fetch_smss()
 
     def fetch_phones(self):
+        # Send request
         r = self.send_request_get(self.base_url)
+        # Analyse and get phones
         self.parser_phone.feed(r.text)
         self.phone_urls = self.parser_phone.get_phones()
 
     def fetch_smss(self):
         for phone_url in self.phone_urls:
+            # Send request
             r = self.send_request_get(self.base_url + phone_url)
-            self.parser_sms.feed(r.text)
+            # Analyse and get SMSs
+            self.parser_sms.feed(r.text, phone_url)
             smss = self.parser_sms.get_smss()
 
-            # Since we fetch SMSs every X minutes, we'll probably
-            # encounter SMS we already handled. For this reason
-            # we keep track of the previous SMSs fetched in the
-            # self.sms_history attribute.
-            # Thus, new SMSs are SMS fetched - SMS we stored in
-            # history : 
-            # new_smss = set(smss) - self.sms_history[phone_url]
-            # self.sms_history[phone_url] = smss
+            # Check if message contains website
 
             # Insert new SMSs into database
-            # DatabaseInterface.sms_insert()
+            for sms in smss:
+                DatabaseInterface.sms_insert(sms)
 
 class ReceiveSMSSParserPhone(HTMLParser):
     
@@ -80,18 +80,44 @@ class ReceiveSMSSParserPhone(HTMLParser):
 class ReceiveSMSSParserSMS:
 
     def __init__(self):
-        self.smss       = None
-        self.smss_temp  = None
+        self.smss_hist  = []
+        self.smss_new   = []
+        self.smss_temp  = []
         
-    def feed(self, html):
-        tables = pd.read_html(html) # Returns list of all tables on page
-        self.smss = tables[0]
-        for tuple in self.smss.itertuples():
-            print(tuple)
-        
-        self.smss = self.smss_temp
-        self.smss_temp = []
+    def feed(self, html, receiver_url):
+        # Reset SMS list
+        self.smss_new   = []
+        self.smss_temp  = []
+
+        # Get new SMSs and populate list
+        table = pd.read_html(html)[0]
+        for tuple in table.itertuples():
+            sender      = tuple[1]
+            msg         = tuple[2]
+            date        = self.compute_date(tuple[3])
+            receiver    = receiver_url.split('/')[-2]
+            
+            # Add SMS to temp list
+            sms = SMS(sender, receiver, msg, date)
+            self.smss_temp.append(sms)
+
+        # Since we fetch SMSs every X minutes, we'll probably
+        # encounter SMS we already handled. For this reason
+        # we keep track of the previous SMSs fetched in the
+        # self.smss_hist attribute.
+        # Thus, new SMSs are SMS fetched - SMS we stored in
+        # history:
+        self.smss_new = [e for e in self.smss_temp if e not in self.smss_hist]
 
     def get_smss(self):
-        return self.smss
-        pass
+        return self.smss_new
+
+    def compute_date(self, date_str):
+        date = datetime.now()
+        if re.search("[0-9]+ hour", date_str):
+            date - timedelta(hours=int(date_str.split(' ')[0]))
+            return date.strftime("%d/%m/%Y, %H:%M:%S")
+        if re.match("[0-9]+ minute", date_str):
+            date - timedelta(minutes=int(date_str.split(' ')[0]))
+            return date.strftime("%d/%m/%Y, %H:%M:%S")
+        return date.strftime("%d/%m/%Y, %H:%M:%S")

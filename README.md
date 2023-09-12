@@ -20,7 +20,12 @@ The project uses docker to instanciate the following containers :
 docker compose build --no-cache
 docker compose up
 ```
-
+In order to reset the database and trigger the initialization script, and update the database scheme, run the following :
+```bash
+docker-compose down --volumes
+docker compose build --no-cache
+docker compose up
+```
 
 ## Access database
 Scrapy to look for files on non indexed domains

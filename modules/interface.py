@@ -8,6 +8,3 @@ class TargetInterface:
     def create_instance_receivesmss():
         return ReceiveSMSS()
     
-    def create_instance_XXX():
-        pass
-    
