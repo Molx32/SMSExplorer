@@ -43,6 +43,12 @@ class Database:
     # ISSUES INTERATIONS
     ###
 class DatabaseInterface:
+    # INIT
+    def db_init():
+        cursor = Database().connect()
+        cursor.execute("""ALTER DATABASE SMSS SET datestyle TO 'GERMAN,MDY';""")
+        print(cursor.fetchone())
+
     # GETTERS
     def sms_count():
         cursor = Database().connect()
@@ -84,7 +90,7 @@ class DatabaseInterface:
         except:
             raise
         query   = """ INSERT INTO SMSS(%s) VALUES(%s); """ % (columns, values)
-        print(values)
+        # print(values)
 
         # Database call
         cursor = Database().connect()

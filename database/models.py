@@ -39,6 +39,7 @@ class SMS:
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))
         values = ", ".join(list(self.__dict__.values()))
+        return values
         return keys + '\n' + values
 
     def __eq__(self, obj):

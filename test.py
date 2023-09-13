@@ -1,6 +1,5 @@
 import requests
 from html.parser import HTMLParser
-import pandas as pd
 import re
 from datetime import datetime, timedelta
 
@@ -23,4 +22,6 @@ d = datetime.now()
 
 
 # from database.database import DatabaseInterface
-print(DatabaseInterface.sms_get_all())
+
+date = datetime.now()
+print(date.strftime("%m/%d/%Y %H:%M:%S"))
