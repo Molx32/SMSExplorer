@@ -1,27 +1,58 @@
 import requests
-from html.parser import HTMLParser
-import re
-from datetime import datetime, timedelta
+from selenium.webdriver import Chrome
+from bs4 import BeautifulSoup
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+# pip install selenium
+# pip install webdriver_manager
 
-from database.models import SMS
-from database.database import DatabaseInterface
-
-# url = "https://receive-smss.com/sms/33780739376/"
-# headers = {
-#     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 OPR/101.0.0.0'
-# }
-# r = requests.get(url, headers=headers)
+url = 'https://receive-smss.com'
+browser = Chrome()
+browser.get(url)
 
 
-d = datetime.now()
-# hour_pattern = re.compile("[0-9]+ hour")
-# tables = pd.read_html(r.text) # Returns list of all tables on page
-# sp500_table = tables[0]
 
-# print(set(l1) - set(l2))
+# Phones
+phone_urls = []
+class_a = "number-boxes1-item-button number-boxess1-item-button button blue stroke rounded tssb"
+soup = BeautifulSoup(browser.page_source, features="lxml")
+for a in soup.find_all('a'):
+    try:
+        if class_a in " ".join(a.get('class')):
+            sender = a.get('href')
+            phone_urls.append(sender)
+    except Exception as e:
+        # print(e)
+        pass
+
+print(len(phone_urls))
 
 
-# from database.database import DatabaseInterface
-
-date = datetime.now()
-print(date.strftime("%m/%d/%Y %H:%M:%S"))
+class_sender = "col-md-3 sender"
+class_msg    = "col-md-6 msg"
+class_time   = "col-md-3 time"
+for phone_url in phone_urls:
+    # Analyse and get SMSs
+    # Parse with BeautifulSoup
+    print(url+phone_url)
+    browser.get(url+phone_url)
+    soup2 = BeautifulSoup(browser.page_source, features="lxml")
+    # Initialize next SMS
+    
+    # Iterate over all 'div'. Once we retrieved each attribute,
+    # we can build a SMS object and reset temporary attributes
+    # to None.
+    for div in soup2.find_all('div'):
+        try:
+            if class_sender in " ".join(div.get('class')):
+                sender = div.get_text().replace("Sender",'')
+                print(sender)
+            if class_msg in " ".join(div.get('class')):
+                msg = div.get_text().replace("Message",'').replace('\n','')
+                print(msg)
+            if class_time in " ".join(div.get('class')):
+                time = div.get_text().replace("Time",'')
+                print(time)
+        except:
+            pass
+    

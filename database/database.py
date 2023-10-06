@@ -62,7 +62,7 @@ class DatabaseInterface:
     
     def sms_get_all():
         cursor = Database().connect()
-        cursor.execute("""select id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS') FROM SMSS LIMIT 3000""")
+        cursor.execute("""select id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS LIMIT 3000""")
         return cursor.fetchall()
     
     def sms_get_by_sender(sender):
@@ -77,7 +77,7 @@ class DatabaseInterface:
 
     def sms_get_by_search(search):
         cursor = Database().connect()
-        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS') FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')""".format(search, search)
+        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')""".format(search, search)
         cursor.execute(query)
         return cursor.fetchall()
     
@@ -90,7 +90,6 @@ class DatabaseInterface:
         except:
             raise
         query   = """ INSERT INTO SMSS(%s) VALUES(%s); """ % (columns, values)
-        # print(values)
 
         # Database call
         cursor = Database().connect()

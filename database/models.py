@@ -6,12 +6,15 @@ from config.config import Connections
 
 
 class SMS:
-    def __init__(self, sender, receiver, msg, receive_date):
+    def __init__(self, sender, receiver, msg, receive_date, country):
         self.sender         = sender
         self.receiver       = receiver
         self.msg            = msg
         self.receive_date   = receive_date
-        
+        self.country        = country
+        self.instagram_acc  = None
+    
+    # Meta handling of attributes and their values
     def getAttributes(self):
         return ", ".join(list(self.__dict__.keys()))
     
@@ -20,7 +23,7 @@ class SMS:
 
     def getValuesForDatabase(self):
         try:
-            text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + self.receive_date + "'"
+            text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + self.receive_date +  "', '" + self.country + "', '" + self.instagram_acc + "'"
         except Exception as error:
             raise Exception("Message content unsafe, don't add to database.")
         text.replace('&', '%26')
@@ -35,6 +38,10 @@ class SMS:
     def setAttributes(self, dict):
         for k, v in dict.items():
             setattr(self, k, v)
+
+    # Methods
+    def add_instagram_account(self, instagram_acc):
+        self.instagram_acc = instagram_acc
 
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))

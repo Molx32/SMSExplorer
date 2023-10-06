@@ -27,6 +27,8 @@
                         <th>Receiver</th>
                         <th>Message</th>
                         <th>Receive date</th>
+                        <th>Country</th>
+                        <th>Instagram</th>
                     </tr>
                     {% for row in data %}
                         <tr>
@@ -35,6 +37,8 @@
                             <td>{{ row[2] }}</td>
                             <td>{{ row[3] | decode}}</td>
                             <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
+                            <td>{{ row[6] }}</td>
                         </tr>
                     {% endfor %}
                 </table>
