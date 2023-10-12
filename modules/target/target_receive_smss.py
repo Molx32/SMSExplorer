@@ -41,7 +41,7 @@ class ReceiveSMSS:
 
                 self.fetch_smss()
 
-                # self.populate_database()
+                self.populate_database()
             except Exception as e:
                 print("Main : " + str(e))
 
@@ -78,14 +78,16 @@ class ReceiveSMSS:
     def populate_database(self):
         # # Insert new SMSs into database
         for phone_url in self.phone_urls:
-            for sms in self.smss_new[phone_url]:
-                print("insert")
-                try:
+            try:
+                start = time.time()
+                for sms in self.smss_new[phone_url]:
+                    print("insert")
                     DatabaseInterface.sms_insert(sms)
-                except:
-                    print("EXCEPTION")
-                    time.sleep(5)
-                    continue
+                end = time.time()
+                Logger.log('DATABASE ADD - ' + phone_url + ' - ' + str(end - start))
+            except Exception as e:
+                Logger.log('DATABASE EXCEPTION - ' + phone_url + ' - ' + str(e))
+                continue
 
     def send_request_get(self, url):
         headers = {
@@ -113,9 +115,11 @@ class Browser:
         #
         # Set Firefox profile
         PROFILE = webdriver.FirefoxProfile()
-        PROFILE.set_preference("browser.cache.disk.enable", False)
-        PROFILE.set_preference("browser.cache.memory.enable", False)
+        PROFILE.set_preference("browser.cache.disk.enable", True)
+        PROFILE.set_preference("browser.cache.memory.enable", True)
         PROFILE.set_preference("browser.cache.offline.enable", False)
+        PROFILE.set_preference("permissions.default.stylesheet", 2)
+        PROFILE.set_preference("permissions.default.image", 2)
         PROFILE.set_preference("network.http.use-cache", False)
         PROFILE.set_preference("general.useragent.override","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0")
         # FireFox Options

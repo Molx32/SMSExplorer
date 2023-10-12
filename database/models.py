@@ -23,9 +23,10 @@ class SMS:
 
     def getValuesForDatabase(self):
         try:
-            text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + self.receive_date +  "', '" + self.country + "', '" + self.instagram_acc + "'"
+            text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + (self.receive_date or "") +  "', '" + (self.country or "") + "', '" + (self.instagram_acc or "") + "'"
         except Exception as error:
-            raise Exception("Message content unsafe, don't add to database.")
+            s = "\nException trying to add the following : " + "'" + self.sender + "', '" + self.receiver + "', '" + self.msg + "', '" + self.receive_date +  "', '" + self.country + "', '" + self.instagram_acc + "'"
+            raise Exception("Message content unsafe, don't add to database." + s)
         text.replace('&', '%26')
         return text
     

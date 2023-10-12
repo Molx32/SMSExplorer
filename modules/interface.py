@@ -7,4 +7,3 @@ class TargetInterface:
     
     def create_instance_receivesmss():
         return ReceiveSMSS()
-    

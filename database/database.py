@@ -39,9 +39,6 @@ class Database:
         self.cursor = None
         self.conn = None
 
-    ### 
-    # ISSUES INTERATIONS
-    ###
 class DatabaseInterface:
     # INIT
     def db_init():
