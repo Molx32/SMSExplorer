@@ -29,22 +29,11 @@ from rq.worker import Worker, WorkerStatus
 from rq.command import send_kill_horse_command
 
 redis = Redis.from_url(Config.REDIS_URL)
-task_queue = rq.Queue(default_timeout=3600, connection=redis)
-
-# sms = SMS()
-# d = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
-# sms.setAttribute('receive_date', d)
-# sms.setAttribute('sender', 'mySender')
-# sms.setAttribute('receiver', 'myReceiver')
-# sms.setAttribute('msg', 'thisIsASuperMessage')
-
-# data = DatabaseInterface.sms_insert(sms)
-# data = DatabaseInterface.sms_get_by_search("facebook")
-# for d in data:
-#     print(d)
+task_queue = rq.Queue(default_timeout=-1, connection=redis)
 
 # Launch workers
-task_queue.enqueue(TargetInterface.create_instance_receivesmss)
+# task_queue.enqueue(TargetInterface.create_instance_receivesmss)
+task_queue.enqueue(TargetInterface.create_instance_mytempsms)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'totomakey'

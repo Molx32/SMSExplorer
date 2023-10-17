@@ -18,15 +18,15 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-class ReceiveSMSS:    
+class MyTempSMS:    
     def __init__(self):
-        self.base_url = "https://receive-smss.com"
+        self.base_url = "https://mytempsms.com"
         self.phone_urls     = []
 
         self.smss_new = {}
         self.smss_hist= {}
 
-        self.browser = Browser("Receive SMSs", "https://receive-smss.com")
+        self.browser = Browser("My Temp SMS", "https://mytempsms.com")
 
         # Run the worker
         while 1:
@@ -46,9 +46,10 @@ class ReceiveSMSS:
 
     def fetch_smss(self):
         urls = []
+        Logger.log("PHONES URL LENGTH - " + str(len(self.phone_urls)))
         for phone_url in self.phone_urls:
             urls.append(self.base_url + phone_url)
-        results = grequests.map((grequests.get(u, headers={'User-Agent':'toto'}) for u in urls), size=5)
+        results = grequests.map((grequests.get(u, headers={'User-Agent':'toto'}) for u in urls), size=10)
         
         for r in results:
             phone_url = r.request.path_url
@@ -74,7 +75,8 @@ class ReceiveSMSS:
                 for sms in self.smss_new[phone_url]:
                     DatabaseInterface.sms_insert(sms)
             except Exception as e:
-                Logger.log('DATABASE EXCEPTION - ' + phone_url + ' - ' + str(e))
+                Logger.log('DATABASE EXCEPTION - ' + sms + ' - ' + str(e))
+                sys.exit(1)
                 continue
 
 class Browser:
@@ -83,13 +85,8 @@ class Browser:
         self.name = name
         self.url  = url
 
-        # Data
-        self.class_a    = "number-boxes1-item-button number-boxess1-item-button button blue stroke rounded tssb"
-        self.class_username = "x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xl565be x1s688f x5n08af x1tu3fi x3x7a5m x10wh9bi x1wdrske x8viiok x18hxmgj"
+        self.countries = 'https://mytempsms.com/receive-sms-online/country.html'
 
-        self.class_sender = "col-md-3 sender"
-        self.class_msg    = "col-md-6 msg"
-        self.class_time   = "col-md-3 time"
         self.smss = []
 
         # PARSERS
@@ -104,20 +101,62 @@ class Browser:
         return r
 
     def fetch_phones(self):
-        # Fetch
-        phone_urls = []
-        source = self.http_get(self.url).text
+        try:
+            # Fetch countries
+            page_num = 1
+            countries = set()
+            countries_parse = True
+            while countries_parse:
+                # Get data
+                url = 'https://mytempsms.com/receive-sms-online/country.html?page=' + str(page_num)
+                source = self.http_get(url).text
 
-        # Parse
-        soup = BeautifulSoup(source, features="lxml")
-        for a in soup.find_all('a', class_=self.class_a):
-            try:
-                sender = a.get('href')
-                phone_urls.append(sender)
-            except Exception as e:
-                Logger.log('EXCEPTION BROWSER FETCH PHONE - ' + str(e))
+                # Parse
+                soup = BeautifulSoup(source, features="lxml")
+                links = soup.find_all('a', {'href': re.compile(r"/receive-sms-online/.+-phone-number.html")})
 
-        return phone_urls
+                countries_len = len(countries)
+                for a in links:
+                    countries.add(a.get('href'))
+
+                if countries_len == len(countries):
+                    countries_parse = False
+
+                # Increment page num
+                page_num = page_num + 1
+        except Exception as e:
+            Logger.log('FETCH PHONES - Get countries' + str(e))
+
+        try:
+            # Fetch phones for each country
+            phones = set()
+            for country_url in countries:
+                if 'upcoming' in country_url or 'foreign' in country_url or 'recently' in country_url:
+                    continue
+                page_num = 1
+                phones_parse = True
+                while phones_parse:
+                    # Get data
+                    url = 'https://mytempsms.com' + country_url.replace('.html', '') + '/page/' + str(page_num) + '.html'
+                    source = self.http_get(url).text
+                    # Parse
+                    # https://mytempsms.com/receive-sms-online/france-phone-number-6822097181.html
+                    country_path = country_url.replace('.html', '')
+                    soup = BeautifulSoup(source, features="lxml")
+                    links = soup.find_all('a', {'href': re.compile(country_path+"-[0-9]+.html")})
+                    phones_len = len(phones)
+                    for a in links:
+                        phones.add(a.get('href'))
+
+                    if phones_len == len(phones):
+                        phones_parse = False
+
+                    # Increment page num
+                    page_num = page_num + 1
+        except Exception as e:
+            Logger.log('FETCH PHONES - Get countries' + str(e))
+        
+        return list(phones)
 
     def compute_date(self, date_str):
         date = datetime.now()
@@ -142,42 +181,41 @@ class Browser:
             smss = []
             receiver = r.request.path_url
             soup = BeautifulSoup(r.text, features="lxml")
-        except Exception as e:
-            print('FETCH SMS - HTTP Get - ' + str(e))
-
-        # Initialize next SMS
-        sender  = None
-        msg     = None
-        time_t  = None
         
-        # Iterate over all 'div'. Once we retrieved each attribute,
-        # we can build a SMS object and reset temporary attributes
-        # to None.
-        for div in soup.find_all('div'):
-            try:
-                if self.class_sender in " ".join(div.get('class')):
-                    sender = div.get_text().replace("Sender",'')
-                if self.class_msg in " ".join(div.get('class')):
-                    msg = div.get_text().replace("Message",'').replace('\n','')
-                if self.class_time in " ".join(div.get('class')):
-                    time_t = div.get_text().replace("Time",'')
-            except:
-                pass
+
+            # Initialize next SMS
+            sender  = None
+            msg     = None
+            time_t  = None
             
-            if sender and msg and time_t:
-                date    = self.compute_date(time_t)
-                sms     = SMS(sender, receiver, msg, date, self.compute_country(receiver))
-                smss.append(sms)
+            # Iterate over all 'div'. Once we retrieved each attribute,
+            # we can build a SMS object and reset temporary attributes
+            # to None.
+            lines = soup.find_all('tr', {'align':''})
+            for tr in lines:
+                tds = tr.find_all('td')
+                if tds:
+                    sender = tds[0].get_text().replace('\n','')
+                    msg = tds[1].get_text().replace('\n','')
+                    time_t = tds[2].get_text().replace('\n','')
 
-                # Parse Instagram
-                self.parse_instagram(sms)
+                if sender and msg and time_t:
+                    date    = self.compute_date(time_t)
+                    sms     = SMS(sender, receiver.replace('.html', '').split('-')[-1], msg, date, self.compute_country(receiver))
+                    Logger.log('Current SMS - ' + sms)
+                    smss.append(sms)
 
-                # Reset temporary attributes to None
-                sender  = None
-                msg     = None
-                time_t    = None
+                    # Parse Instagram
+                    self.parse_instagram(sms)
 
-        return smss
+                    # Reset temporary attributes to None
+                    sender  = None
+                    msg     = None
+                    time_t    = None
+            return smss
+        except Exception as e:
+            print('PARSE SMS - ' + str(e))
+
     
     def parse_instagram(self, sms):
         # Case 1

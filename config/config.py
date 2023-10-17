@@ -9,7 +9,6 @@ class Config:
 
     SEARCH_ENGINES = ["Google", "Bing", "Yahoo", "DuckDuckGo"]
 
-    REDIS_URL       = "redis://"
     REDIS_URL       = "redis://redisserver:6379"
     CELERY_CONFIG={
         'broker_url': 'redis://localhost:6379',

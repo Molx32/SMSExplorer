@@ -6,6 +6,7 @@ sys.path.extend(['../'])
 
 # Config imports
 from config.config import Connections
+from config.config import Logger
 
 # Database imports
 from database.models import SMS
@@ -59,7 +60,7 @@ class DatabaseInterface:
     
     def sms_get_all():
         cursor = Database().connect()
-        cursor.execute("""select id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS LIMIT 3000""")
+        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS ORDER BY receive_date DESC LIMIT 3000""")
         return cursor.fetchall()
     
     def sms_get_by_sender(sender):
@@ -74,7 +75,7 @@ class DatabaseInterface:
 
     def sms_get_by_search(search):
         cursor = Database().connect()
-        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')""".format(search, search)
+        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%') ORDER BY receive_date DESC""".format(search, search)
         cursor.execute(query)
         return cursor.fetchall()
     
@@ -84,16 +85,16 @@ class DatabaseInterface:
         columns = sms.getAttributes()
         try:
             values  = sms.getValuesForDatabase()
-        except:
-            raise
+        except Exception as e:
+            raise e
         query   = """ INSERT INTO SMSS(%s) VALUES(%s); """ % (columns, values)
 
         # Database call
         cursor = Database().connect()
         try:
             cursor.execute(query)
-        except Exception as error:
-            raise
+        except Exception as e:
+            raise e
 
 
     # CLEANERS
