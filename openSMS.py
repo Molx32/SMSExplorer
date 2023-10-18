@@ -32,8 +32,8 @@ redis = Redis.from_url(Config.REDIS_URL)
 task_queue = rq.Queue(default_timeout=-1, connection=redis)
 
 # Launch workers
-# task_queue.enqueue(TargetInterface.create_instance_receivesmss)
-task_queue.enqueue(TargetInterface.create_instance_mytempsms)
+task_queue.enqueue(TargetInterface.create_instance_receivesmss)
+# task_queue.enqueue(TargetInterface.create_instance_mytempsms)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'totomakey'
@@ -54,13 +54,22 @@ def default():
 
     return render_template('search.html', form=form, data=data, count=count)
 
+@app.route("/statistics", methods = ['GET'])
+def statistics():
+    # Chart 1
+    return render_template('statistics.html')
+
+@app.route("/about", methods = ['GET'])
+def about():
+    return render_template('about.html')
+
 
 @app.route("/clean", methods = ['GET'])
 def clean():
     workers = Worker.all(redis)
     for worker in workers:
         send_kill_horse_command(redis, worker.name)
-    time.sleep(5)
+    time.sleep(2)
     DatabaseInterface.clean_database()
     # Relaunch workers
     task_queue.enqueue(TargetInterface.create_instance_receivesmss)

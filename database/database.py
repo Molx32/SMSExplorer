@@ -60,24 +60,25 @@ class DatabaseInterface:
     
     def sms_get_all():
         cursor = Database().connect()
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS ORDER BY receive_date DESC LIMIT 3000""")
+        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc, source, domain, url FROM SMSS ORDER BY receive_date DESC LIMIT 3000""")
+        return cursor.fetchall()
+    
+    def sms_get_by_search(search):
+        cursor = Database().connect()
+        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc, source, domain, url FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%') ORDER BY receive_date DESC""".format(search, search)
+        cursor.execute(query)
         return cursor.fetchall()
     
     def sms_get_by_sender(sender):
         cursor = Database().connect()
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS') FROM SMSS WHERE sender=%s""", (sender))
+        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), source, domain, url FROM SMSS WHERE sender=%s""", (sender))
         return cursor.fetchall()
     
     def sms_get_by_receiver(receiver):
         cursor = Database().connect()
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS') FROM SMSS WHERE receiver=%s""", (receiver))
+        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), source, domain, url FROM SMSS WHERE receiver=%s""", (receiver))
         return cursor.fetchall()
 
-    def sms_get_by_search(search):
-        cursor = Database().connect()
-        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%') ORDER BY receive_date DESC""".format(search, search)
-        cursor.execute(query)
-        return cursor.fetchall()
     
     # SETTERS
     def sms_insert(sms):

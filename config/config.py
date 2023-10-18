@@ -1,4 +1,5 @@
 import os
+import datetime
 
 SECRET_KEY = 'development'
 
@@ -263,6 +264,14 @@ class Phone:
     ]
 
 class Logger:
+    def get_date():
+        now = datetime.datetime.now()
+        return str(now.strftime("%Y-%m-%d %H:%M:%S"))
+
+    def err(s):
+        with open("err.log", "a") as f:
+            f.write(Logger.get_date() + '\t' + s + '\n')
+
     def log(s):
         with open("logfile.log", "a") as f:
-            f.write(s + '\n')
+            f.write(Logger.get_date() + '\t' + s + '\n')

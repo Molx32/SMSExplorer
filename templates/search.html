@@ -7,6 +7,12 @@
     <title>Search and explore</title>
 </head>
 <body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/search" class="active">Search</a>
+        <a href="/statistics">Statistics</a>
+        <a href="/about">About</a>
+    </div>
     <div class="content">
         <h1>Search SMS</h1>
             <form action="/clean" method="GET">
@@ -29,6 +35,10 @@
                         <th>Receive date</th>
                         <th>Country</th>
                         <th>Instagram</th>
+                        <th>URL</th>
+                        <th>Domain</th>
+                        <th>Source</th>
+
                     </tr>
                     {% for row in data %}
                         <tr>
@@ -39,6 +49,9 @@
                             <td>{{ row[4] }}</td>
                             <td>{{ row[5] }}</td>
                             <td>{{ row[6] }}</td>
+                            <td>{{ row[7] }}</td>
+                            <td>{{ row[9] }}</td>
+                            <td>{{ row[8] }}</td>
                         </tr>
                     {% endfor %}
                 </table>

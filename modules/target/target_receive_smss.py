@@ -21,7 +21,8 @@ from bs4 import BeautifulSoup
 class ReceiveSMSS:    
     def __init__(self):
         self.base_url = "https://receive-smss.com"
-        self.phone_urls     = []
+        self.phone_urls = []
+        self.phone_nums = []
 
         self.smss_new = {}
         self.smss_hist= {}
@@ -30,52 +31,54 @@ class ReceiveSMSS:
 
         # Run the worker
         while 1:
-            try:
-                start = time.time()
-                self.fetch_phones()
-                self.fetch_smss()
-                self.populate_database()
-                end = time.time()
-                Logger.log('MAIN - ' + str(end - start))
-            except Exception as e:
-                print("Main : " + str(e))
+            start = time.time()
+            self.fetch_phones()
+            self.fetch_smss()
+            self.populate_database()
+            end = time.time()
+            Logger.log('MAIN - ' + str(end - start))
 
     def fetch_phones(self):
-        # Send request
-        self.phone_urls = self.browser.fetch_phones()
+        try:
+            # Send request
+            self.phone_urls = self.browser.fetch_phones()
+            for phone_url in self.phone_urls:
+                self.phone_nums.append(phone_url.split('/')[-2])
+        except Exception as e:
+            Logger.err('ReceiveSMSS - fetch_phones()' + str(e))
+            raise Exception('ReceiveSMSS - fetch_phones()') from e
 
     def fetch_smss(self):
-        urls = []
-        for phone_url in self.phone_urls:
-            urls.append(self.base_url + phone_url)
-        results = grequests.map((grequests.get(u, headers={'User-Agent':'toto'}) for u in urls), size=5)
-        
-        for r in results:
-            phone_url = r.request.path_url
-            smss_temp = self.browser.parse_sms(r)
+        # Send all parallel requests
+        results = grequests.map((grequests.get(self.base_url + u, headers={'User-Agent':'toto'}) for u in self.phone_urls), size=5)
 
-            try:
-                self.smss_new[phone_url] = [e for e in smss_temp if e not in self.smss_hist[phone_url]]
-            except:
-                self.smss_new[phone_url] = smss_temp
-                pass
-            self.smss_hist[phone_url] = smss_temp
+        # Handle all results
+        try:
+            for result in results:
+                # Get phone number
+                # and parse all results
+                phone_num = result.request.path_url.split('/')[-2]
+                smss_temp = self.browser.parse_sms(result)
 
-    def fetch_instagram(self):
-        # Check if message contains website
-        for phone_url in self.smss_new: 
-            for sms in self.smss_new[phone_url]:
-                self.parse_instagram(sms)
+                # For each SMS, check if it is in history.
+                if phone_num in self.smss_hist.keys():
+                    self.smss_new[phone_num] = [e for e in smss_temp if e not in self.smss_hist[phone_num]]
+                else:
+                    self.smss_new[phone_num] = smss_temp
+                self.smss_hist[phone_num] = smss_temp
+        except Exception as e:
+            raise Exception('Receive SMS - fetch_smss()') from e
 
     def populate_database(self):
-        # # Insert new SMSs into database
-        for phone_url in self.phone_urls:
-            try:
-                for sms in self.smss_new[phone_url]:
+        try:
+            # Insert new SMSs into database
+            for phone_url in self.phone_urls:
+                phone_num = phone_url.split('/')[-2]
+                for sms in self.smss_new[phone_num]:
                     DatabaseInterface.sms_insert(sms)
-            except Exception as e:
-                Logger.log('DATABASE EXCEPTION - ' + phone_url + ' - ' + str(e))
-                continue
+        except Exception as e:
+            Logger.log('ReceiveSMSS - populate_database()' + str(e))
+            raise Exception('ReceiveSMSS - populate_database()') from e
 
 class Browser:
     def __init__(self, name, url):

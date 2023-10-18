@@ -1,4 +1,5 @@
 import sys
+import re
 sys.path.extend(['../'])
 
 import urllib.parse
@@ -13,6 +14,19 @@ class SMS:
         self.receive_date   = receive_date
         self.country        = country
         self.instagram_acc  = None
+        self.source         = ""
+        self.url            = 'NOT FOUND'
+        self.domain         = 'NOT FOUND'
+
+        # Extract URL and domain
+        url_pattern = url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
+        dom_pattern = "^((?!-)[A-Za-z0-9-]" + "{1,63}(?<!-)\\.)" +"+[A-Za-z]{2,6}"
+        url_match   = re.findall(url_pattern, self.msg)
+        dom_match   = re.findall(dom_pattern, self.msg)
+        if url_match:
+            self.url = url_match[0]
+        if dom_match:
+            self.domain = dom_match[0]
     
     # Meta handling of attributes and their values
     def getAttributes(self):
@@ -23,12 +37,21 @@ class SMS:
 
     def getValuesForDatabase(self):
         try:
-            text = "'" + urllib.parse.quote_plus(self.sender) + "', '" + urllib.parse.quote_plus(self.receiver) + "', '" + urllib.parse.quote_plus(self.msg) + "', '" + (self.receive_date or "") +  "', '" + (self.country or "") + "', '" + (self.instagram_acc or "") + "'"
+            text = "'" 
+            text = text + urllib.parse.quote_plus(self.sender) + "', '"
+            text = text + urllib.parse.quote_plus(self.receiver) + "', '"
+            text = text + urllib.parse.quote_plus(self.msg) + "', '"
+            text = text + (self.receive_date or "") +  "', '"
+            text = text + (self.country or "") + "', '"
+            text = text + (self.instagram_acc or "") + "', '"
+            text = text + (self.url or "") + "', '"
+            text = text + (self.domain or "") + "', '"
+            text = text + (self.source or "")
+            text = text + "'"
+            text.replace('&', '%26')
+            return text
         except Exception as error:
-            s = "\nException trying to add the following : " + "'" + self.sender + "', '" + self.receiver + "', '" + self.msg + "', '" + self.receive_date +  "', '" + self.country + "', '" + self.instagram_acc + "'"
-            raise Exception("Message content unsafe, don't add to database." + s)
-        text.replace('&', '%26')
-        return text
+            raise Exception("Message content unsafe, don't add to database." + str(self))
     
     def getAttributeValue(self, attribute):
         return self.__dict__['attribute']

@@ -21,7 +21,8 @@ from bs4 import BeautifulSoup
 class MyTempSMS:    
     def __init__(self):
         self.base_url = "https://mytempsms.com"
-        self.phone_urls     = []
+        self.phone_urls = []
+        self.phone_nums = []
 
         self.smss_new = {}
         self.smss_hist= {}
@@ -31,36 +32,41 @@ class MyTempSMS:
         # Run the worker
         while 1:
             try:
-                start = time.time()
                 self.fetch_phones()
                 self.fetch_smss()
                 self.populate_database()
-                end = time.time()
-                Logger.log('MAIN - ' + str(end - start))
             except Exception as e:
-                print("Main : " + str(e))
+                Logger.err("Main : " + str(e))
+                raise Exception() from e
 
     def fetch_phones(self):
         # Send request
+        self.phone_nums = []
         self.phone_urls = self.browser.fetch_phones()
 
     def fetch_smss(self):
-        urls = []
-        Logger.log("PHONES URL LENGTH - " + str(len(self.phone_urls)))
-        for phone_url in self.phone_urls:
-            urls.append(self.base_url + phone_url)
-        results = grequests.map((grequests.get(u, headers={'User-Agent':'toto'}) for u in urls), size=10)
-        
-        for r in results:
-            phone_url = r.request.path_url
-            smss_temp = self.browser.parse_sms(r)
+        try:
+            urls = []
+            results = grequests.map((grequests.get(self.base_url + u, headers={'User-Agent':'toto'}) for u in self.phone_urls), size=10)
+            
+            for r in results:
+                # Retrieve phone number
+                Logger.log("Fetch sms - status code - " + str(r.status_code))
+                phone_num = r.request.path_url.split('/')[-1].split('-')[-1].replace('.html','')
+                self.phone_nums.append(phone_num)
+                Logger.log("Fetch sms - trying to handle - " + str(phone_num))
+                smss_temp = self.browser.parse_sms(r)
+                Logger.log("Fetch sms - number of sms for " + str(r.request.path_url) + " : " + str(len(smss_temp)))
 
-            try:
-                self.smss_new[phone_url] = [e for e in smss_temp if e not in self.smss_hist[phone_url]]
-            except:
-                self.smss_new[phone_url] = smss_temp
-                pass
-            self.smss_hist[phone_url] = smss_temp
+                try:
+                    self.smss_new[phone_num] = [e for e in smss_temp if e not in self.smss_hist[phone_num]]
+                except:
+                    self.smss_new[phone_num] = smss_temp
+                    pass
+                self.smss_hist[phone_num] = smss_temp
+        except Exception as e:
+            Logger.err('FETCH SMS - ' + str(e))
+            raise Exception('fetch_smss()') from e
 
     def fetch_instagram(self):
         # Check if message contains website
@@ -70,24 +76,24 @@ class MyTempSMS:
 
     def populate_database(self):
         # # Insert new SMSs into database
-        for phone_url in self.phone_urls:
-            try:
-                for sms in self.smss_new[phone_url]:
-                    DatabaseInterface.sms_insert(sms)
-            except Exception as e:
-                Logger.log('DATABASE EXCEPTION - ' + sms + ' - ' + str(e))
-                sys.exit(1)
-                continue
+        try:
+            for num in self.phone_nums:
+                for sms in self.smss_new[num]:
+                    try:
+                        DatabaseInterface.sms_insert(sms)
+                    except Exception as e:
+                        Logger.err('DATABASE EXCEPTION - ' + str(e))
+                        raise Exception('sms_insert()') from e
+                        continue
+        except Exception as er:
+            Logger.err('POPULATE EXCEPTION - ' + str(num) + ' - ' + str(er))
+            raise Exception("populate_database()") from er
 
 class Browser:
     def __init__(self, name, url):
         # Website
         self.name = name
         self.url  = url
-
-        self.countries = 'https://mytempsms.com/receive-sms-online/country.html'
-
-        self.smss = []
 
         # PARSERS
         # Parser - Instagram
@@ -125,7 +131,8 @@ class Browser:
                 # Increment page num
                 page_num = page_num + 1
         except Exception as e:
-            Logger.log('FETCH PHONES - Get countries' + str(e))
+            Logger.err('FETCH PHONES - Get countries' + str(e))
+            raise Exception('fetch_phones() - countries') from e
 
         try:
             # Fetch phones for each country
@@ -154,7 +161,8 @@ class Browser:
                     # Increment page num
                     page_num = page_num + 1
         except Exception as e:
-            Logger.log('FETCH PHONES - Get countries' + str(e))
+            Logger.err('FETCH PHONES - Get countries' + str(e))
+            raise Exception('fetch_phones() - phones numbers') from e
         
         return list(phones)
 
@@ -202,19 +210,20 @@ class Browser:
                 if sender and msg and time_t:
                     date    = self.compute_date(time_t)
                     sms     = SMS(sender, receiver.replace('.html', '').split('-')[-1], msg, date, self.compute_country(receiver))
-                    Logger.log('Current SMS - ' + sms)
+                    Logger.log('Current SMS - ' + str(sms))
                     smss.append(sms)
 
                     # Parse Instagram
-                    self.parse_instagram(sms)
+                    # self.parse_instagram(sms)
 
                     # Reset temporary attributes to None
                     sender  = None
                     msg     = None
-                    time_t    = None
+                    time_t  = None
             return smss
         except Exception as e:
-            print('PARSE SMS - ' + str(e))
+            Logger.err('PARSE SMS - ' + str(e))
+            raise Exception('parse_sms()') from e
 
     
     def parse_instagram(self, sms):
@@ -251,4 +260,5 @@ class Browser:
 
         except Exception as e:
             sms.add_instagram_account("ERROR")
-            Logger.log('EXCEPTION - PARSE INSTAGRAM CALL PATTERN - ' + str(e))
+            Logger.err('EXCEPTION - PARSE INSTAGRAM CALL PATTERN - ' + str(e))
+            raise Exception('parse_instagram()') from e
