@@ -218,16 +218,8 @@ input[type=button] {
   width: 100%;
 }
 
-
-input[type=submit] {
-  background-color: #04AA6D;
-  border: none;
-  color: white;
-  padding: 16px 32px;
-  text-decoration: none;
-  margin: 4px 2px;
-  cursor: pointer;
-  width: 100%;
+input[type=button]:hover {
+  background-color: #029b63;
 }
 
 input[type=button].delete {
@@ -249,6 +241,40 @@ input[type=button].create {
   padding: 4px 8px;
   width: auto;
   font-size: 10px;
+}
+
+/* SUBMIT */
+input[type=submit] {
+  background-color: #04AA6D;
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type=submit].clean {
+	background-color: #a72d2d;
+}
+
+input[type=submit].clean:hover {
+  background-color: #922727;
+}
+
+input[type=submit]#target_search_all {
+  width: 32%;
+}
+
+input[type=submit]#target_clear_files {
+  background-color: #a72d2d;
+  width: 32%;
+}
+
+input[type=submit]#target_clear_domains {
+  background-color: #a72d2d;
+  width: 32%;
 }
 
 span.close {
@@ -273,40 +299,7 @@ input[type=text] {
   border-radius: 4px;
 }
 
-input[type=submit].clean {
-	background-color: #000000;
-	width: 100%;
-}
 
-input[type=submit] {
-  background-color: #04AA6D;
-  border: none;
-  color: white;
-  padding: 16px 32px;
-  text-decoration: none;
-  margin: 4px 2px;
-  cursor: pointer;
-  width: 100%;
-}
-
-
-input[type=submit]#target_search_all {
-  width: 32%;
-}
-
-input[type=submit]#target_clear_files {
-  background-color: #a72d2d;
-  width: 32%;
-}
-
-input[type=submit]#target_clear_domains {
-  background-color: #a72d2d;
-  width: 32%;
-}
-
-input[type=submit].clean {
-	background-color: #a72d2d;
-}
 
 /* All modal */
 .modal {
@@ -337,22 +330,22 @@ input[type=submit].clean {
 
 
 /*** FILE CLASSIFICATIONS AND TABLE BUTTONS */
-.dropbtn {
+.databtnenabled {
   color: white;
   padding: 10px;
   border: none;
   cursor: pointer;
   font-size: 10px;
-  background-color: #999;
+  background-color: #04AA6D;
 }
 
-.dropbtnmenu {
-  background-color: #04AA6D;
+.databtndisabled {
+  color: white;
   padding: 10px;
   border: none;
   cursor: pointer;
-  color: white;
-  padding: 16px 32px;
+  font-size: 10px;
+  background-color: #888;
 }
 
 .dropdown {
@@ -384,26 +377,6 @@ input[type=submit].clean {
   display: block;
 }
 
-.dropdown:hover .dropbtn {
+.dropdown:hover .databtn {
   background-color: #666;
-}
-
-.NONE {
-  background-color: #ABABAB;
-}
-
-.PUBLIC {
-  background-color: #418062;
-}
-
-.PRIVATE {
-  background-color: #B35409;
-}
-
-.CONFIDENTIAL {
-  background-color: #A62214;
-}
-
-.SECRET {
-  background-color: #66150C;
 }

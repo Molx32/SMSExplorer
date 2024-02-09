@@ -21,7 +21,5 @@ def http_get(url, allow_redirects=True):
 # for r in results:
 #     print(r.status_code)
 
-
-var = 'sault les gars https://receive-smss.com/sms/33780739376/ zsfzef'
-url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
-print(re.findall(url_pattern, var))
+url     = 'https://receive-smss.com/sms/33780739376/'
+print(url.split('/')[2])

@@ -19,10 +19,16 @@ services:
             - 6379:6379
 
     # Redis queue
-    worker:
+    fetcher_worker:
         image: opensms:latest
         depends_on:
             - redisserver
+        command: rq worker --url redis://redisserver:6379
+    
+    data_worker:
+        image: opensms:latest
+        depends_on:
+            - fetcher_worker
         command: rq worker --url redis://redisserver:6379
 
     # Web server

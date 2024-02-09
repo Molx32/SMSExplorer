@@ -68,12 +68,6 @@ class MyTempSMS:
             Logger.err('FETCH SMS - ' + str(e))
             raise Exception('fetch_smss()') from e
 
-    def fetch_instagram(self):
-        # Check if message contains website
-        for phone_url in self.smss_new: 
-            for sms in self.smss_new[phone_url]:
-                self.parse_instagram(sms)
-
     def populate_database(self):
         # # Insert new SMSs into database
         try:
@@ -95,10 +89,7 @@ class Browser:
         self.name = name
         self.url  = url
 
-        # PARSERS
-        # Parser - Instagram
-        self.regex_instagram = r"https://ig.me/\w+"
-
+    # PARSERS
     def http_get(self, url, allow_redirects=True):
         headers = {
             'User-Agent':'toto'
@@ -213,9 +204,6 @@ class Browser:
                     Logger.log('Current SMS - ' + str(sms))
                     smss.append(sms)
 
-                    # Parse Instagram
-                    # self.parse_instagram(sms)
-
                     # Reset temporary attributes to None
                     sender  = None
                     msg     = None
@@ -224,41 +212,3 @@ class Browser:
         except Exception as e:
             Logger.err('PARSE SMS - ' + str(e))
             raise Exception('parse_sms()') from e
-
-    
-    def parse_instagram(self, sms):
-        # Case 1
-        #   "Tap to reset your Instagram p***word: https://ig.me/1ZZOeHuLUwa4Ttq"
-        #   There is no username, and it is not necessary to reset the password to access the account
-        # Case 2
-        #   Instagram link: https://ig.me/r6LPOYK87HRyT73. Don't share it.
-        #   Password reset for a given account
-        try:
-            match = re.findall(self.regex_instagram, sms.msg)
-            if match:
-                # Get Instagram URL
-                url     = match[0]
-                source  = self.http_get(url, allow_redirects=False)
-                next_url = source.headers['Location']
-
-                # Check if Instagram URL is mobile-oriented
-                # instagram://smslogin/?uid=sstisw3&token=3dgsv3&utm_medium=sms&utm_campaign=smslogin&utm_source=instagram&ndid=607dc8ba17346He98c44fc3H607dcd5377618H123
-                if 'instagram://smslogin' in next_url:
-                    next_url = next_url.replace('instagram://smslogin/', 'https://www.instagram.com/_n/web_smslogin')
-                    next_url = next_url.replace('utm_campaign=smslogin', 'utm_campaign=web_smslogin')
-
-                # Parse
-                username = "NOT FOUND"
-                source  = self.http_get(next_url).text
-                soup    = BeautifulSoup(source, features="lxml")
-                for span in soup.find_all('span', class_=self.class_username):
-                    username = span.get_text()
-                    Logger.log('PARSE INSTAGRAM - USERNAME - ' + username)
-
-                # Update SMS                
-                sms.add_instagram_account(username)
-
-        except Exception as e:
-            sms.add_instagram_account("ERROR")
-            Logger.err('EXCEPTION - PARSE INSTAGRAM CALL PATTERN - ' + str(e))
-            raise Exception('parse_instagram()') from e

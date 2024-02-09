@@ -13,20 +13,22 @@ class SMS:
         self.msg            = msg
         self.receive_date   = receive_date
         self.country        = country
-        self.instagram_acc  = None
+        self.url            = '-'
+        self.domain         = '-'
         self.source         = ""
-        self.url            = 'NOT FOUND'
-        self.domain         = 'NOT FOUND'
+        self.data_handled   = False
 
+        # Parse receiver
+        self.receiver = self.receiver.replace("%2F",'')
+        self.receiver = self.receiver.replace("/",'')
+        self.receiver = self.receiver.replace("sms",'')
+        
         # Extract URL and domain
-        url_pattern = url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
-        dom_pattern = "^((?!-)[A-Za-z0-9-]" + "{1,63}(?<!-)\\.)" +"+[A-Za-z]{2,6}"
-        url_match   = re.findall(url_pattern, self.msg)
-        dom_match   = re.findall(dom_pattern, self.msg)
+        url_match   = self._parseUrl()
+        dom_match   = self._parseDomain()
         if url_match:
             self.url = url_match[0]
-        if dom_match:
-            self.domain = dom_match[0]
+            self.domain = url_match[0].split('/')[2]
     
     # Meta handling of attributes and their values
     def getAttributes(self):
@@ -43,10 +45,10 @@ class SMS:
             text = text + urllib.parse.quote_plus(self.msg) + "', '"
             text = text + (self.receive_date or "") +  "', '"
             text = text + (self.country or "") + "', '"
-            text = text + (self.instagram_acc or "") + "', '"
             text = text + (self.url or "") + "', '"
             text = text + (self.domain or "") + "', '"
-            text = text + (self.source or "")
+            text = text + (self.source or "") + "', '"
+            text = text + (str(self.data_handled) or "False")
             text = text + "'"
             text.replace('&', '%26')
             return text
@@ -64,8 +66,16 @@ class SMS:
             setattr(self, k, v)
 
     # Methods
-    def add_instagram_account(self, instagram_acc):
-        self.instagram_acc = instagram_acc
+    def _parseUrl(self):
+        url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
+        return re.findall(url_pattern, self.msg)
+    
+    def _parseDomain(self):
+        dom_pattern = "^((?!-)[A-Za-z0-9-]" + "{1,63}(?<!-)\\.)" +"+[A-Za-z]{2,6}"
+        return re.findall(dom_pattern, self.msg)
+
+    def _parse_msg(self):
+        self.msg.replace('p***word', 'password')
 
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))

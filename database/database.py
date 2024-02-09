@@ -7,6 +7,7 @@ sys.path.extend(['../'])
 # Config imports
 from config.config import Connections
 from config.config import Logger
+from config.config import Config
 
 # Database imports
 from database.models import SMS
@@ -48,11 +49,6 @@ class DatabaseInterface:
         print(cursor.fetchone())
 
     # GETTERS
-    def sms_count():
-        cursor = Database().connect()
-        cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
-        return cursor.fetchone()
-
     def sms_get():
         cursor = Database().connect()
         cursor.execute("""SELECT * FROM SMSS WHERE id=%s""", (id))
@@ -60,12 +56,14 @@ class DatabaseInterface:
     
     def sms_get_all():
         cursor = Database().connect()
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc, source, domain, url FROM SMSS ORDER BY receive_date DESC LIMIT 3000""")
+        excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country, url, domain, source, data_handled FROM SMSS WHERE domain NOT IN ({}) ORDER BY receive_date DESC LIMIT 1000;""".format(excluded_domains))
         return cursor.fetchall()
     
     def sms_get_by_search(search):
         cursor = Database().connect()
-        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country,instagram_acc, source, domain, url FROM SMSS WHERE LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%') ORDER BY receive_date DESC""".format(search, search)
+        excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), country, url, domain, source, data_handled FROM SMSS WHERE (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) AND domain NOT IN ({}) ORDER BY receive_date DESC""".format(search, search, excluded_domains)
         cursor.execute(query)
         return cursor.fetchall()
     
@@ -79,7 +77,11 @@ class DatabaseInterface:
         cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), source, domain, url FROM SMSS WHERE receiver=%s""", (receiver))
         return cursor.fetchall()
 
-    
+    def sms_get_data_by_id(sms_id):
+        cursor = Database().connect()
+        cursor.execute("""SELECT sms_data FROM Data WHERE sms_id = {};""".format(sms_id))
+        return cursor.fetchone()
+        
     # SETTERS
     def sms_insert(sms):
         # Handle data
@@ -96,6 +98,51 @@ class DatabaseInterface:
             cursor.execute(query)
         except Exception as e:
             raise e
+
+    def sms_data_insert(sms_id, json_data):
+        try:
+            cursor = Database().connect()
+            query   = """ INSERT INTO DATA(SMS_DATA,SMS_ID) VALUES('{}', {}); """.format(json_data, sms_id)
+            cursor.execute(query)
+
+            # Update row
+            query   = """ UPDATE SMSS SET data_handled = True WHERE id = {}""".format(sms_id)
+            cursor.execute(query)
+        except Exception as e:
+            raise e
+
+    # RAW STATISTICS
+    def sms_count():
+        cursor = Database().connect()
+        cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
+        return cursor.fetchone()
+
+    def sms_get_count_by_hour():
+        cursor = Database().connect()
+        cursor.execute("""SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 1 ASC;""")
+        return cursor.fetchall()
+
+    def sms_get_top_ten_domains():
+        cursor = Database().connect()
+        cursor.execute("""SELECT domain, COUNT(id) FROM SMSS WHERE domain != '-'GROUP BY 1 ORDER BY 2 DESC;""")
+        return cursor.fetchall()
+    
+    def sms_get_top_ten_countries():
+        cursor = Database().connect()
+        cursor.execute("""SELECT country, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 2 DESC;""")
+        return cursor.fetchall()
+    
+    # SANITIZED STATISTICS
+    # TODO
+
+    # DATA HANDLERS
+    def get_sms_by_url(url):
+        cursor = Database().connect()
+        cursor.execute("""SELECT id,url FROM SMSS WHERE URL LIKE '{}%' AND DATA_HANDLED=False;""".format(url))
+        return cursor.fetchall()
+    
+
+
 
 
     # CLEANERS

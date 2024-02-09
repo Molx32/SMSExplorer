@@ -31,16 +31,21 @@ class ReceiveSMSS:
 
         # Run the worker
         while 1:
-            start = time.time()
-            self.fetch_phones()
-            self.fetch_smss()
-            self.populate_database()
-            end = time.time()
-            Logger.log('MAIN - ' + str(end - start))
+            try:
+                start = time.time()
+                self.fetch_phones()
+                self.fetch_smss()
+                self.populate_database()
+                end = time.time()
+                Logger.log('MAIN - ' + str(end - start))
+            except Exception as e:
+                Logger.log('ReceiveSMSS - loop reset' + str(e))
+                continue
 
     def fetch_phones(self):
         try:
             # Send request
+            Logger.log('ReceiveSMSS - fetch_phones')
             self.phone_urls = self.browser.fetch_phones()
             for phone_url in self.phone_urls:
                 self.phone_nums.append(phone_url.split('/')[-2])
@@ -54,6 +59,7 @@ class ReceiveSMSS:
 
         # Handle all results
         try:
+            Logger.log('ReceiveSMSS - fetch_smss')
             for result in results:
                 # Get phone number
                 # and parse all results
@@ -72,6 +78,7 @@ class ReceiveSMSS:
     def populate_database(self):
         try:
             # Insert new SMSs into database
+            Logger.log('ReceiveSMSS - populate_database')
             for phone_url in self.phone_urls:
                 phone_num = phone_url.split('/')[-2]
                 for sms in self.smss_new[phone_num]:
@@ -95,11 +102,8 @@ class Browser:
         self.class_time   = "col-md-3 time"
         self.smss = []
 
-        # PARSERS
-        # Parser - Instagram
-        self.regex_instagram = r"https://ig.me/\w+"
-
     def http_get(self, url, allow_redirects=True):
+        Logger.log('Browser - http_get')
         headers = {
             'User-Agent':'toto'
         }
@@ -107,6 +111,7 @@ class Browser:
         return r
 
     def fetch_phones(self):
+        Logger.log('Browser - fetch_phones')
         # Fetch
         phone_urls = []
         source = self.http_get(self.url).text
@@ -136,11 +141,13 @@ class Browser:
         return date.strftime("%m/%d/%Y %H:%M:%S")
             
     def compute_country(self, receiver):
+        Logger.log('Browser - compute_country')
         for country in Phone.COUNTRIES:
             if receiver.startswith(country['code'].replace('+','')):
                 return country['name']
 
     def parse_sms(self, r):
+        Logger.log('Browser - parse_sms')
         try:
             smss = []
             receiver = r.request.path_url
@@ -153,6 +160,9 @@ class Browser:
         msg     = None
         time_t  = None
         
+        # Find country
+        country = soup.find('title').get_text().split('|')[-1].replace(' Phone Number', '').strip()
+
         # Iterate over all 'div'. Once we retrieved each attribute,
         # we can build a SMS object and reset temporary attributes
         # to None.
@@ -162,6 +172,7 @@ class Browser:
                     sender = div.get_text().replace("Sender",'')
                 if self.class_msg in " ".join(div.get('class')):
                     msg = div.get_text().replace("Message",'').replace('\n','')
+                    msg = msg.replace('***word', 'assword')
                 if self.class_time in " ".join(div.get('class')):
                     time_t = div.get_text().replace("Time",'')
             except:
@@ -169,11 +180,8 @@ class Browser:
             
             if sender and msg and time_t:
                 date    = self.compute_date(time_t)
-                sms     = SMS(sender, receiver, msg, date, self.compute_country(receiver))
+                sms     = SMS(sender, receiver, msg, date, country)
                 smss.append(sms)
-
-                # Parse Instagram
-                self.parse_instagram(sms)
 
                 # Reset temporary attributes to None
                 sender  = None
@@ -182,38 +190,3 @@ class Browser:
 
         return smss
     
-    def parse_instagram(self, sms):
-        # Case 1
-        #   "Tap to reset your Instagram p***word: https://ig.me/1ZZOeHuLUwa4Ttq"
-        #   There is no username, and it is not necessary to reset the password to access the account
-        # Case 2
-        #   Instagram link: https://ig.me/r6LPOYK87HRyT73. Don't share it.
-        #   Password reset for a given account
-        try:
-            match = re.findall(self.regex_instagram, sms.msg)
-            if match:
-                # Get Instagram URL
-                url     = match[0]
-                source  = self.http_get(url, allow_redirects=False)
-                next_url = source.headers['Location']
-
-                # Check if Instagram URL is mobile-oriented
-                # instagram://smslogin/?uid=sstisw3&token=3dgsv3&utm_medium=sms&utm_campaign=smslogin&utm_source=instagram&ndid=607dc8ba17346He98c44fc3H607dcd5377618H123
-                if 'instagram://smslogin' in next_url:
-                    next_url = next_url.replace('instagram://smslogin/', 'https://www.instagram.com/_n/web_smslogin')
-                    next_url = next_url.replace('utm_campaign=smslogin', 'utm_campaign=web_smslogin')
-
-                # Parse
-                username = "NOT FOUND"
-                source  = self.http_get(next_url).text
-                soup    = BeautifulSoup(source, features="lxml")
-                for span in soup.find_all('span', class_=self.class_username):
-                    username = span.get_text()
-                    Logger.log('PARSE INSTAGRAM - USERNAME - ' + username)
-
-                # Update SMS                
-                sms.add_instagram_account(username)
-
-        except Exception as e:
-            sms.add_instagram_account("ERROR")
-            Logger.log('EXCEPTION - PARSE INSTAGRAM CALL PATTERN - ' + str(e))

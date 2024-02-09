@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search and explore</title>
+    <script type="text/javascript" src="../static/jquery-1.11.1.min.js" ></script>
+    <script type="text/javascript" src="../static/underscore-min.js" ></script>
+    <script type="text/javascript" src="../static/backbone-min.js" ></script>
+    <script type="text/javascript" src="../static/pretty-json-min.js" defer></script>
+    <script type="text/javascript" src="../static/nav.js" defer></script>
+    
 </head>
 <body>
     <div class="navbar">
@@ -34,11 +40,10 @@
                         <th>Message</th>
                         <th>Receive date</th>
                         <th>Country</th>
-                        <th>Instagram</th>
                         <th>URL</th>
                         <th>Domain</th>
                         <th>Source</th>
-
+                        <th>Data</th>
                     </tr>
                     {% for row in data %}
                         <tr>
@@ -50,12 +55,28 @@
                             <td>{{ row[5] }}</td>
                             <td>{{ row[6] }}</td>
                             <td>{{ row[7] }}</td>
-                            <td>{{ row[9] }}</td>
                             <td>{{ row[8] }}</td>
+                            <td>
+                                {%- if row[9] == True -%}
+                                <button {{'id=file_classification_button_' ~ row[0]}} class='databtnenabled' onclick="displayData(this.id)">Get data</button>
+                                {%- else -%}
+                                <button {{'id=file_classification_button_' ~ row[0]}} class='databtndisabled' disabled>No data</button>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </table>
             </div>
     </div>
+
+    <div id="data_viewer" class="modal">
+        <div class="modal-content">
+            <span id="close" class="close">&times;</span>            
+            <span id="result">
+
+            </span>
+        </div>
+    </div>
+
 </body>
 </html>

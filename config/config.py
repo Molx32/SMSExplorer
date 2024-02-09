@@ -4,6 +4,8 @@ import datetime
 SECRET_KEY = 'development'
 
 class Config:
+    # Flask app secret key
+    SECRET_KEY = 'NationalSecurityUltimateSecretPassword'
     SITES = [
         "https://receive-smss.com"
     ]
@@ -15,6 +17,10 @@ class Config:
         'broker_url': 'redis://localhost:6379',
         'result_backend': 'redis://localhost:6379',
     }
+
+    EXCLUDED_DOMAINS = [
+        'mrspin.co.uk'
+    ]
 
 class Connections:
     DATABASE = 'postgres'
