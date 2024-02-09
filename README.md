@@ -81,7 +81,7 @@ The project uses docker to instanciate the following containers :
 - Add sanitized statistics
 - Add statistics about collected data
 - Collection
-- RESOLVE THE RACE CONDITION CASE
+- RESOLVE THE RACE CONDITION CASE...
 
 ### Authors
 Molx32
