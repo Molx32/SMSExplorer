@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="../static/default.css">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search and explore</title>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/search">Search</a>
+        <a href="/statistics">Statistics</a>
+        <a href="/about" class="active">About</a>
+    </div>
+    <div class="content">
+        <h1>About</h1>
+        Nothing to talk about yet.
+    </div>
+</body>
+</html>

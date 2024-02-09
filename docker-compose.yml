@@ -1,0 +1,43 @@
+version: '3'
+services:
+    # Database
+    database:
+        image: postgres
+        restart: always
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_PASSWORD=FileExposer
+            - POSTGRES_USER=postgres
+        volumes:
+            - ./database/init:/docker-entrypoint-initdb.d/
+
+    # Redis server
+    redisserver:
+        image: redis:latest
+        ports:
+            - 6379:6379
+
+    # Redis queue
+    fetcher_worker:
+        image: opensms:latest
+        depends_on:
+            - redisserver
+        command: rq worker --url redis://redisserver:6379
+    
+    data_worker:
+        image: opensms:latest
+        depends_on:
+            - fetcher_worker
+        command: rq worker --url redis://redisserver:6379
+
+    # Web server
+    opensms:
+        image: opensms:latest
+        depends_on:
+            - redisserver
+            - database
+        build: .
+        restart: on-failure
+        ports:
+            - 9000:9000

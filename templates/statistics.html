@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="../static/default.css">
+<head>
+  <!-- https://gist.github.com/Nadiantara/f62ea4f5a3035dd5427a3006d769a6a1 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Statistics</title>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/search">Search</a>
+        <a href="/statistics" class="active">Statistics</a>
+        <a href="/about">About</a>
+    </div>
+    <div class="content">
+        <h1>Search SMS</h1>
+        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+            <canvas id="sms_get_count_by_hour"></canvas>
+        </div>
+        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+          <canvas id="sms_get_top_ten_domains"></canvas>
+      </div>
+      <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+        <canvas id="sms_get_top_ten_countries"></canvas>
+    </div>
+    </div>
+
+    <script>
+        const sms_get_count_by_hour     = document.getElementById('sms_get_count_by_hour');
+        const sms_get_top_ten_domains   = document.getElementById('sms_get_top_ten_domains');
+        const sms_get_top_ten_countries = document.getElementById('sms_get_top_ten_countries');
+
+        new Chart(sms_get_count_by_hour, {
+          type: 'bar',
+          data: {
+            labels: {{ sms_get_count_by_hour_labels | safe}},
+            datasets: [{
+              label: '# of SMS',
+              data: {{ sms_get_count_by_hour_values | safe}},
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        new Chart(sms_get_top_ten_domains, {
+          type: 'bar',
+          data: {
+            labels: {{ sms_get_top_ten_domains_labels | safe}},
+            datasets: [{
+              label: 'Top domains',
+              data: {{ sms_get_top_ten_domains_values | safe}},
+              borderWidth: 1
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        new Chart(sms_get_top_ten_countries, {
+          type: 'bar',
+          data: {
+            labels: {{ sms_get_top_ten_countries_labels | safe}},
+            datasets: [{
+              label: 'Top countries',
+              data: {{ sms_get_top_ten_countries_values | safe}},
+              borderWidth: 1
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      </script>
+
+</body>
+</html>

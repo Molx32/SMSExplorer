@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="../static/default.css">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search and explore</title>
+    <script type="text/javascript" src="../static/jquery-1.11.1.min.js" ></script>
+    <script type="text/javascript" src="../static/underscore-min.js" ></script>
+    <script type="text/javascript" src="../static/backbone-min.js" ></script>
+    <script type="text/javascript" src="../static/pretty-json-min.js" defer></script>
+    <script type="text/javascript" src="../static/nav.js" defer></script>
+    
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/search" class="active">Search</a>
+        <a href="/statistics">Statistics</a>
+        <a href="/about">About</a>
+    </div>
+    <div class="content">
+        <h1>Search SMS</h1>
+            <form action="/clean" method="GET">
+                <input class="clean" type="submit" value="Clean database"></button>
+            </form>
+            <br>
+            <form action="/search" method="GET">
+                <input name="search" placeholder="Enter a key word" value="">
+                <input type="submit" value="Submit"></button>
+            </form>
+            <div>
+                <h1>Explore</h1>
+                Explore the data you searched for among a total of {{ count[0] }} SMSs.
+                <table style="height: 25%; width: 100%; overflow: auto">
+                    <tr onclick="window.location='#';">
+                        <th>Id</th>
+                        <th>Sender</th>
+                        <th>Receiver</th>
+                        <th>Message</th>
+                        <th>Receive date</th>
+                        <th>Country</th>
+                        <th>URL</th>
+                        <th>Domain</th>
+                        <th>Source</th>
+                        <th>Data</th>
+                    </tr>
+                    {% for row in data %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] | decode}}</td>
+                            <td>{{ row[4] }}</td>
+                            <td>{{ row[5] }}</td>
+                            <td>{{ row[6] }}</td>
+                            <td>{{ row[7] }}</td>
+                            <td>{{ row[8] }}</td>
+                            <td>
+                                {%- if row[9] == True -%}
+                                <button {{'id=file_classification_button_' ~ row[0]}} class='databtnenabled' onclick="displayData(this.id)">Get data</button>
+                                {%- else -%}
+                                <button {{'id=file_classification_button_' ~ row[0]}} class='databtndisabled' disabled>No data</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+    </div>
+
+    <div id="data_viewer" class="modal">
+        <div class="modal-content">
+            <span id="close" class="close">&times;</span>            
+            <span id="result">
+
+            </span>
+        </div>
+    </div>
+
+</body>
+</html>
