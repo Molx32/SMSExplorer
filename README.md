@@ -77,10 +77,17 @@ The project uses docker to instanciate the following containers :
 
 ```
 ### TODO
+- Search
+  - Add filters
+    - 'Contains URLs'     --> Display only SMSs with URLs
+    - 'Known valid URLs'  --> Display only SMSs with URLs known to hide data
+    - 'Data URL'          --> Display only SMSs with URLs with automated data collection
 - Statistics
-- Add sanitized statistics
-- Add statistics about collected data
+    - 'Contains URLs'     --> Display statistics with only SMSs with URLs
+    - 'Known valid URLs'  --> Display statistics with only SMSs with URLs known to hide data
+    - 'Data URL'          --> Display statistics with only SMSs with URLs with automated data collection
 - Collection
+  - Add new data sources
 - RESOLVE THE RACE CONDITION CASE...
 
 ### Authors
