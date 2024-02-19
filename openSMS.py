@@ -53,31 +53,39 @@ app.config['SECRET_KEY'] = Config.SECRET_KEY
 # ----------------------------------------------------------------- #
 # -                      SEARCH ENDPOINT                          - #
 # ----------------------------------------------------------------- #
-@app.route("/")
-@app.route("/search", methods = ['GET'])
-def search():
-
+def _generic_search(is_raw=False):
     # Get searched SMSs
     if request.args.get('search'):
         search = request.args.get('search')
-        data = DatabaseInterface.sms_get_by_search(search)
+        data = DatabaseInterface.sms_get_by_search(search, is_raw)
         count   = DatabaseInterface.sms_count()
     # Get all SMSs
     else:
-        data = DatabaseInterface.sms_get_all()
+        data = DatabaseInterface.sms_get_all(is_raw)
         count = DatabaseInterface.sms_count()
 
     # Load forms
     form    = SearchForm()
     return render_template('search.html', form=form, data=data, count=count)
 
+@app.route("/")
+    return redirect('/search_raw')
+
+@app.route("/search_raw", methods = ['GET'])
+def search_raw():
+    return _generic_search(is_raw=True)
+
+@app.route("/search_san", methods = ['GET'])
+def search_san():
+    return _generic_search(is_raw=False)
+
 
 
 # ----------------------------------------------------------------- #
 # -                    STATISTICS ENDPOINT                        - #
 # ----------------------------------------------------------------- #
-@app.route("/statistics", methods = ['GET'])
-def statistics():
+@app.route("/statistics_raw", methods = ['GET'])
+def statistics_raw():
     # Chart - sms_get_count_by_hour
     sms_get_count_by_hour = DatabaseInterface.sms_get_count_by_hour()
     sms_get_count_by_hour_labels = [str(row[0]) for row in sms_get_count_by_hour]
@@ -92,11 +100,31 @@ def statistics():
     sms_get_top_ten_countries_values = [str(row[1]) for row in sms_get_top_ten_countries]
 
 
-    return render_template('statistics.html',
+    return render_template('statistics_raw.html',
         sms_get_count_by_hour_values=sms_get_count_by_hour_values, sms_get_count_by_hour_labels=sms_get_count_by_hour_labels,
         sms_get_top_ten_domains_labels=sms_get_top_ten_domains_labels, sms_get_top_ten_domains_values=sms_get_top_ten_domains_values,
         sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values)
 
+@app.route("/statistics_san", methods = ['GET'])
+def statistics_san():
+    # Chart - sms_get_count_by_hour
+    sms_get_count_by_hour = DatabaseInterface.sms_get_count_by_hour()
+    sms_get_count_by_hour_labels = [str(row[0]) for row in sms_get_count_by_hour]
+    sms_get_count_by_hour_values = [str(row[1]) for row in sms_get_count_by_hour]
+
+    sms_get_top_ten_domains = DatabaseInterface.sms_get_top_ten_domains()
+    sms_get_top_ten_domains_labels = [str(row[0]) for row in sms_get_top_ten_domains]
+    sms_get_top_ten_domains_values = [str(row[1]) for row in sms_get_top_ten_domains]
+
+    sms_get_top_ten_countries = DatabaseInterface.sms_get_top_ten_countries()
+    sms_get_top_ten_countries_labels = [str(row[0]) for row in sms_get_top_ten_countries]
+    sms_get_top_ten_countries_values = [str(row[1]) for row in sms_get_top_ten_countries]
+
+
+    return render_template('statistics_raw.html',
+        sms_get_count_by_hour_values=sms_get_count_by_hour_values, sms_get_count_by_hour_labels=sms_get_count_by_hour_labels,
+        sms_get_top_ten_domains_labels=sms_get_top_ten_domains_labels, sms_get_top_ten_domains_values=sms_get_top_ten_domains_values,
+        sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values)
 
 
 

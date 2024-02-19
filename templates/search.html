@@ -13,38 +13,44 @@
     
 </head>
 <body>
-    <div class="navbar">
-        <a href="/">Home</a>
-        <a href="/search" class="active">Search</a>
-        <a href="/statistics">Statistics</a>
-        <a href="/about">About</a>
-    </div>
+  {% include 'menu.html' %}
     <div class="content">
         <h1>Search SMS</h1>
             <form action="/clean" method="GET">
                 <input class="clean" type="submit" value="Clean database"></button>
             </form>
-            <br>
-            <form action="/search" method="GET">
-                <input name="search" placeholder="Enter a key word" value="">
-                <input type="submit" value="Submit"></button>
-            </form>
             <div>
                 <h1>Explore</h1>
                 Explore the data you searched for among a total of {{ count[0] }} SMSs.
-                <table style="height: 25%; width: 100%; overflow: auto">
-                    <tr onclick="window.location='#';">
-                        <th>Id</th>
-                        <th>Sender</th>
-                        <th>Receiver</th>
-                        <th>Message</th>
-                        <th>Receive date</th>
-                        <th>Country</th>
-                        <th>URL</th>
-                        <th>Domain</th>
-                        <th>Source</th>
-                        <th>Data</th>
-                    </tr>
+                <table class="styled-table" style="height: 25%; width: 100%; overflow: auto">
+                    <thead>
+                        <tr>
+                            <th colspan=10>
+                              <form action="/search" method="GET">
+                                  <div class="search-bar">
+                                      <input id="searchQueryInput" type="text" name="search" placeholder="Search" value=""/>
+                                      <button id="searchQuerySubmit" type="submit" value="Submit">
+                                          <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="#666666" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+                                          </svg>
+                                      </button>
+                                  </div>
+                              </form>
+                            </th>
+                          </tr>
+                        <tr onclick="window.location='#';" style="top: 57px;">
+                            <th>Id</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Message</th>
+                            <th>Receive date</th>
+                            <th>Country</th>
+                            <th>URL</th>
+                            <th>Domain</th>
+                            <th>Source</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     {% for row in data %}
                         <tr>
                             <td>{{ row[0] }}</td>
@@ -65,6 +71,7 @@
                             </td>
                         </tr>
                     {% endfor %}
+                    </tbody>
                 </table>
             </div>
     </div>

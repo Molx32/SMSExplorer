@@ -18,5 +18,5 @@ class ModuleInterface:
 
     def create_instance_mock():
         while 1:
-            Earnrwds()
+            # Earnrwds()
             AirIndia()

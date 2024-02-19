@@ -6,15 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="../static/nav.js" defer></script>
     <title>Statistics</title>
 </head>
 <body>
-    <div class="navbar">
-        <a href="/">Home</a>
-        <a href="/search">Search</a>
-        <a href="/statistics" class="active">Statistics</a>
-        <a href="/about">About</a>
-    </div>
+    {% include 'menu.html' %}
     <div class="content">
         <h1>Search SMS</h1>
         <div class="chart-container" style="position: relative; height:40vh; width:80vw">

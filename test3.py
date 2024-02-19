@@ -1,22 +1,35 @@
-# https://nps.airindia.in/w1ZoZvh4
+import string
+import grequests
+import requests
+import sys
 
-# import requests
 
-# url = 'https://nps.airindia.in/mCOdZVTh'
-# rep = requests.get(url, allow_redirects=False, verify=False)
-# redirect_url = rep.headers['Location']
-# params = redirect_url.split('?')[1]
-# for param in params.split('&'):
-#     key = param.split('=')[0]
-#     val = param.split('=')[1]
-#     print(key + ' - ' + val)
+L = []
+for L1 in string.ascii_uppercase:
+    for L2 in string.ascii_uppercase:
+        L.append(L1+L2)
 
-import json
- 
-# Create a dictionary
-sms_id = 1
-json_data = "test"
-s = """ INSERT INTO DATA(SMS_DATA,SMS_ID) VALUES('{}', {}); """.format(json_data, sms_id)
-print(s)
+I = []
+for I1 in '0123456789':
+    for I2 in '0123456789':
+        I.append(I1+I2)
 
-smss = (13, 'https://w-mt.co/g/9GbFdJ')
+C = []
+for L1 in L:
+    for I1 in I:
+        C.append(L1+I1)
+
+start = 0
+limit = 100
+while limit < 67600:
+    print(limit)
+    results = grequests.map((grequests.get('https://force-us-app.moj.io/onboard/' + C1, headers={'User-Agent':'toto'}) for C1 in C[:limit]), size=100)
+    for r in results:
+        with open("result.txt", "a") as f:
+            f.write(r.request.path_url + ' - ' + str(r.status_code))
+            if r.status_code == 302:
+                print(r.headers['Location'])
+                f.write(r.headers['Location'])
+
+    start = limit
+    limit = limit + 100

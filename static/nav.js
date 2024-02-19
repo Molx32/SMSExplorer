@@ -1,3 +1,27 @@
+
+// Update menu display
+current_menu_id = 'menu_' + window.location.pathname.replace('/','')
+element = document.getElementById(current_menu_id);
+element.classList.add('active')
+
+
+//
+var coll = document.getElementsByClassName("collapsible");
+console.log(coll);
+var i;
+
+for (i = 0; i < coll.length; i++) {
+	coll[i].addEventListener("click", function() {
+	// this.classList.toggle("active");
+	var content = this.nextElementSibling;
+	if (content.style.maxHeight){
+		content.style.maxHeight = null;
+	} else {
+		content.style.maxHeight = content.scrollHeight + "px";
+	} 
+	});
+}
+
 function open_modal(modal_id){
 	m = document.getElementById(modal_id);
 	m.style.display = "block";
