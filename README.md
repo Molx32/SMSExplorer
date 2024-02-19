@@ -75,8 +75,8 @@ The project uses docker to instanciate the following containers :
 - PostgreSQL database
 
 
-```
 ### TODO
+
 - Search
   - Add filters
     - 'Contains URLs'     --> Display only SMSs with URLs
