@@ -22,6 +22,16 @@ class Config:
         'mrspin.co.uk'
     ]
 
+    SEARCH_URL = [
+        'nps.airindia.in'
+    ]
+
+    SEARCH_FILTERS = [
+        'NONE',
+        'URL',
+        'DATA'
+    ]
+
 class Connections:
     DATABASE = 'postgres'
     USER = 'postgres'

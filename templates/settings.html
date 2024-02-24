@@ -32,33 +32,8 @@
                             </div>
                             <form id="form_search">
                                 <input hidden id="form_input_search" type="text" name="search" value=""/>
-                                <input hidden id="form_input_include" type="text" name="input_include" value=""/>
-                                <input hidden id="form_input_exclude" type="text" name="input_exclude" value=""/>
                                 <button hidden id="form_input_submit" type="submit" value="Submit"></button>
                             </form>
-                          </th>
-                          <th>
-                            <div class="switch_parent">
-                                <span>Include</span>
-                                <div class="switch_3_ways">
-                                    <div id="toggle_include_none" class="switch none" onclick="change_filter('none', 'include')">None</div>
-                                    <div id="toggle_include_valid_urls" class="switch valid_urls" onclick="change_filter('valid_urls', 'include')">URLs</div>
-                                    <div id="toggle_include_valid_data" class="switch valid_data" onclick="change_filter('valid_data', 'include')">Data</div>
-                                    <div id="include_selector" class="selector"></div>
-                                </div>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="switch_parent">
-                                <br>
-                                <span>Exclude</span>
-                                 <div class="switch_3_ways">
-                                  <div id="toggle_exclude_none" class="switch none" onclick="change_filter('none', 'exclude')">None</div>
-                                  <div id="toggle_exclude_valid_urls" class="switch valid_urls" onclick="change_filter('valid_urls', 'exclude')">URLs</div>
-                                  <div id="toggle_exclude_valid_data" class="switch valid_data" onclick="change_filter('valid_data', 'exclude')">Data</div>
-                                   <div id="exclude_selector" class="selector"></div>
-                                </div>
-                              </div>
                           </th>
                         </tr>
                 </table>
@@ -66,15 +41,10 @@
                     <thead>
                         <tr onclick="window.location='#';" style="top: 57px;">
                             <th>Id</th>
-                            <th>Sender</th>
-                            <th>Receiver</th>
-                            <th>Message</th>
-                            <th>Receive date</th>
-                            <th>Country</th>
-                            <th>URL</th>
                             <th>Domain</th>
-                            <th>Source</th>
-                            <th>Data</th>
+                            <th>isInteresingData</th>
+                            <th>isInteresingDataDesc</th>
+                            <th>isAutomated</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -85,17 +55,6 @@
                             <td>{{ row[2] }}</td>
                             <td>{{ row[3] | decode}}</td>
                             <td>{{ row[4] }}</td>
-                            <td>{{ row[5] }}</td>
-                            <td>{{ row[6] }}</td>
-                            <td>{{ row[7] }}</td>
-                            <td>{{ row[8] }}</td>
-                            <td>
-                                {%- if row[9] == True -%}
-                                <button {{'id=file_classification_button_' ~ row[0]}} class='databtnenabled' onclick="displayData(this.id)">Get data</button>
-                                {%- else -%}
-                                <button {{'id=file_classification_button_' ~ row[0]}} class='databtndisabled' disabled>No data</button>
-                                {% endif %}
-                            </td>
                         </tr>
                     {% endfor %}
                     </tbody>

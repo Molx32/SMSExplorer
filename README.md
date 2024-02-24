@@ -76,16 +76,42 @@ The project uses docker to instanciate the following containers :
 
 
 ### TODO
-
+✅
+🛠️
+❌
 - Search
   - Add filters
-    - 'Contains URLs'     --> Display only SMSs with URLs
-    - 'Known valid URLs'  --> Display only SMSs with URLs known to hide data
-    - 'Data URL'          --> Display only SMSs with URLs with automated data collection
+    - ✅ 'Contains URLs'     --> Display only SMSs with URLs
+    - ✅ 'Known valid URLs'  --> Display only SMSs with URLs known to hide data
+    - ✅ 'Data URL'          --> Display only SMSs with URLs with automated data collection
 - Statistics
     - 'Contains URLs'     --> Display statistics with only SMSs with URLs
     - 'Known valid URLs'  --> Display statistics with only SMSs with URLs known to hide data
     - 'Data URL'          --> Display statistics with only SMSs with URLs with automated data collection
+- TARGET FEATURE 🛠️🛠️🛠️
+  - Settings
+    - Edit existing targets
+      - Edit isAutomated
+      - Edit isInteresingData
+      - Edit isInteresingDataDesc
+  - Database
+	  - Add a new table with list of unique targets (domains, or urls?)
+	  - Add a 'target' table with
+	      - isInteresingData:
+	        - yes
+	        - no
+	      - isInteresingDataDesc
+	        - NO_SCAM
+	        - NO_AD
+	        - NO_MISSED_OPPORTUNITY
+	        - NO_OTHER
+	        - YES_PII
+	        - YES_DISCOVERY
+	        - YES_ACCOUNT_TAKEOVER
+	        - YES_ACCOUNT_PASSWORD_RESET
+	      - isAutomated
+	        - yes
+	        - no
 - Collection
   - Add new data sources
 - RESOLVE THE RACE CONDITION CASE...

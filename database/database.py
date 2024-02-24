@@ -66,6 +66,39 @@ class DatabaseInterface:
         query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), country, url, domain, source, data_handled FROM SMSS WHERE (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) AND domain NOT IN ({}) ORDER BY receive_date DESC""".format(search, search, excluded_domains)
         cursor.execute(query)
         return cursor.fetchall()
+
+    def sms_get_by_search(search, input_include, input_exclude):
+        cursor = Database().connect()
+        excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+        # NONE, DATA, URL
+        select                      = """ SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), country, url, domain, source, data_handled FROM SMSS """
+
+        # Handle Search
+        if search != '':
+            where                       = """ WHERE (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
+            where                       = where + """ AND domain NOT IN ({}) """.format(excluded_domains)
+        else:
+            where                       = """ WHERE domain NOT IN ({}) """.format(excluded_domains)
+
+        # Handle include filter
+        if input_include == 'URL':
+            included_urls = "'" + "','".join(Config.SEARCH_URL) + "'"
+            where = where + """ AND domain IN ({}) """.format(included_urls)
+        if input_include == 'DATA':
+            where = where + """ AND data_handled = True """
+
+        # Handle exclude filter
+        if input_exclude == 'URL':
+            excluded_urls = "'" + "','".join(Config.SEARCH_URL) + "'"
+            where = where + """ AND domain NOT IN ({}) """.format(excluded_domains)
+        if input_exclude == 'DATA':
+            where = where + """ AND data_handled = False """
+
+        order_by            = """ ORDER BY receive_date DESC """.format(search, search, excluded_domains)
+        limit               = """ LIMIT 1000 """
+        query = select + where + order_by + limit
+        cursor.execute(query)
+        return cursor.fetchall()
     
     def sms_get_by_sender(sender):
         cursor = Database().connect()

@@ -53,33 +53,28 @@ app.config['SECRET_KEY'] = Config.SECRET_KEY
 # ----------------------------------------------------------------- #
 # -                      SEARCH ENDPOINT                          - #
 # ----------------------------------------------------------------- #
-def _generic_search(is_raw=False):
-    # Get searched SMSs
-    if request.args.get('search'):
-        search = request.args.get('search')
-        data = DatabaseInterface.sms_get_by_search(search, is_raw)
-        count   = DatabaseInterface.sms_count()
-    # Get all SMSs
-    else:
-        data = DatabaseInterface.sms_get_all(is_raw)
-        count = DatabaseInterface.sms_count()
+@app.route("/")
+@app.route("/search", methods = ['GET'])
+def search():
+    input_include = request.args.get('input_include')
+    input_exclude = request.args.get('input_exclude')
+    input_search  = request.args.get('search')
+
+    # Check if input is safe
+    if input_include not in Config.SEARCH_FILTERS:
+        input_include = 'NONE'
+    if input_exclude not in Config.SEARCH_FILTERS:
+        input_exclude = 'NONE'
+    if input_search is None:
+        input_search = ''
+
+    # Get SMSs
+    data = DatabaseInterface.sms_get_by_search(input_search, input_include, input_exclude)
+    count   = DatabaseInterface.sms_count()
 
     # Load forms
     form    = SearchForm()
     return render_template('search.html', form=form, data=data, count=count)
-
-@app.route("/")
-    return redirect('/search_raw')
-
-@app.route("/search_raw", methods = ['GET'])
-def search_raw():
-    return _generic_search(is_raw=True)
-
-@app.route("/search_san", methods = ['GET'])
-def search_san():
-    return _generic_search(is_raw=False)
-
-
 
 # ----------------------------------------------------------------- #
 # -                    STATISTICS ENDPOINT                        - #
@@ -125,6 +120,19 @@ def statistics_san():
         sms_get_count_by_hour_values=sms_get_count_by_hour_values, sms_get_count_by_hour_labels=sms_get_count_by_hour_labels,
         sms_get_top_ten_domains_labels=sms_get_top_ten_domains_labels, sms_get_top_ten_domains_values=sms_get_top_ten_domains_values,
         sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values)
+
+
+
+
+# ----------------------------------------------------------------- #
+# -                     SETTINGS ENDPOINT                         - #
+# ----------------------------------------------------------------- #
+@app.route("/settings", methods = ['GET'])
+def settings():
+    return render_template('settings.html')
+
+
+
 
 
 
