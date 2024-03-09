@@ -13,8 +13,8 @@ class SMS:
         self.msg            = msg
         self.receive_date   = receive_date
         self.country        = country
-        self.url            = '-'
-        self.domain         = '-'
+        self.url            = ''
+        self.domain         = ''
         self.source         = ""
         self.data_handled   = False
 
@@ -27,8 +27,8 @@ class SMS:
         url_match   = self._parseUrl()
         dom_match   = self._parseDomain()
         if url_match:
-            self.url = url_match[0]
-            self.domain = url_match[0].split('/')[2]
+            self._sanitizeUrl(url_match)
+            self.domain = self.url.split('/')[2]
     
     # Meta handling of attributes and their values
     def getAttributes(self):
@@ -69,6 +69,12 @@ class SMS:
     def _parseUrl(self):
         url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
         return re.findall(url_pattern, self.msg)
+
+    def _sanitizeUrl(self, url_match):
+        self.url = url_match[0]
+        # Remove dot at the end
+        if self.url[-1] == '.':
+            self.url = self.url[:len(self.url)-1]
     
     def _parseDomain(self):
         dom_pattern = "^((?!-)[A-Za-z0-9-]" + "{1,63}(?<!-)\\.)" +"+[A-Za-z]{2,6}"
@@ -76,6 +82,7 @@ class SMS:
 
     def _parse_msg(self):
         self.msg.replace('p***word', 'password')
+        self.msg.replace('do***ent', 'document')
 
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))

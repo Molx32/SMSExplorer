@@ -1,0 +1,21 @@
+{
+    "data" : [
+        {
+            "domain":"nps.airindia.in",
+            "is_automated":true,
+            "is_interesting":true,
+            "is_interesting_desc":[
+                "DATA_INTERESTING_DESC_YES_PII",
+                "DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER"
+            ]
+        },
+        {
+            "domain":"mrspin.co.uk",
+            "is_automated":false,
+            "is_interesting":false,
+            "is_interesting_desc":[
+                "DATA_INTERESTING_DESC_NO_SCAM"
+            ]
+        }
+    ]
+}

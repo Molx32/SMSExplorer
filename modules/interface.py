@@ -2,7 +2,7 @@ import sys
 from modules.target.target_receive_smss import ReceiveSMSS
 from modules.target.target_mytempsms import MyTempSMS
 
-from modules.data.data__module import Earnrwds, AirIndia
+from modules.data.data__module import *
 
 sys.path.extend(['../'])
 
@@ -18,5 +18,11 @@ class ModuleInterface:
 
     def create_instance_mock():
         while 1:
-            # Earnrwds()
             AirIndia()
+            Instagram()
+            Earnrwds()
+            # Ukrwds() -- Need to execute JS
+            Moj()
+            Superprof()
+            Konto()
+            SuitsMeCard()

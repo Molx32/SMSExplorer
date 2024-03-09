@@ -25,9 +25,6 @@ class Database:
         self.conn = None
         self.cursor = None
 
-    ### 
-    # DATABASE MANAGEMENT METHODS
-    ### 
     def connect(self):
         # Connect to DB
         self.conn = psycopg2.connect(database=Connections.DATABASE, user=Connections.USER, password=Connections.PASSWORD, host=Connections.HOST, port=Connections.PORT)
@@ -42,61 +39,53 @@ class Database:
         self.conn = None
 
 class DatabaseInterface:
-    # INIT
-    def db_init():
-        cursor = Database().connect()
-        cursor.execute("""ALTER DATABASE SMSS SET datestyle TO 'GERMAN,MDY';""")
-        print(cursor.fetchone())
-
-    # GETTERS
-    def sms_get():
-        cursor = Database().connect()
-        cursor.execute("""SELECT * FROM SMSS WHERE id=%s""", (id))
-        return cursor.fetchone()
     
-    def sms_get_all():
+#############################################################################
+# HANDLE SMSS
+    def sms_get_by_search(search, input_data, input_interesting):
         cursor = Database().connect()
         excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'),country, url, domain, source, data_handled FROM SMSS WHERE domain NOT IN ({}) ORDER BY receive_date DESC LIMIT 1000;""".format(excluded_domains))
-        return cursor.fetchall()
-    
-    def sms_get_by_search(search):
-        cursor = Database().connect()
-        excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
-        query = """SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), country, url, domain, source, data_handled FROM SMSS WHERE (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) AND domain NOT IN ({}) ORDER BY receive_date DESC""".format(search, search, excluded_domains)
-        cursor.execute(query)
-        return cursor.fetchall()
 
-    def sms_get_by_search(search, input_include, input_exclude):
-        cursor = Database().connect()
-        excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
-        # NONE, DATA, URL
-        select                      = """ SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), country, url, domain, source, data_handled FROM SMSS """
+        # SELECT 
+        select  = ""
+        select  = select + "SELECT "
+        select  = select + "smss.id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country, url, smss.domain, data_handled, is_interesting, is_automated, is_interesting_desc """
+        select  = select + "FROM smss "
+
+        # JOIN
+        join    = "LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+
+        # WHERE
+        where   = "WHERE "
+        where   = where + """smss.domain NOT IN ({}) """.format(excluded_domains)
+
 
         # Handle Search
         if search != '':
-            where                       = """ WHERE (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
-            where                       = where + """ AND domain NOT IN ({}) """.format(excluded_domains)
-        else:
-            where                       = """ WHERE domain NOT IN ({}) """.format(excluded_domains)
+            where   = where + """(LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
 
-        # Handle include filter
-        if input_include == 'URL':
-            included_urls = "'" + "','".join(Config.SEARCH_URL) + "'"
-            where = where + """ AND domain IN ({}) """.format(included_urls)
-        if input_include == 'DATA':
-            where = where + """ AND data_handled = True """
+        # Handle data filter
+        if input_data == 'ALL':
+            where = where + ""
+        if input_data == 'YES':
+            where = where + " AND data_handled = True "
+        if input_data == 'NO':
+            where = where + " AND data_handled = False "
 
-        # Handle exclude filter
-        if input_exclude == 'URL':
-            excluded_urls = "'" + "','".join(Config.SEARCH_URL) + "'"
-            where = where + """ AND domain NOT IN ({}) """.format(excluded_domains)
-        if input_exclude == 'DATA':
-            where = where + """ AND data_handled = False """
+        # Handle interesting filter
+        if input_interesting == 'ALL':
+            where = where + ""
+        if input_interesting == 'NONE':
+            where = where + " AND is_interesting IS NULL "
+        if input_interesting == 'YES':
+            where = where + " AND is_interesting = True "
+        if input_interesting == 'NO':
+            where = where + " AND is_interesting = False "
 
         order_by            = """ ORDER BY receive_date DESC """.format(search, search, excluded_domains)
         limit               = """ LIMIT 1000 """
-        query = select + where + order_by + limit
+        query = select + join + where + order_by + limit
+        print(query)
         cursor.execute(query)
         return cursor.fetchall()
     
@@ -115,7 +104,6 @@ class DatabaseInterface:
         cursor.execute("""SELECT sms_data FROM Data WHERE sms_id = {};""".format(sms_id))
         return cursor.fetchone()
         
-    # SETTERS
     def sms_insert(sms):
         # Handle data
         columns = sms.getAttributes()
@@ -132,7 +120,7 @@ class DatabaseInterface:
         except Exception as e:
             raise e
 
-    def sms_data_insert(sms_id, json_data):
+    def sms_insert_data(sms_id, json_data):
         try:
             cursor = Database().connect()
             query   = """ INSERT INTO DATA(SMS_DATA,SMS_ID) VALUES('{}', {}); """.format(json_data, sms_id)
@@ -144,7 +132,9 @@ class DatabaseInterface:
         except Exception as e:
             raise e
 
-    # RAW STATISTICS
+
+#############################################################################
+# HANDLE STATISTICS
     def sms_count():
         cursor = Database().connect()
         cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
@@ -164,6 +154,82 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute("""SELECT country, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 2 DESC;""")
         return cursor.fetchall()
+
+    # All
+    def sms_count_all():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM SMSS;")
+        return cursor.fetchone()
+    
+    def sms_count_all_data():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE data_handled = 't';")
+        return cursor.fetchone()
+
+    def sms_count_all_urls():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL <> '';")
+        return cursor.fetchone()
+
+
+    def sms_get_statistics_interesting():
+        # All -> URLs -> Interesting
+        def _count_all_interesting(is_interesting):
+            query = ""
+            if is_interesting == Config.METADATA_INTERESTING_YES:
+                query = "SELECT COUNT(smss.id) FROM SMSS LEFT OUTER JOIN targets ON smss.domain = targets.domain WHERE is_interesting = True"
+            elif is_interesting == Config.METADATA_INTERESTING_NO:
+                query = "SELECT COUNT(smss.id) FROM SMSS LEFT OUTER JOIN targets ON smss.domain = targets.domain WHERE is_interesting = False"
+            elif is_interesting == Config.METADATA_INTERESTING_UNKNOWN:
+                query = "SELECT COUNT(smss.id) FROM SMSS LEFT OUTER JOIN targets ON smss.domain = targets.domain WHERE is_interesting is null"
+
+            cursor = Database().connect()
+            cursor.execute(query)
+            return cursor.fetchone()
+
+        r = {}
+        for is_interesting in Config.LIST_METADATA_INTERESTING:
+            r[is_interesting] = _count_all_interesting(is_interesting)[0]
+        return r
+
+    def sms_get_statistics_interesting_tags_yes():
+        # All -> URLs -> Interesting
+        def _count_all_interesting_tag(tag):
+            cursor = Database().connect()
+            cursor.execute("SELECT COUNT(smss.id) FROM SMSS LEFT OUTER JOIN targets ON smss.domain = targets.domain WHERE is_interesting_desc LIKE '%{}%'".format(tag))
+            return cursor.fetchone()
+
+        r = {}
+        for tag in Config.LIST_METADATA_INTERESTING_YES:
+            r[tag] = _count_all_interesting_tag(tag)[0]
+        return r
+
+    def sms_get_statistics_interesting_tags_no():
+        # All -> URLs -> Interesting
+        def _count_all_interesting_tag(tag):
+            cursor = Database().connect()
+            cursor.execute("SELECT COUNT(smss.id) FROM SMSS LEFT OUTER JOIN targets ON smss.domain = targets.domain WHERE is_interesting_desc LIKE '%{}%'".format(tag))
+            return cursor.fetchone()
+
+        r = {}
+        for tag in Config.LIST_METADATA_INTERESTING_NO:
+            r[tag] = _count_all_interesting_tag(tag)[0]
+        return r
+
+
+
+    # All -> No URLs
+    def sms_count_all_no_urls():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL = '';")
+        return cursor.fetchone()
+
+    # All -> No URLs -> Interesting
+    def sms_count_all_no_urls_interesting():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL = '';")
+        return cursor.fetchone()
+
     
     # SANITIZED STATISTICS
     # TODO
@@ -171,16 +237,81 @@ class DatabaseInterface:
     # DATA HANDLERS
     def get_sms_by_url(url):
         cursor = Database().connect()
-        cursor.execute("""SELECT id,url FROM SMSS WHERE URL LIKE '{}%' AND DATA_HANDLED=False;""".format(url))
+        cursor.execute("""SELECT id,url,msg FROM SMSS WHERE URL LIKE '{}%' AND DATA_HANDLED=False;""".format(url))
         return cursor.fetchall()
     
 
 
 
-
-    # CLEANERS
+#############################################################################
+# UTILS
     def clean_database():
         cursor = Database().connect()
         query = """DELETE FROM SMSS;"""
         cursor.execute(query)
         print("Database cleaned!")    
+
+
+
+
+
+
+#############################################################################
+# TARGETS
+    def targets_get_all(search):
+
+        if search != '':
+            query = """SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE LOWER(domain) LIKE LOWER('%{}%') LIMIT 1000;""".format(search)
+        else:
+            query = "SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS LIMIT 1000;"
+        
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+
+    def targets_count():
+        cursor = Database().connect()
+        cursor.execute('SELECT COUNT(id) FROM TARGETS;')
+        return cursor.fetchone()
+
+    def targets_initialize(init=True):
+        # Connect to database
+        cursor = Database().connect()
+
+        # If targets has already been init, return
+        if not init or DatabaseInterface.targets_has_been_init():
+            return
+
+        # Else, init by inserting all targets
+        for item in Config.METADATA['data']:
+            domain              = item['domain']
+            is_automated        = item['is_automated']
+            is_interesting      = item['is_interesting']
+            is_interesting_desc = ','.join(item['is_interesting_desc'])
+
+            query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, is_automated, is_interesting, is_interesting_desc)
+            cursor.execute(query)
+        
+        # Update configuration
+        query   = "UPDATE CONFIG SET is_targets_imported = True"
+        cursor.execute(query)
+
+    def targets_has_been_init():
+        # Connect to database
+        cursor = Database().connect()
+
+        # If targets has already been init, return True
+        query   = "SELECT is_targets_imported FROM CONFIG"
+        cursor.execute(query)
+        res = cursor.fetchone()[0]
+        return res
+        
+#############################################################################
+# EXPORTS
+    def export_smss():
+        query = "\COPY smss TO '/etc/data/exports.csv' DELIMITER ',' CSV HEADER;"
+        cursor = Database().connect()
+        with open('/etc/data/exports.csv', 'a') as f:
+            cursor.copy_expert("COPY smss TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+        return

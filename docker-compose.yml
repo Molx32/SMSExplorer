@@ -11,6 +11,7 @@ services:
             - POSTGRES_USER=postgres
         volumes:
             - ./database/init:/docker-entrypoint-initdb.d/
+            - exports:/etc/data/exports
 
     # Redis server
     redisserver:
@@ -23,12 +24,14 @@ services:
         image: opensms:latest
         depends_on:
             - redisserver
+            - database
         command: rq worker --url redis://redisserver:6379
     
     data_worker:
         image: opensms:latest
         depends_on:
             - fetcher_worker
+            - database
         command: rq worker --url redis://redisserver:6379
 
     # Web server
@@ -41,3 +44,8 @@ services:
         restart: on-failure
         ports:
             - 9000:9000
+        volumes:
+            - exports:/etc/data/exports
+    
+volumes:
+    exports:
