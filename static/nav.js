@@ -77,18 +77,18 @@ function change_filter_data(filter){
 	if(filter.toUpperCase() === "NONE"){
 		selector.style.left = 0;
 		selector.style.width = none.clientWidth + "px";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 		selector.innerHTML = "NONE";
 	}else if(filter.toUpperCase() === "YES"){
 		selector.style.left = none.clientWidth + "px";
 		selector.style.width = yes.clientWidth + "px";
 		selector.innerHTML = "YES";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 	}else if(filter.toUpperCase() === "NO"){
 		selector.style.left = none.clientWidth + yes.clientWidth + 1 + "px";
 		selector.style.width = no.clientWidth + "px";
 		selector.innerHTML = "NO";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 	}
 	set_search_form()
 }
@@ -103,23 +103,23 @@ function change_filter_interesting(filter){
 	if(filter.toUpperCase() === "ALL"){
 		selector.style.left = 0;
 		selector.style.width = all.clientWidth + "px";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 		selector.innerHTML = "ALL";
 	}else if(filter.toUpperCase() === "YES"){
 		selector.style.left = all.clientWidth + "px";
 		selector.style.width = yes.clientWidth + "px";
 		selector.innerHTML = "YES";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 	}else if(filter.toUpperCase() === "NO"){
 		selector.style.left = all.clientWidth + yes.clientWidth + 1 + "px";
 		selector.style.width = no.clientWidth + "px";
 		selector.innerHTML = "NO";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 	}else if(filter.toUpperCase() === "NONE"){
 		selector.style.left = all.clientWidth + yes.clientWidth + no.clientWidth + 1 + "px";
 		selector.style.width = none.clientWidth + "px";
 		selector.innerHTML = "NONE";
-		selector.style.backgroundColor = "#5CB8A6";
+		selector.style.backgroundColor = "#2daab8";
 	}
 	set_search_form()
 }

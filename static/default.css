@@ -29,7 +29,7 @@ p {
 .navbar {
   margin: 0;
   padding: 0;
-  width: 200px;
+  width: 250px;
   background-color: #fff;
   position: fixed;
   top: 0;
@@ -112,16 +112,22 @@ p {
 }
 
 .navbar .logo {
-  width: auto;
+  width: -webkit-fill-available;
   text-align: center;
   font-family: system-ui;
-  max-width: 100px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.navbar .logo img {
+  max-width: 70px;
 }
 
 
 /* MAIN DIV FOR CONTENT */
 div.content {
-  padding: 0 0 0 200px;
+  padding: 0 0 0 250px;
 }
 
 
@@ -270,7 +276,7 @@ div.stat_desc{
 }
 
 .styled-table thead tr {
-  background-color: #009879;
+  background-color: #2e4765;
   color: #ffffff;
   text-align: left;
   position: sticky;
@@ -289,6 +295,7 @@ div.stat_desc{
 
 .styled-table tbody tr {
   border-bottom: 1px solid #dddddd;
+  background-color: #f8f8f8;
 }
 
 .styled-table tbody tr:nth-of-type(even) {
