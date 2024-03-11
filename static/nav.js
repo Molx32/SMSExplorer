@@ -170,7 +170,7 @@ function displayData(button_id){
 	update_form.onreadystatechange = () => {
         if (update_form.readyState === 4) {
             obj = JSON.parse(JSON.parse(update_form.response));
-            var node = new PrettyJSON.view.NOde({
+            var node = new PrettyJSON.view.Node({
                 el:document.getElementById("result"),
                 data:obj
             });
