@@ -29,11 +29,14 @@ for (i = 0; i < coll.length; i++) {
 /*               SEARCH FORMS               */
 /* **************************************** */
 if (location.pathname.includes('search')) {
-	set_form();
+	set_form_display();
+}
+if (location.pathname.includes('investigation')) {
+	set_form_display_investigation();
 }
 
 function findGetParameter(parameterName) {
-    var result = null, tmp = [];
+    var result = "", tmp = [];
     location.search.substr(1).split("&").forEach(function (item) {
           tmp = item.split("=");
           if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
@@ -58,7 +61,7 @@ function send_search_form() {
 	form.submit();
 }
 
-function set_form(){
+function set_form_display(){
 	// Set search input
 	document.getElementById("input_search").value = findGetParameter('search');
 	data_filter 		= findGetParameter('input_data').toUpperCase();
@@ -124,13 +127,58 @@ function change_filter_interesting(filter){
 	set_search_form()
 }
 
+function change_filter_unique(filter){
+	// Handle new settings
+	var yes 		= document.getElementById("toggle_unique_yes");
+	var no 			= document.getElementById("toggle_unique_no");
+	var selector 	= document.getElementById("unique_selector");
+	if(filter.toUpperCase() === "NO"){
+		selector.style.left = 0;
+		selector.style.width = no.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "ALL";
+	}else if(filter.toUpperCase() === "YES"){
+		selector.style.left = no.clientWidth + "px";
+		selector.style.width = yes.clientWidth + "px";
+		selector.innerHTML = "YES";
+		selector.style.backgroundColor = "#2daab8";
+	}
+	set_search_form_investigation()
+}
+
+function set_search_form_investigation() {
+	param_search 		= document.getElementById('input_search').value;
+	param_interesting 	= document.getElementById('unique_selector').innerText;
+	
+	document.getElementById('form_input_search').value	= param_search;
+	document.getElementById('form_input_unique').value = param_interesting;
+}
+
+function set_form_display_investigation(){
+	// Set search input
+	document.getElementById("input_search").value = findGetParameter('search');
+	unique 		= findGetParameter('unique').toUpperCase();
+
+	change_filter_unique(unique);
+}
+
+
+function send_search_form_investigation() {
+	form = document.getElementById('form_search');
+	param_search 	= document.getElementById('input_search').value;
+
+	// Normalize param_include
+	document.getElementById('form_input_search').value = param_search;
+	form.submit();
+}
+
 
 function send_search_form_targets() {
 	form = document.getElementById('form_search');
 	param_search 	= document.getElementById('input_search_targets').value;
 
-	// NOrmalize param_include
-	document.getElementById('form_input_search_targets').value = param_search;
+	// Normalize param_include
+	document.getElementById('form_input_search').value = param_search;
 	form.submit();
 }
 
@@ -184,11 +232,35 @@ function displayData(button_id){
 
 
 
-/* *************************************** */
-/*               EXPORT DATA               */
-/* *************************************** */
+/* ************************************ */
+/*               SETTINGS               */
+/* ************************************ */
 function export_smss() {
 	const req = new XMLHttpRequest();
 	req.open("GET", "/settings/export_smss");
 	req.send();
+}
+
+function settings_clean_database() {
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			// Typical action to be performed when the document is ready:
+			alert("Database cleaned");
+		}
+	};
+	xhttp.open("GET", "/settings/database/clean", true);
+	xhttp.send();
+}
+
+function settings_update_targets() {
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			// Typical action to be performed when the document is ready:
+			alert("Database cleaned");
+		}
+	};
+	xhttp.open("GET", "/settings/database/targets_update", true);
+	xhttp.send();
 }

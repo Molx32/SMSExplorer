@@ -62,7 +62,7 @@ class DatabaseInterface:
 
         # Handle Search
         if search != '':
-            where   = where + """(LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
+            where   = where + """AND (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
 
         # Handle data filter
         if input_data == 'ALL':
@@ -155,7 +155,8 @@ class DatabaseInterface:
         cursor.execute("""SELECT country, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 2 DESC;""")
         return cursor.fetchall()
 
-    # All
+#############################################################################
+# HOME
     def sms_count_all():
         cursor = Database().connect()
         cursor.execute("SELECT COUNT(id) FROM SMSS;")
@@ -170,6 +171,37 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL <> '';")
         return cursor.fetchone()
+
+    def sms_count_unknown():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL = '';")
+        return cursor.fetchone()
+
+    def sms_activities_last_data():
+        cursor = Database().connect()
+        cursor.execute("SELECT id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' LIMIT 5;")
+        return cursor.fetchall()
+
+#############################################################################
+# INVESTIGATION
+    def sms_get_unqualified_targets(search, unique):
+        
+        query = ""
+        where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND is_interesting IS NULL AND url <> '' """.format(search)
+        group_by = "GROUP BY smss.domain LIMIT 1000;"
+
+        if unique:
+            select  = "SELECT min(smss.id), min(smss.url), min(smss.msg), min(smss.domain) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + group_by
+        else:
+            select  = "SELECT smss.id, smss.url, smss.msg, smss.domain FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + " LIMIT 1000;"
+
+        # Handle Search
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
 
 
     def sms_get_statistics_interesting():
@@ -268,7 +300,6 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
-
 
     def targets_count():
         cursor = Database().connect()

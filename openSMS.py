@@ -56,23 +56,28 @@ app.config['SECRET_KEY'] = Config.SECRET_KEY
 # ----------------------------------------------------------------- #
 # -                            HOME                               - #
 # ----------------------------------------------------------------- #
+@app.route("/")
 @app.route("/home", methods = ['GET'])
 def home():
     # Get statistics
     count_messages  = DatabaseInterface.sms_count_all()[0]
     count_urls      = DatabaseInterface.sms_count_all_urls()[0]
     count_data      = DatabaseInterface.sms_count_all_data()[0]
-    count_unknown   = 123456
+    count_unknown   = DatabaseInterface.sms_count_unknown()[0]
+
+    # Activities
+    activities_last_data = DatabaseInterface.sms_activities_last_data()
+
     # Load forms
     return render_template('home.html',
         count_messages=count_messages, count_urls=count_urls,
-        count_data=count_data, count_unknown=count_unknown)
+        count_data=count_data, count_unknown=count_unknown,
+        activities_last_data=activities_last_data)
 
 
 # ----------------------------------------------------------------- #
 # -                      SEARCH ENDPOINT                          - #
 # ----------------------------------------------------------------- #
-@app.route("/")
 @app.route("/search", methods = ['GET'])
 def search():
     input_data          = request.args.get('input_data')
@@ -113,6 +118,32 @@ def search_targets():
     count   = DatabaseInterface.targets_count()
 
     return render_template('targets.html', data=data, count=count)
+
+# ---------------------------------------------------------------- #
+# -                       INVESTIGATION                          - #
+# ---------------------------------------------------------------- #
+@app.route("/investigation", methods = ['GET'])
+def investigation():
+    # Get params
+    input_search  = request.args.get('search')
+    input_unique  = request.args.get('unique')
+
+    # Filter params
+    if input_search is None:
+        input_search = ''
+    if input_unique is None:
+        input_unique = False
+    if input_unique == 'YES':
+        input_unique = True
+    else:
+        input_unique = False
+
+
+    # Get SMSs
+    data    = DatabaseInterface.sms_get_unqualified_targets(input_search, input_unique)
+    count   = len(data)
+
+    return render_template('investigation.html', data=data, count=count)
 
 # ----------------------------------------------------------------- #
 # -                    STATISTICS ENDPOINT                        - #
@@ -179,9 +210,8 @@ def settings_export_smss():
 
 # @app.route("/settings/export_targets", methods = ['GET'])
 # def settings_export_targets():
-#     path = "/Examples.pdf"
 #     DatabaseInterface.export_smss()
-#     return send_file(path, as_attachment=True)
+#     return send_file('/etc/data/exports.csv', as_attachment=True)
 
 
 
@@ -217,7 +247,8 @@ def data():
         data = {}
     return jsonify(data)
 
-@app.route("/clean", methods = ['GET'])
+
+@app.route("/settings/database/clean", methods = ['GET'])
 def clean():
     workers = Worker.all(redis)
     for worker in workers:
@@ -225,9 +256,13 @@ def clean():
     time.sleep(2)
     DatabaseInterface.clean_database()
     # Relaunch workers
+    task_queue.enqueue(DatabaseInterface.targets_initialize)
     task_queue.enqueue(TargetInterface.create_instance_receivesmss)
-    return redirect('/search')
+    task_queue.enqueue(ModuleInterface.create_instance_mock)
 
+@app.route("/settings/database/targets_update", methods = ['GET'])
+def targets_update():
+    pass
 
 @app.template_filter('decode')
 def decode_msg(encoded):

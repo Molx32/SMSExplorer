@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    {% include '_includes.html' %}
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="../static/jquery-1.11.1.min.js" ></script>
+        <script type="text/javascript" src="../static/underscore-min.js" ></script>
+        <script type="text/javascript" src="../static/backbone-min.js" ></script>
+        <script type="text/javascript" src="../static/pretty-json-min.js" defer></script>
+        <script type="text/javascript" src="../static/nav.js" defer></script>
+        <link rel="stylesheet" href="../static/default.css">
+        <link rel="stylesheet" href="../static/pretty-json.css">
+    </head>
 <body>
-    {% include '_menu.html' %}
+    <div class="navbar">
+        <span class="logo">
+            <img src="../static/logo.png" width="100%">
+            <span>SMS Explorer</span>
+        </span>
+        <span class="cat">Dashboard</span>
+        <a id="menu_home" href="/home" class="subcat">Home</a>
+        <!-- Search -->
+        <span class="cat">Search</span>
+        <a id="menu_search" href="/search" class="subcat">SMSs</a>
+        <a id="menu_targets" href="/search_targets" class="subcat">Targets</a>
+        <!-- Statistics -->
+        <span class="cat">Statistics</span>
+        <a id="menu_statistics_raw" href="/statistics_raw" class="subcat">Raw</a>
+        <a id="menu_statistics_san" href="/statistics_san" class="subcat">Sanitized</a>
+        <!-- Settings -->
+        <span class="cat">Settings</span>
+        <a id="menu_settings" href="/settings" class="subcat">Settings</a>
+        <!-- About -->
+        <a id="menu_about" href="/about" class="subcat">About</a>
+    </div>
     <div class="content">
         <div class="content-inner">
                 <div class="container">
@@ -176,12 +204,20 @@
                     </div>
                 </div>
         </div>
+        <!-- Export SMSs button -->
+        <form id="export_smss">
+            <button type="button" value="Export SMSs" onclick="window.open('/settings/export_smss', '_blank').focus();">Export SMSs</button>
+        </form>
+        <!-- Export targets button -->
+        <form id="export_targets">
+            <button type="button" value="Export targets" onclick="window.open('/settings/export_targets', '_blank').focus();">Export targets</button>
+        </form>
         <!-- Clean database -->
         <form id="clean_database">
             <button type="button" value="Clean database" onclick="window.open('/settings/database/clean', '_blank').focus();">Clean database</button>
         </form>
         <!-- Update database -->
-        <form id="targets_update">
+        <form id="clean_database">
             <button type="button" value="Update targets" onclick="window.open('/settings/database/targets_update', '_blank').focus();">Update targets</button>
         </form>
     </div>

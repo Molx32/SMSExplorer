@@ -16,8 +16,8 @@
                                     <img src="../static/icon_sms.png"/>
                                 </div>
                                 <div class="count_content">
-                                    <h3>954989</h3>
-                                    <p>Message received</p>
+                                    <h3>{{count_messages}}</h3>
+                                    <p>Messages received</p>
                                 </div>
                             </div>
                             <div id="tile_messages_received" class="tile">
@@ -25,8 +25,8 @@
                                     <img src="../static/icon_sms.png"/>
                                 </div>
                                 <div class="count_content">
-                                    <h3>954989</h3>
-                                    <p>Message received</p>
+                                    <h3>{{count_urls}}</h3>
+                                    <p>Messages with URL</p>
                                 </div>
                             </div>
                             <div id="tile_messages_received" class="tile">
@@ -34,8 +34,8 @@
                                     <img src="../static/icon_sms.png"/>
                                 </div>
                                 <div class="count_content">
-                                    <h3>954989</h3>
-                                    <p>Message received</p>
+                                    <h3>{{count_data}}</h3>
+                                    <p>Messages with data</p>
                                 </div>
                             </div>
                             <div id="tile_messages_received" class="tile">
@@ -43,18 +43,67 @@
                                     <img src="../static/icon_sms.png"/>
                                 </div>
                                 <div class="count_content">
-                                    <h3>954989</h3>
-                                    <p>Message received</p>
+                                    <h3>{{count_unknown}}</h3>
+                                    <p>Garbage</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div id="home_events" class="events">
+                            <!-- Last data collected -->
                             <div class="event">
                                 <div class="event-header event-header-border">
                                     <div class="main_title">
                                         <h3>Last data collected</h3>
+                                    </div>
+                                </div>
+                                {% for activity in activities_last_data %}
+                                    {% set id       = activity[0] %}
+                                    {% set date     = activity[1] %}
+                                    {% set sender   = activity[2] %}
+                                    {% set receiver = activity[3] %}
+                                    {% set msg      = activity[4] %}
+                                    {% set country  = activity[5] %}
+                                    <div class="event-content">
+                                        <div>
+                                            <ul>
+                                                <li>
+                                                    <div class="event-row-1">
+                                                        <div>
+                                                            <img src="../static/icon_sms.png" style="max-width: 50px;">
+                                                            <div>
+                                                                <p>{{activity[2]}}</p>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/>
+                                                                    </svg>
+                                                                <p>{{activity[3]}}</p>
+                                                            </div>
+                                                        </div>
+                                                        <p>{{activity[1]}}</p>
+                                                    </div>
+                                                    <div class="event-row-2">
+                                                        <div><p>{{activity[4]  | decode}}</p></div>
+                                                        <div>
+                                                            <button {{'id=file_classification_button_' ~ activity[0]}} onclick="displayData(this.id)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                                                    <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Top data domain -->
+                            <div class="event">
+                                <div class="event-header event-header-border">
+                                    <div class="main_title">
+                                        <h3>Top data domain</h3>
                                     </div>
                                 </div>
                                 <div class="event-content">
@@ -130,85 +179,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="event">
-                                <div class="event-header event-header-border">
-                                    <div class="main_title">
-                                        <h3>Last data collected</h3>
-                                    </div>
-                                </div>
-                                <div class="event-content">
-                                    <div>
-                                        <ul>
-                                            <li>
-                                                <div class="event-row-1">
-                                                    <div>
-                                                        <img src="../static/icon_sms.png" style="max-width: 50px;">
-                                                        <p>+33659874 --> +33659874</p>
-                                                    </div>
-                                                    <p>Tues, 5th 2024</p>
-                                                </div>
-                                                <div class="event-row-2">
-                                                    <div><p>message sfzedrgzdfzdgzdfzeg</p></div>
-                                                    <div>
-                                                        <button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                                <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="event-content">
-                                    <div>
-                                        <ul>
-                                            <li>
-                                                <div class="event-row-1">
-                                                    <div>
-                                                        <img src="../static/icon_sms.png" style="max-width: 50px;">
-                                                        <p>+33659874 --> +33659874</p>
-                                                    </div>
-                                                    <p>Tues, 5th 2024</p>
-                                                </div>
-                                                <div class="event-row-2">
-                                                    <div><p>message sfzedrgzdfzdgzdfzeg</p></div>
-                                                    <div>
-                                                        <button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                                <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="event-content">
-                                    <div>
-                                        <ul>
-                                            <li>
-                                                <div class="event-row-1">
-                                                    <div>
-                                                        <img src="../static/icon_sms.png" style="max-width: 50px;">
-                                                        <p>+33659874 --> +33659874</p>
-                                                    </div>
-                                                    <p>Tues, 5th 2024</p>
-                                                </div>
-                                                <div class="event-row-2">
-                                                    <div><p>message sfzedrgzdfzdgzdfzeg</p></div>
-                                                    <div>
-                                                        <button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                                <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Last data collected -->
                             <div class="event">
                                 <div class="event-header event-header-border">
                                     <div class="main_title">
@@ -292,6 +263,14 @@
                     </div>
                     
                 </div>
+            </div>
+        </div>
+        <div id="data_viewer" class="modal">
+            <div class="modal-content">
+                <span id="close" class="close">&times;</span>            
+                <span id="result">
+    
+                </span>
             </div>
         </div>
     </body>
