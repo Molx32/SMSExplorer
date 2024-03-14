@@ -1,40 +1,19 @@
+/* **************************************************** */
+/*               BUTTON VALUES MANAGEMENT               */
+/* **************************************************** */
+// The goal of this sections is to update all buttons with
+// the appropriate date loading a page
 
-// Update menu display
-// current_menu_id = 'menu_' + window.location.pathname.replace('/','')
-// element = document.getElementById(current_menu_id);
-// element.classList.add('active')
-
-
-//
-var coll = document.getElementsByClassName("collapsible");
-console.log(coll);
-var i;
-
-for (i = 0; i < coll.length; i++) {
-	coll[i].addEventListener("click", function() {
-	// this.classList.toggle("active");
-	var content = this.nextElementSibling;
-	if (content.style.maxHeight){
-		content.style.maxHeight = null;
-	} else {
-		content.style.maxHeight = content.scrollHeight + "px";
-	} 
-	});
-}
-
-
-
-
-/* **************************************** */
-/*               SEARCH FORMS               */
-/* **************************************** */
+// SEARCH PAGES
 if (location.pathname.includes('search')) {
-	set_form_display();
+	smsSearchDisplaySearchBar();
 }
+// INVESTIGATION PAGES
 if (location.pathname.includes('investigation')) {
-	set_form_display_investigation();
+	investigationDisplaySearchBar();
 }
 
+// Read get parameters to set button in an appropriate way
 function findGetParameter(parameterName) {
     var result = "", tmp = [];
     location.search.substr(1).split("&").forEach(function (item) {
@@ -44,65 +23,30 @@ function findGetParameter(parameterName) {
     return result;
 }
 
-function set_search_form() {
-	form = document.getElementById('form_search');
-	param_search 		= document.getElementById('input_search').value;
-	param_include 		= document.getElementById('data_selector').innerText;
-	param_interesting 	= document.getElementById('interesting_selector').innerText;
-	
-	document.getElementById('form_input_search').value	= param_search;
-	document.getElementById('form_input_data').value = param_include;
-	document.getElementById('form_input_interesting').value = param_interesting;
+
+
+
+/* ************************************** */
+/*               SMS SEARCH               */
+/* ************************************** */
+function smsSearchDisplaySearchBar(){
+	// Get params
+	search 		= findGetParameter('search');
+	data 		= findGetParameter('data');
+	interesting = findGetParameter('interesting');
+	// Update visuals
+	document.getElementById("smssearch_search_button").value = search
+	smsSearchDisplayToggleButtonData(data)
+	smsSearchDisplayToggleButtonInteresting(interesting);
 }
 
-function send_search_form() {
-	param_search = document.getElementById('input_search').value;
-	document.getElementById('form_input_search').value	= param_search;
-	form.submit();
-}
-
-function set_form_display(){
-	// Set search input
-	document.getElementById("input_search").value = findGetParameter('search');
-	data_filter 		= findGetParameter('input_data').toUpperCase();
-	interesting_filter 	= findGetParameter('input_interesting').toUpperCase();
-
-	change_filter_data(data_filter);
-	change_filter_interesting(interesting_filter);
-}
-
-function change_filter_data(filter){
+function smsSearchDisplayToggleButtonInteresting(filter){
 	// Handle new settings
-	var none 	= document.getElementById("toggle_data_none");
-	var yes 	= document.getElementById("toggle_data_yes");
-	var no 		= document.getElementById("toggle_data_no");
-	var selector = document.getElementById("data_selector");
-	if(filter.toUpperCase() === "NONE"){
-		selector.style.left = 0;
-		selector.style.width = none.clientWidth + "px";
-		selector.style.backgroundColor = "#2daab8";
-		selector.innerHTML = "NONE";
-	}else if(filter.toUpperCase() === "YES"){
-		selector.style.left = none.clientWidth + "px";
-		selector.style.width = yes.clientWidth + "px";
-		selector.innerHTML = "YES";
-		selector.style.backgroundColor = "#2daab8";
-	}else if(filter.toUpperCase() === "NO"){
-		selector.style.left = none.clientWidth + yes.clientWidth + 1 + "px";
-		selector.style.width = no.clientWidth + "px";
-		selector.innerHTML = "NO";
-		selector.style.backgroundColor = "#2daab8";
-	}
-	set_search_form()
-}
-
-function change_filter_interesting(filter){
-	// Handle new settings
-	var all 		= document.getElementById("toggle_interesting_all");
-	var none 		= document.getElementById("toggle_interesting_none");
-	var yes 		= document.getElementById("toggle_interesting_yes");
-	var no 			= document.getElementById("toggle_interesting_no");
-	var selector 	= document.getElementById("interesting_selector");
+	var all 		= document.getElementById("smssearch_toggle_interesting_all");
+	var none 		= document.getElementById("smssearch_toggle_interesting_none");
+	var yes 		= document.getElementById("smssearch_toggle_interesting_yes");
+	var no 			= document.getElementById("smssearch_toggle_interesting_no");
+	var selector 	= document.getElementById("smssearch_toggle_interesting_selector");
 	if(filter.toUpperCase() === "ALL"){
 		selector.style.left = 0;
 		selector.style.width = all.clientWidth + "px";
@@ -124,56 +68,149 @@ function change_filter_interesting(filter){
 		selector.innerHTML = "NONE";
 		selector.style.backgroundColor = "#2daab8";
 	}
-	set_search_form()
 }
 
-function change_filter_unique(filter){
+function smsSearchDisplayToggleButtonData(filter){
 	// Handle new settings
-	var yes 		= document.getElementById("toggle_unique_yes");
-	var no 			= document.getElementById("toggle_unique_no");
-	var selector 	= document.getElementById("unique_selector");
-	if(filter.toUpperCase() === "NO"){
+	var none 	= document.getElementById("smssearch_toggle_data_none");
+	var yes 	= document.getElementById("smssearch_toggle_data_yes");
+	var no 		= document.getElementById("smssearch_toggle_data_no");
+	var selector = document.getElementById("smssearch_toggle_data_selector");
+	if(filter.toUpperCase() === "NONE"){
+		selector.style.left = 0;
+		selector.style.width = none.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "NONE";
+	}else if(filter.toUpperCase() === "YES"){
+		selector.style.left = none.clientWidth + "px";
+		selector.style.width = yes.clientWidth + "px";
+		selector.innerHTML = "YES";
+		selector.style.backgroundColor = "#2daab8";
+	}else if(filter.toUpperCase() === "NO"){
+		selector.style.left = none.clientWidth + yes.clientWidth + 1 + "px";
+		selector.style.width = no.clientWidth + "px";
+		selector.innerHTML = "NO";
+		selector.style.backgroundColor = "#2daab8";
+	}
+}
+
+function smsSearchSendSearchForm() {
+	// Retrieve values from buttons
+	param_search 		= document.getElementById('smssearch_search_button').value;
+	param_include 		= document.getElementById('smssearch_toggle_data_selector').innerText;
+	param_interesting 	= document.getElementById('smssearch_toggle_interesting_selector').innerText;
+	// Update form
+	document.getElementById('smssearch_form_search').value		= param_search;
+	document.getElementById('smssearch_form_data').value 		= param_include;
+	document.getElementById('smssearch_form_interesting').value = param_interesting;
+	// Send form
+	form = document.getElementById('sms_search_form');
+	form.submit();
+}
+
+/* ****************************************** */
+/*               INVESTIGATION               */
+/* ***************************************** */
+function investigationDisplaySearchBar(){
+	// Set search input
+	search = findGetParameter('search');
+	unique = findGetParameter('unique');
+	
+	document.getElementById("investigation_search_button").value = search
+	investigationDisplayToggleButton(unique);
+}
+
+function investigationDisplayToggleButton(unique){
+	// Visual update of the toggle button
+	var yes 		= document.getElementById("investigation_toggle_unique_yes");
+	var no 			= document.getElementById("investigation_toggle_unique_no");
+	var selector 	= document.getElementById("investigation_toggle_unique_selector");
+	if(unique.toUpperCase() === "NO"){
 		selector.style.left = 0;
 		selector.style.width = no.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
-		selector.innerHTML = "ALL";
-	}else if(filter.toUpperCase() === "YES"){
+		selector.innerHTML = "NO";
+	}else if(unique.toUpperCase() === "YES"){
 		selector.style.left = no.clientWidth + "px";
 		selector.style.width = yes.clientWidth + "px";
 		selector.innerHTML = "YES";
 		selector.style.backgroundColor = "#2daab8";
 	}
-	set_search_form_investigation()
 }
 
-function set_search_form_investigation() {
+function investigationSendSearchForm() {
+	// Retrieve values from buttons
+	search	= document.getElementById('investigation_search_button').value;
+	unique	= document.getElementById('investigation_toggle_unique_selector').innerText;
+	// Update form
+	document.getElementById('investigation_form_search').value = search;
+	document.getElementById('investigation_form_toggle').value = unique;
+	// Send form
+	form = document.getElementById('investigation_search_form');
+	form.submit();
+}
+
+function investigationUpdateDisplayToggleButton(domain, value){
+	// Handle new settings
+	var yess 		= document.getElementsByName(domain + "_no");
+	var nos 			= document.getElementsByName(domain + "_yes");
+	var selectors 	= document.getElementsByName(domain + "_selector");
+
+	for (let i = 0; i < yess.length; i++) {
+		selector 	= selectors[i]
+		yes 		= yess[i]
+		no 			= nos[i]
+		if(value.toUpperCase() === "NO"){
+			selector.style.left = 0;
+			selector.style.width = no.clientWidth + "px";
+			selector.style.backgroundColor = "#2daab8";
+			selector.innerHTML = "NO";
+		}else if(value.toUpperCase() === "YES"){
+			selector.style.left = no.clientWidth + "px";
+			selector.style.width = yes.clientWidth + "px";
+			selector.innerHTML = "YES";
+			selector.style.backgroundColor = "#2daab8";
+		}
+	  }
+
+}
+
+function investigationUpdateSendInterestingForm(domain) {
+	// Retrieve data
+	var value 	= document.getElementsByName(domain + "_selector")[0].innerHTML;
+
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			// Typical action to be performed when the document is ready:
+			alert("Updated");
+		}
+	};
+	xhttp.open("POST", "/investigation/target/interesting?domain=" + domain + "&is_interesting=" + value, true);
+	xhttp.send();
+}
+
+function investigationUpdateSendTagForm() {
+	
+}
+
+
+
+function set_search_form_investigation_is_interesting() {
+	// Send a request
 	param_search 		= document.getElementById('input_search').value;
-	param_interesting 	= document.getElementById('unique_selector').innerText;
+	param_interesting 	= document.getElementById('investigation_toggle_unique_selector').innerText;
 	
 	document.getElementById('form_input_search').value	= param_search;
 	document.getElementById('form_input_unique').value = param_interesting;
 }
 
-function set_form_display_investigation(){
-	// Set search input
-	document.getElementById("input_search").value = findGetParameter('search');
-	unique 		= findGetParameter('unique').toUpperCase();
-
-	change_filter_unique(unique);
-}
 
 
-function send_search_form_investigation() {
-	form = document.getElementById('form_search');
-	param_search 	= document.getElementById('input_search').value;
-
-	// Normalize param_include
-	document.getElementById('form_input_search').value = param_search;
-	form.submit();
-}
-
-
-function send_search_form_targets() {
+/* *********************************** */
+/*               TARGETS               */
+/* *********************************** */
+function targetsSendSearchForm() {
 	form = document.getElementById('form_search');
 	param_search 	= document.getElementById('input_search_targets').value;
 

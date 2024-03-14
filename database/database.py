@@ -185,16 +185,15 @@ class DatabaseInterface:
 #############################################################################
 # INVESTIGATION
     def sms_get_unqualified_targets(search, unique):
-        
         query = ""
         where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND is_interesting IS NULL AND url <> '' """.format(search)
         group_by = "GROUP BY smss.domain LIMIT 1000;"
 
         if unique:
-            select  = "SELECT min(smss.id), min(smss.url), min(smss.msg), min(smss.domain) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
             query   = select + where + group_by
         else:
-            select  = "SELECT smss.id, smss.url, smss.msg, smss.domain FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
             query   = select + where + " LIMIT 1000;"
 
         # Handle Search
@@ -203,6 +202,18 @@ class DatabaseInterface:
         return cursor.fetchall()
 
 
+    def sms_update_unqualified_targets_interesting(domain, is_interesting):
+        # Check if target exists
+        query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
+        cursor = Database().connect()
+        cursor.execute(query)
+        results = cursor.fetchone()
+        if not results:
+            query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, False, is_interesting, '')
+            cursor.execute(query)
+        else:
+            query = """UPDATE targets SET is_interesting = {} WHERE domain = {}""".format(is_interesting, domain)
+            cursor.execute(query)
 
     def sms_get_statistics_interesting():
         # All -> URLs -> Interesting

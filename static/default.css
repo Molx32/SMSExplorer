@@ -477,6 +477,7 @@ span.close {
   font: inherit;
   cursor: pointer;
   outline: inherit;
+  fill: #2e4765;
 }
 
 /*****************************************************************/

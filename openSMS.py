@@ -3,6 +3,7 @@ import requests
 import sys
 from datetime import datetime
 import time
+import json
 
 from config.config import Config
 from modules.interface import TargetInterface, ModuleInterface
@@ -80,8 +81,8 @@ def home():
 # ----------------------------------------------------------------- #
 @app.route("/search", methods = ['GET'])
 def search():
-    input_data          = request.args.get('input_data')
-    input_interesting   = request.args.get('input_interesting')
+    input_data          = request.args.get('data')
+    input_interesting   = request.args.get('interesting')
     input_search        = request.args.get('search')
 
 
@@ -89,7 +90,7 @@ def search():
     if input_data not in Config.SEARCH_FILTERS_DATA:
         input_data = 'NONE'
     if input_interesting not in Config.SEARCH_FILTERS_INTERESTING:
-        input_interesting = 'ALL'
+        input_interesting = 'NO'
     if input_search is None:
         input_search = ''
 
@@ -144,6 +145,27 @@ def investigation():
     count   = len(data)
 
     return render_template('investigation.html', data=data, count=count)
+
+@app.route("/investigation/target/interesting", methods = ['POST'])
+def investigation_update_interesting():
+    # Get params
+    is_interesting  = request.args.get('is_interesting')
+    domain          = request.args.get('domain')
+
+    # is_interesting
+    if is_interesting == 'NO':
+        is_interesting = False
+    elif is_interesting == 'YES':
+        is_interesting = True
+    else:
+        return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
+    # domain
+    if domain == '' or not domain:
+        return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
+
+    DatabaseInterface.sms_update_unqualified_targets_interesting(domain, is_interesting)
+
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 # ----------------------------------------------------------------- #
 # -                    STATISTICS ENDPOINT                        - #
