@@ -31,6 +31,18 @@ from rq.worker import Worker, WorkerStatus
 from rq.command import send_kill_horse_command
 
 # Send jobs to queue
+healthy_database = False
+while not healthy_database:
+    healthy_database = True
+    try:
+        DatabaseInterface.is_database_healthy()
+    except:
+        print("******************Database not ready********************")
+        print("******************Waiting for 5 secs********************")
+        healthy_database = False
+        time.sleep(5)
+        print("******************Try new connection********************")
+
 redis_queue = Redis.from_url(Config.REDIS_URL)
 task_queue  = rq.Queue(default_timeout=-1, connection=redis_queue)
 task_queue.enqueue(DatabaseInterface.targets_initialize)
@@ -40,6 +52,7 @@ task_queue.enqueue(ModuleInterface.create_instance_mock)
 # Configure Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
 
 # Populate database with configuration
 
@@ -139,12 +152,15 @@ def investigation():
     else:
         input_unique = False
 
+    tags_not_interesting = Config.LIST_METADATA_INTERESTING_NO
+    tags_interesting = Config.LIST_METADATA_INTERESTING_YES
 
     # Get SMSs
     data    = DatabaseInterface.sms_get_unqualified_targets(input_search, input_unique)
     count   = len(data)
 
-    return render_template('investigation.html', data=data, count=count)
+    return render_template('investigation.html', data=data, count=count,
+        tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
 @app.route("/investigation/target/interesting", methods = ['POST'])
 def investigation_update_interesting():
@@ -228,13 +244,22 @@ def settings():
 @app.route("/settings/export_smss", methods = ['GET'])
 def settings_export_smss():
     DatabaseInterface.export_smss()
-    return send_file('/etc/data/exports.csv', as_attachment=True)
+    return send_file(Config.EXPORT_SMSS, as_attachment=True)
 
-# @app.route("/settings/export_targets", methods = ['GET'])
-# def settings_export_targets():
-#     DatabaseInterface.export_smss()
-#     return send_file('/etc/data/exports.csv', as_attachment=True)
+@app.route("/settings/export_targets", methods = ['GET'])
+def settings_export_targets():
+    DatabaseInterface.export_targets()
+    return send_file(Config.EXPORT_TARGETS, as_attachment=True)
 
+@app.route("/settings/export_data", methods = ['GET'])
+def settings_export_data():
+    DatabaseInterface.export_data()
+    return send_file(Config.EXPORT_DATA, as_attachment=True)
+
+@app.route("/settings/export_config", methods = ['GET'])
+def settings_export_config():
+    DatabaseInterface.export_config()
+    return send_file(Config.EXPORT_CONFIG, as_attachment=True)
 
 
 
@@ -245,6 +270,12 @@ def settings_export_smss():
 @app.route("/about", methods = ['GET'])
 def about():
     return render_template('about.html')
+
+
+# --------------------------------------------------------------- #
+# -                       STATIC FILES                          - #
+# --------------------------------------------------------------- #
+
 
 
 

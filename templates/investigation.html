@@ -45,12 +45,13 @@
     <table class="styled-table" style="height: 25%; width: 100%; overflow: auto">
         <thead>
             <tr onclick="window.location='#';">
-                <!-- smss.id, smss.url, smss.msg, smss.domain  -->
-                <th>URL</th>
-                <th>SMS</th>
-                <th>Domain</th>
-                <th>Interesting</th>
-                <th>Link</th>
+                <!-- smss.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc  -->
+                <th style="width: 20%;">URL</th>
+                <th style="width: 40%;">SMS</th>
+                <th style="width: 10%;">Domain</th>
+                <th style="width: 10%;">Interesting</th>
+                <th style="width: 19%;">Interesting desc</th>
+                <th style="width: 1%;">Link</th>
             </tr>
         </thead>
         <tbody>
@@ -59,16 +60,15 @@
                 <td>{{ row[1] }}</td>
                 <td>{{ row[2] | decode}}</td>
                 <td>{{ row[3] | decode}}</td>
-                {% set domain_id = row[3] | replace(".","") %}
                 <td>
                     <div class="switch_3_ways">
                         <div id="investigation_toggle_is_interesting_no" class="switch no" name="{{row[3]}}_no" onclick="investigationUpdateDisplayToggleButton('{{row[3]}}', 'no')">No</div>
                         <div id="investigation_toggle_is_interesting_yes" class="switch yes" name="{{row[3]}}_yes" onclick="investigationUpdateDisplayToggleButton('{{row[3]}}', 'yes')">Yes</div>
                         <div id="investigation_toggle_is_interesting_selector" class="selector" name="{{row[3]}}_selector"></div>
                         {%- if row[4] == True -%}
-                            <script>investigationUpdateDisplayToggleButton('{{row[3]}}','yes')</script>
+                            <script defer>setTimeout(() => {  investigationUpdateDisplayToggleButton('{{row[3]}}','yes') }, 1000);</script>
                         {%- elif row[4] == False -%}
-                            <script>investigationUpdateDisplayToggleButton('{{row[3]}}','no')</script>
+                            <script defer>setTimeout(() => {  investigationUpdateDisplayToggleButton('{{row[3]}}','no') }, 1000);</script>
                         {% endif %}
                     </div>
                     <button class='icon-investigation' onclick="investigationUpdateSendInterestingForm('{{row[3]}}')">
@@ -76,6 +76,52 @@
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
                         </svg>
                     </button>
+                </td>
+                <td>
+                    <!-- IF TARGET IS NOT IN DATABASE -->
+                    {% set hide_not_interesting = "hidden" %}
+                    {% set hide_interesting     = "hidden" %}
+
+                    {% if row[4] == True %}
+                        {% set hide_interesting     = "" %}
+                    {% elif row[4] == False %}
+                        {% set hide_not_interesting     = "" %}
+                    {% endif %}
+                    
+                    <div id="not_interesting_buttons" {{hide_not_interesting}}>
+                        {% for tag_not_interesting in tags_not_interesting %}
+                            {% set tag_active = "" %}
+                            {% if row[5] %}
+                                {% for tag in row[5] %}
+                                    {% if tag == tag_not_interesting %}
+                                        {% set tag_active = "tag-active" %}
+                                    {% endif %}
+                                {% endfor %}    
+                            {% endif %}
+                            <span class='databtnotinteresting {{tag_active}}'>{{tag_not_interesting}}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div id="interesting_buttons" {{hide_interesting}}>
+                        {% for tag_interesting in tags_interesting %}
+                            {% set tag_active = "" %}
+                            {% if row[5] %}
+                                {% for tag in row[5] %}
+                                    {% if tag == tag_interesting %}
+                                        {% set tag_active = "tag-active" %}
+                                    {% endif %}
+                                {% endfor %}    
+                            {% endif %}
+                            <span class='databtnotinteresting {{tag_active}}'>{{tag_interesting}}</span>
+                        {% endfor %}
+                    </div>
+
+                    <button class='icon-investigation' >
+                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
+                        </svg>
+                    </button>
+                    
                 </td>
                 <td>
                     <button class='icon-investigation' onclick="window.open({{row[4]}}, '_blank').focus();">

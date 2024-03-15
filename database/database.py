@@ -40,8 +40,15 @@ class Database:
 
 class DatabaseInterface:
     
+    def is_database_healthy():
+        try:
+            Database().connect()
+        except Exception as e:
+            raise e
 #############################################################################
 # HANDLE SMSS
+    
+
     def sms_get_by_search(search, input_data, input_interesting):
         cursor = Database().connect()
         excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
@@ -186,15 +193,15 @@ class DatabaseInterface:
 # INVESTIGATION
     def sms_get_unqualified_targets(search, unique):
         query = ""
-        where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND is_interesting IS NULL AND url <> '' """.format(search)
-        group_by = "GROUP BY smss.domain LIMIT 1000;"
+        where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
+        group_by = "GROUP BY smss.domain LIMIT 500;"
 
         if unique:
-            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
             query   = select + where + group_by
         else:
-            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + " LIMIT 1000;"
+            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + " LIMIT 500;"
 
         # Handle Search
         cursor = Database().connect()
@@ -319,7 +326,10 @@ class DatabaseInterface:
 
     def targets_initialize(init=True):
         # Connect to database
-        cursor = Database().connect()
+        cursor = None
+        while cursor is None:
+            cursor = Database().connect()
+        
 
         # If targets has already been init, return
         if not init or DatabaseInterface.targets_has_been_init():
@@ -352,8 +362,25 @@ class DatabaseInterface:
 #############################################################################
 # EXPORTS
     def export_smss():
-        query = "\COPY smss TO '/etc/data/exports.csv' DELIMITER ',' CSV HEADER;"
         cursor = Database().connect()
-        with open('/etc/data/exports.csv', 'a') as f:
+        with open(Config.EXPORT_SMSS, 'a') as f:
             cursor.copy_expert("COPY smss TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+        return
+
+    def export_targets():
+        cursor = Database().connect()
+        with open(Config.EXPORT_TARGETS, 'a') as f:
+            cursor.copy_expert("COPY targets TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+        return
+
+    def export_data():
+        cursor = Database().connect()
+        with open(Config.EXPORT_DATA, 'a') as f:
+            cursor.copy_expert("COPY data TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+        return
+
+    def export_config():
+        cursor = Database().connect()
+        with open(Config.EXPORT_CONFIG, 'a') as f:
+            cursor.copy_expert("COPY config TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
         return

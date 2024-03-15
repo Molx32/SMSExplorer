@@ -13,7 +13,13 @@ class Config:
         'broker_url'     : 'redis://localhost:6379',
         'result_backend' : 'redis://localhost:6379',
     }
-
+    
+    #####################################################
+    # FILE SYSTEM
+    EXPORT_SMSS     = '/etc/data/export_smss.csv'
+    EXPORT_TARGETS  = '/etc/data/export_targets.csv'
+    EXPORT_DATA     = '/etc/data/export_data.csv'
+    EXPORT_CONFIG   = '/etc/data/export_config.csv'
 
     #####################################################
     # APP CONFIGURATION
