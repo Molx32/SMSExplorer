@@ -138,13 +138,33 @@ function investigationDisplayToggleButton(unique){
 	}
 }
 
+function investigationDisplayUnqualifiedButton(unqualified){
+	// Visual update of the toggle button
+	var yes 		= document.getElementById("investigation_toggle_unqualified_yes");
+	var no 			= document.getElementById("investigation_toggle_unqualified_no");
+	var selector 	= document.getElementById("investigation_toggle_unqualified_selector");
+	if(unqualified.toUpperCase() === "NO"){
+		selector.style.left = 0;
+		selector.style.width = no.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "NO";
+	}else if(unqualified.toUpperCase() === "YES"){
+		selector.style.left = no.clientWidth + "px";
+		selector.style.width = yes.clientWidth + "px";
+		selector.innerHTML = "YES";
+		selector.style.backgroundColor = "#2daab8";
+	}
+}
+
 function investigationSendSearchForm() {
 	// Retrieve values from buttons
 	search	= document.getElementById('investigation_search_button').value;
 	unique	= document.getElementById('investigation_toggle_unique_selector').innerText;
+	unqualified	= document.getElementById('investigation_toggle_unqualified_selector').innerText;
 	// Update form
 	document.getElementById('investigation_form_search').value = search;
-	document.getElementById('investigation_form_toggle').value = unique;
+	document.getElementById('investigation_form_toggle_unique').value = unique;
+	document.getElementById('investigation_form_toggle_unqualified').value = unqualified;
 	// Send form
 	form = document.getElementById('investigation_search_form');
 	form.submit();
@@ -165,20 +185,56 @@ function investigationUpdateDisplayToggleButton(domain, value){
 			selector.style.width = no.clientWidth + "px";
 			selector.style.backgroundColor = "#2daab8";
 			selector.innerHTML = "NO";
+			document.getElementsByName(domain + "_not_interesting_buttons")[0].hidden = false;
+    		document.getElementsByName(domain + "_interesting_buttons")[0].hidden = true;
 		}else if(value.toUpperCase() === "YES"){
 			selector.style.left = no.clientWidth + "px";
 			selector.style.width = yes.clientWidth + "px";
 			selector.innerHTML = "YES";
 			selector.style.backgroundColor = "#2daab8";
+			document.getElementsByName(domain + "_not_interesting_buttons")[0].hidden = true;
+    		document.getElementsByName(domain + "_interesting_buttons")[0].hidden = false;
 		}
 	  }
+}
 
+function investigationUpdateDisplayTagsButton(domain, tag){
+	// Handle new settings
+	e 	= document.getElementsByName(domain + "_" + tag)[0]
+
+	// 
+	if (e.classList.contains("tag-active")) {
+		e.classList.remove("tag-active");
+	} else {
+		e.classList.add("tag-active")
+	}
 }
 
 function investigationUpdateSendInterestingForm(domain) {
-	// Retrieve data
-	var value 	= document.getElementsByName(domain + "_selector")[0].innerHTML;
-
+	// Retrieve is_interesting
+	var is_interesting 	= document.getElementsByName(domain + "_selector")[0].innerHTML;
+	// Retrieve not interesting tags
+	div_not_interesting_button = document.getElementsByName(domain + '_not_interesting_buttons')[0]
+	is_not_interesting_tags = div_not_interesting_button.getElementsByClassName('tag-active')
+	div_interesting_button = document.getElementsByName(domain + '_interesting_buttons')[0]
+	is_interesting_tags = div_interesting_button.getElementsByClassName('tag-active')
+	
+	// 
+	tags_list = []
+	if (is_interesting === 'YES') {
+		for (tag of is_interesting_tags) {
+			tags_list.push(tag.innerHTML)
+		}
+		tags = tags_list.join()
+	} else if (is_interesting === 'NO') {
+		for (tag of is_not_interesting_tags) {
+			tags_list.push(tag.innerHTML)
+		}
+		tags = tags_list.join()
+	} else {
+		tags = ''
+	}
+	
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
@@ -186,7 +242,7 @@ function investigationUpdateSendInterestingForm(domain) {
 			alert("Updated");
 		}
 	};
-	xhttp.open("POST", "/investigation/target/interesting?domain=" + domain + "&is_interesting=" + value, true);
+	xhttp.open("POST", "/investigation/target/interesting?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
 	xhttp.send();
 }
 

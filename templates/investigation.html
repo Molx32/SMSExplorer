@@ -29,11 +29,20 @@
                         <div id="investigation_toggle_unique_selector" class="selector"></div>
                     </div>
                 </div>
+                <div class="switch_parent">
+                    <span class="filter-label">Unqualified?</span>
+                    <div class="switch_3_ways">
+                        <div id="investigation_toggle_unqualified_no" class="switch no" onclick="investigationDisplayUnqualifiedButton('no')">No</div>
+                        <div id="investigation_toggle_unqualified_yes" class="switch yes" onclick="investigationDisplayUnqualifiedButton('yes')">Yes</div>
+                        <div id="investigation_toggle_unqualified_selector" class="selector"></div>
+                    </div>
+                </div>
                 </th>
                 <th>
                     <form id="investigation_search_form">
                         <input hidden id="investigation_form_search" type="text" name="search" value=""/>
-                        <input hidden id="investigation_form_toggle" type="text" name="unique" value=""/>
+                        <input hidden id="investigation_form_toggle_unique" type="text" name="unique" value=""/>
+                        <input hidden id="investigation_form_toggle_unqualified" type="text" name="unqualified" value=""/>
                         <button type="button" id="form_input_submit" value="Search" onclick="investigationSendSearchForm()" class="form_button_search">Search</button>
                     </form>
                 </th>
@@ -50,7 +59,8 @@
                 <th style="width: 40%;">SMS</th>
                 <th style="width: 10%;">Domain</th>
                 <th style="width: 10%;">Interesting</th>
-                <th style="width: 19%;">Interesting desc</th>
+                <th style="width: 18%;">Interesting desc</th>
+                <th style="width: 1%;">Save</th>
                 <th style="width: 1%;">Link</th>
             </tr>
         </thead>
@@ -71,11 +81,7 @@
                             <script defer>setTimeout(() => {  investigationUpdateDisplayToggleButton('{{row[3]}}','no') }, 1000);</script>
                         {% endif %}
                     </div>
-                    <button class='icon-investigation' onclick="investigationUpdateSendInterestingForm('{{row[3]}}')">
-                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
-                        </svg>
-                    </button>
+                    
                 </td>
                 <td>
                     <!-- IF TARGET IS NOT IN DATABASE -->
@@ -88,43 +94,46 @@
                         {% set hide_not_interesting     = "" %}
                     {% endif %}
                     
-                    <div id="not_interesting_buttons" {{hide_not_interesting}}>
-                        {% for tag_not_interesting in tags_not_interesting %}
-                            {% set tag_active = "" %}
-                            {% if row[5] %}
-                                {% for tag in row[5] %}
-                                    {% if tag == tag_not_interesting %}
-                                        {% set tag_active = "tag-active" %}
-                                    {% endif %}
-                                {% endfor %}    
-                            {% endif %}
-                            <span class='databtnotinteresting {{tag_active}}'>{{tag_not_interesting}}</span>
-                        {% endfor %}
-                    </div>
+                    <div class="cell-is-interesting-div">
+                        <div id="not_interesting_buttons" name="{{row[3]}}_not_interesting_buttons" {{hide_not_interesting}}>
+                            {% for tag_not_interesting in tags_not_interesting %}
+                                {% set tag_active = "" %}
+                                {% if row[5] %}
+                                    {% for tag in row[5] %}
+                                        {% if tag == tag_not_interesting %}
+                                            {% set tag_active = "tag-active" %}
+                                        {% endif %}
+                                    {% endfor %}    
+                                {% endif %}
+                                <span class='databtnotinteresting {{tag_active}}' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                            {% endfor %}
+                        </div>
+                    
 
-                    <div id="interesting_buttons" {{hide_interesting}}>
-                        {% for tag_interesting in tags_interesting %}
-                            {% set tag_active = "" %}
-                            {% if row[5] %}
-                                {% for tag in row[5] %}
-                                    {% if tag == tag_interesting %}
-                                        {% set tag_active = "tag-active" %}
-                                    {% endif %}
-                                {% endfor %}    
-                            {% endif %}
-                            <span class='databtnotinteresting {{tag_active}}'>{{tag_interesting}}</span>
-                        {% endfor %}
+                        <div id="interesting_buttons" name="{{row[3]}}_interesting_buttons" {{hide_interesting}}>
+                            {% for tag_interesting in tags_interesting %}
+                                {% set tag_active = "" %}
+                                {% if row[5] %}
+                                    {% for tag in row[5] %}
+                                        {% if tag == tag_interesting %}
+                                            {% set tag_active = "tag-active" %}
+                                        {% endif %}
+                                    {% endfor %}    
+                                {% endif %}
+                                <span class='databtinteresting {{tag_active}}' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                            {% endfor %}
+                        </div>
                     </div>
-
-                    <button class='icon-investigation' >
+                </td>
+                <td>
+                    <button class='icon-investigation' onclick="investigationUpdateSendInterestingForm('{{row[3]}}')">
                         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
                         </svg>
                     </button>
-                    
                 </td>
                 <td>
-                    <button class='icon-investigation' onclick="window.open({{row[4]}}, '_blank').focus();">
+                    <button class='icon-investigation' onclick="window.open('{{row[1]}}', '_blank').focus();">
                         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.213 9.787a3.391 3.391 0 0 0-4.795 0l-3.425 3.426a3.39 3.39 0 0 0 4.795 4.794l.321-.304m-.321-4.49a3.39 3.39 0 0 0 4.795 0l3.424-3.426a3.39 3.39 0 0 0-4.794-4.795l-1.028.961"/>
                         </svg>

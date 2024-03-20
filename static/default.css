@@ -464,6 +464,13 @@ span.close {
   cursor: pointer;
   font-size: 10px;
   background-color: #ababab;
+  display: inline-block;
+  margin-bottom: 4px;
+  margin-top: 4px;
+}
+
+.tag-active {
+  color: rgb(87, 66, 184);
 }
 
 /**************************************************************************/
@@ -478,6 +485,12 @@ span.close {
   cursor: pointer;
   outline: inherit;
   fill: #2e4765;
+}
+
+.cell-is-interesting-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
 }
 
 /*****************************************************************/
@@ -517,7 +530,18 @@ span.close {
   height: 60px;
   flex-basis: 60px;
   text-align: right;
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  outline: inherit;
+  fill: #2e4765;
+  color: #2e4765;
+  max-width: -webkit-fill-available;
 }
+
+
 
 .tile .icon img {
   max-width: -webkit-fill-available;

@@ -208,18 +208,39 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
+    def sms_get_targets(search, unique, unqualified):
+        query = ""
+        where = ""
+        if unqualified:
+            where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
+        else:
+            where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
+        group_by = "GROUP BY smss.domain LIMIT 500;"
 
-    def sms_update_unqualified_targets_interesting(domain, is_interesting):
+        if unique:
+            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + group_by
+        else:
+            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + " LIMIT 500;"
+
+        # Handle Search
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+
+    def sms_update_unqualified_targets_interesting(domain, is_interesting, tags):
         # Check if target exists
         query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
         cursor = Database().connect()
         cursor.execute(query)
         results = cursor.fetchone()
         if not results:
-            query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, False, is_interesting, '')
+            query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, False, is_interesting, tags)
             cursor.execute(query)
         else:
-            query = """UPDATE targets SET is_interesting = {} WHERE domain = {}""".format(is_interesting, domain)
+            query = """UPDATE targets SET is_interesting = {}, is_interesting_desc = '{}'  WHERE domain = '{}'""".format(is_interesting, tags, domain)
             cursor.execute(query)
 
     def sms_get_statistics_interesting():

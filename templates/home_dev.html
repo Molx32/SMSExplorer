@@ -1,10 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        {% include '_includes.html' %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="../static/jquery-1.11.1.min.js" ></script>
+        <script type="text/javascript" src="../static/underscore-min.js" ></script>
+        <script type="text/javascript" src="../static/backbone-min.js" ></script>
+        <script type="text/javascript" src="../static/pretty-json-min.js" defer></script>
+        <script type="text/javascript" src="../static/nav.js" defer></script>
+        <link rel="stylesheet" href="../static/default.css">
+        <link rel="stylesheet" href="../static/pretty-json.css">
     </head>
     <body>
-        {% include '_menu.html' %}
+        <div class="navbar">
+            <span class="logo">
+                <img src="../static/logo.png" width="100%">
+                <span>SMS Explorer</span>
+            </span>
+            <span class="cat">Dashboard</span>
+            <a id="menu_home" href="/home" class="subcat">Home</a>
+            <!-- Search -->
+            <span class="cat">Search</span>
+            <a id="menu_search" href="/search" class="subcat">SMSs</a>
+            <a id="menu_targets" href="/search_targets" class="subcat">Targets</a>
+            <a id="menu_investigation" href="/investigation" class="subcat">Investigation</a>
+            <!-- Statistics -->
+            <span class="cat">Statistics</span>
+            <a id="menu_statistics_raw" href="/statistics_raw" class="subcat">Raw</a>
+            <a id="menu_statistics_san" href="/statistics_san" class="subcat">Sanitized</a>
+            <!-- Settings -->
+            <span class="cat">Settings</span>
+            <a id="menu_settings" href="/settings" class="subcat">Settings</a>
+            <!-- About -->
+            <a id="menu_about" href="/about" class="subcat">About</a>
+        </div>
         
         <div class="content">
             <div class="content-inner">
@@ -47,7 +76,7 @@
                             <div id="tile_messages_received" class="tile">
                                 <div class="icon">
                                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
                                     </svg>
                                 </div>
                                 <div class="count_content">
@@ -191,7 +220,7 @@
                             <div class="event">
                                 <div class="event-header event-header-border">
                                     <div class="main_title">
-                                        <h3>Last errors</h3>
+                                        <h3>Last data collected</h3>
                                     </div>
                                 </div>
                                 <div class="event-content">

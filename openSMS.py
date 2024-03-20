@@ -139,24 +139,34 @@ def search_targets():
 @app.route("/investigation", methods = ['GET'])
 def investigation():
     # Get params
-    input_search  = request.args.get('search')
-    input_unique  = request.args.get('unique')
+    input_search        = request.args.get('search')
+    input_unique        = request.args.get('unique')
+    input_unqualified   = request.args.get('unqualified')
 
-    # Filter params
+    # FILTER
+    # Search
     if input_search is None:
         input_search = ''
+    # Unique
     if input_unique is None:
         input_unique = False
     if input_unique == 'YES':
         input_unique = True
     else:
         input_unique = False
+    # Unqualified
+    if input_unqualified is None:
+        input_unqualified = False
+    if input_unqualified == 'YES':
+        input_unqualified = True
+    else:
+        input_unqualified = False
 
     tags_not_interesting = Config.LIST_METADATA_INTERESTING_NO
     tags_interesting = Config.LIST_METADATA_INTERESTING_YES
 
     # Get SMSs
-    data    = DatabaseInterface.sms_get_unqualified_targets(input_search, input_unique)
+    data    = DatabaseInterface.sms_get_targets(input_search, input_unique, input_unqualified)
     count   = len(data)
 
     return render_template('investigation.html', data=data, count=count,
@@ -167,7 +177,9 @@ def investigation_update_interesting():
     # Get params
     is_interesting  = request.args.get('is_interesting')
     domain          = request.args.get('domain')
+    tags            = request.args.get('tags')
 
+    # FILTER INPUT
     # is_interesting
     if is_interesting == 'NO':
         is_interesting = False
@@ -178,8 +190,16 @@ def investigation_update_interesting():
     # domain
     if domain == '' or not domain:
         return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
+    # tags
+    if is_interesting:
+        if not set(tags.split(',')) <= set(Config.LIST_METADATA_INTERESTING_YES):
+            tags = ''
+    else:
+        if not set(tags.split(',')) <= set(Config.LIST_METADATA_INTERESTING_NO):
+            tags = ''
 
-    DatabaseInterface.sms_update_unqualified_targets_interesting(domain, is_interesting)
+
+    DatabaseInterface.sms_update_unqualified_targets_interesting(domain, is_interesting, tags)
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
