@@ -100,7 +100,7 @@
                             <div class="setting">
                                 <div class="setting-header setting-header-border">
                                     <div class="main_title">
-                                        <h3>Update data</h3>
+                                        <h3>Import data</h3>
                                     </div>
                                 </div>
                                 <div class="setting-content">
@@ -110,14 +110,19 @@
                                                 <div class="setting-row-1">
                                                     <div>
                                                         <img src="../static/icon_sms.png">
-                                                        <h4>Update targets</h4>
+                                                        <h4>Import targets</h4>
                                                         <p>When targets are manually updated in a targets configuration file, it may be useful to load again this file and thus update the database.</p>
                                                     </div>
-                                                    <button>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                            <path fill-rule="evenodd" d="M12 3c.3 0 .6.1.8.4l4 5a1 1 0 1 1-1.6 1.2L13 7v7a1 1 0 1 1-2 0V6.9L8.8 9.6a1 1 0 1 1-1.6-1.2l4-5c.2-.3.5-.4.8-.4ZM9 14v-1H5a2 2 0 0 0-2 2v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4v1a3 3 0 1 1-6 0Zm8 2a1 1 0 1 0 0 2 1 1 0 1 0 0-2Z" clip-rule="evenodd"/>
-                                                        </svg>
-                                                    </button>
+                                                    <form method="POST" action="/targets/upload" enctype="multipart/form-data">
+                                                        <input type="file" name="file" accept=".csv" />
+                                                        <input type="submit" value="Submit">
+                                                        <!-- <button type="Submit">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                                                <path fill-rule="evenodd" d="M12 3c.3 0 .6.1.8.4l4 5a1 1 0 1 1-1.6 1.2L13 7v7a1 1 0 1 1-2 0V6.9L8.8 9.6a1 1 0 1 1-1.6-1.2l4-5c.2-.3.5-.4.8-.4ZM9 14v-1H5a2 2 0 0 0-2 2v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4v1a3 3 0 1 1-6 0Zm8 2a1 1 0 1 0 0 2 1 1 0 1 0 0-2Z" clip-rule="evenodd"/>
+                                                            </svg>
+                                                        </button> -->
+                                                    </form>
+                                                    
                                                 </div>
                                             </li>
                                         </ul>
