@@ -10,6 +10,42 @@
                 <div class="container">
                     <div class="row">
                         <div class="settings">
+                            <!-- Mode -->
+                            <div class="setting">
+                                <div class="setting-header setting-header-border">
+                                    <div class="main_title">
+                                        <h3>Mode</h3>
+                                    </div>
+                                </div>
+                                <div class="setting-content">
+                                    <div>
+                                        <ul>
+                                            <li>
+                                                <div class="setting-row-1">
+                                                    <div>
+                                                        <img src="../static/icon_sms.png">
+                                                        <h4>Choose mode</h4>
+                                                        <p>Agressive mode will fetch data, and thus do illegal stuff, while passive will simply fetch messages.</p>
+                                                    </div>
+                                                    <div>
+                                                        <div class="switch_3_ways">
+                                                            <div id="settings_toggle_mode_agressive" class="switch none" onclick="settingsSetMode('agressive')">AGRESSIVE</div>
+                                                            <div id="settings_toggle_mode_passive" class="switch yes" onclick="settingsSetMode('passive')">PASSIVE</div>
+                                                            <div id="settings_toggle_mode_selector" class="selector"></div>
+                                                        </div>
+                                                        <button onclick="settingSendModeForm()">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                                                <path fill-rule="evenodd" d="M13 11.1V4a1 1 0 1 0-2 0v7.1L8.8 8.4a1 1 0 1 0-1.6 1.2l4 5a1 1 0 0 0 1.6 0l4-5a1 1 0 1 0-1.6-1.2L13 11Z" clip-rule="evenodd"/>
+                                                                <path fill-rule="evenodd" d="M9.7 15.9 7.4 13H5a2 2 0 0 0-2 2v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.4l-2.3 2.9a3 3 0 0 1-4.6 0Zm7.3.1a1 1 0 1 0 0 2 1 1 0 1 0 0-2Z" clip-rule="evenodd"/>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- Exports -->
                             <div class="setting">
                                 <div class="setting-header setting-header-border">
