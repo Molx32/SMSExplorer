@@ -33,12 +33,13 @@
                                                             <div id="settings_toggle_mode_passive" class="switch yes" onclick="settingsSetMode('passive')">PASSIVE</div>
                                                             <div id="settings_toggle_mode_selector" class="selector"></div>
                                                         </div>
-                                                        <button onclick="settingSendModeForm()">
+                                                        <button onclick="settingsSendModeForm()">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                                                                 <path fill-rule="evenodd" d="M13 11.1V4a1 1 0 1 0-2 0v7.1L8.8 8.4a1 1 0 1 0-1.6 1.2l4 5a1 1 0 0 0 1.6 0l4-5a1 1 0 1 0-1.6-1.2L13 11Z" clip-rule="evenodd"/>
                                                                 <path fill-rule="evenodd" d="M9.7 15.9 7.4 13H5a2 2 0 0 0-2 2v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.4l-2.3 2.9a3 3 0 0 1-4.6 0Zm7.3.1a1 1 0 1 0 0 2 1 1 0 1 0 0-2Z" clip-rule="evenodd"/>
                                                             </svg>
                                                         </button>
+                                                        <script defer>setTimeout(() => {  settingsSetMode('{{mode}}') }, 1000);</script>
                                                     </div>
                                                 </div>
                                             </li>
@@ -149,7 +150,7 @@
                                                         <h4>Import targets</h4>
                                                         <p>When targets are manually updated in a targets configuration file, it may be useful to load again this file and thus update the database.</p>
                                                     </div>
-                                                    <form method="POST" action="/targets/upload" enctype="multipart/form-data">
+                                                    <form method="POST" action="/settings/targets/upload" enctype="multipart/form-data">
                                                         <input type="file" name="file" accept=".csv" />
                                                         <input type="submit" value="Submit">
                                                         <!-- <button type="Submit">
