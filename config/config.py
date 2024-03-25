@@ -7,9 +7,11 @@ SECRET_KEY = 'development'
 class Config:
     #####################################################
     # ARCHITECTURE CONFIGURATION
-    SECRET_KEY      = 'NationalSecurityUltimateSecretPassword'
-    REDIS_URL       = "redis://redisserver:6379"
-    CELERY_CONFIG   = {
+    SECRET_KEY              = 'NationalSecurityUltimateSecretPassword'
+    REDIS_URL               = "redis://redisserver:6379"
+    REDIS_JOB_ID_DATA       = "REDIS_JOB_ID_DATA"
+    REDIS_JOB_ID_FETCHER    = "REDIS_JOB_ID_FETCHER"
+    CELERY_CONFIG           = {
         'broker_url'     : 'redis://localhost:6379',
         'result_backend' : 'redis://localhost:6379',
     }
@@ -23,6 +25,9 @@ class Config:
 
     #####################################################
     # APP CONFIGURATION
+    MODES               = ["AGRESSIVE", "PASSIVE"]
+    MODE_AGRESSIVE      = "AGRESSIVE"
+    MODE_PASSIVE        = "PASSIVE"
     SITES               = ["https://receive-smss.com"]
     EXCLUDED_DOMAINS    = ['mrspin.co.uk']
 

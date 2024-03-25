@@ -29,6 +29,7 @@ from redis import Redis
 import rq
 from rq.worker import Worker, WorkerStatus
 from rq.command import send_kill_horse_command
+from rq.command import send_stop_job_command
 
 # Send jobs to queue
 healthy_database = False
@@ -46,13 +47,14 @@ while not healthy_database:
 redis_queue = Redis.from_url(Config.REDIS_URL)
 task_queue  = rq.Queue(default_timeout=-1, connection=redis_queue)
 task_queue.enqueue(DatabaseInterface.targets_initialize)
-task_queue.enqueue(TargetInterface.create_instance_receivesmss)
-task_queue.enqueue(ModuleInterface.create_instance_mock)
+task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
+task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
 
 # Configure Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
+app.config['UPLOAD_FOLDER'] = '/etc/data/imports/'
 
 # Populate database with configuration
 
@@ -132,6 +134,11 @@ def search_targets():
     count   = DatabaseInterface.targets_count()
 
     return render_template('targets.html', data=data, count=count)
+
+
+
+
+
 
 # ---------------------------------------------------------------- #
 # -                       INVESTIGATION                          - #
@@ -254,12 +261,44 @@ def statistics_san():
 # ----------------------------------------------------------------- #
 @app.route("/settings", methods = ['GET'])
 def settings():
-    # Get settings
+    mode = DatabaseInterface.get_mode()
+    return render_template('settings.html', mode=mode)
+
+@app.route("/settings/update_mode", methods = ['POST'])
+def settings_update_mode():
+    mode  = request.args.get('mode')
+    if not mode in Config.MODES:
+        print("In mode list")
+        return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
+
+    current_mode = DatabaseInterface.get_mode()
+    print(current_mode)
+    print(mode)
+    if current_mode == mode:
+        print("Same value in database!")
+        return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+    
+    
+    workers = Worker.all(redis_queue)
+    for worker in workers:
+        print(worker.get_current_job_id())
+        # send_kill_horse_command(redis, worker.name)
 
 
-    # Load forms
-    return render_template('settings.html')
+    # Set to passive
+    if current_mode == Config.MODE_AGRESSIVE:
+        DatabaseInterface.switch_mode(mode)
+        print("Set to passive")
+        # send_stop_job_command(redis_queue, Config.REDIS_JOB_ID_DATA)
+    # Set to agressive
+    if current_mode == Config.MODE_PASSIVE:
+        DatabaseInterface.switch_mode(mode)
+        print("Set to agressive")
+        # send_stop_job_command(redis_queue, Config.REDIS_JOB_ID_DATA)
+        task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
 
+    # Check database for current mode
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 @app.route("/settings/export_smss", methods = ['GET'])
 def settings_export_smss():
@@ -281,7 +320,17 @@ def settings_export_config():
     DatabaseInterface.export_config()
     return send_file(Config.EXPORT_CONFIG, as_attachment=True)
 
+@app.route("/settings/targets/upload", methods = ['POST'])
+def upload_targets_upload():
+    if request.method == 'POST':
+        uploaded_file = request.files['file']
+        if uploaded_file.filename != '':
+            uploaded_file.save(app.config['UPLOAD_FOLDER'] + 'targets.csv')
+        DatabaseInterface.targets_update()  
 
+        return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+
+    return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
 
 # ----------------------------------------------------------------- #
@@ -331,7 +380,6 @@ def clean():
     # Relaunch workers
     task_queue.enqueue(DatabaseInterface.targets_initialize)
     task_queue.enqueue(TargetInterface.create_instance_receivesmss)
-    task_queue.enqueue(ModuleInterface.create_instance_mock)
 
 @app.route("/settings/database/targets_update", methods = ['GET'])
 def targets_update():

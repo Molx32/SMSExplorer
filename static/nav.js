@@ -278,6 +278,43 @@ function targetsSendSearchForm() {
 
 
 
+/* ************************************ */
+/*               SETTINGS               */
+/* ************************************ */
+function settingsSetMode(mode) {
+	// Handle new settings
+	var agressive	= document.getElementById("settings_toggle_mode_agressive");
+	var passive		= document.getElementById("settings_toggle_mode_passive");
+	var selector 	= document.getElementById("settings_toggle_mode_selector");
+
+	if(mode.toUpperCase() === "AGRESSIVE"){
+		selector.style.left = 0;
+		selector.style.width = agressive.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "AGRESSIVE";
+	}else if(mode.toUpperCase() === "PASSIVE"){
+		selector.style.left = agressive.clientWidth + "px";
+		selector.style.width = passive.clientWidth + "px";
+		selector.innerHTML = "PASSIVE";
+		selector.style.backgroundColor = "#2daab8";
+	}
+}
+
+function settingsSendModeForm() {
+	mode = document.getElementById("settings_toggle_mode_selector").innerText;
+	const req = new XMLHttpRequest();
+	req.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			// Typical action to be performed when the document is ready:
+			alert("Mode updated");
+		}
+	};
+	req.open("POST", "/settings/update_mode?mode="+mode);
+	req.send();
+}
+
+
+
 /* **************************************** */
 /*               DATA DISPLAY               */
 /* **************************************** */
@@ -295,7 +332,6 @@ function open_modal(modal_id){
 		m.style.display = "none";
 	}
 }
-
 
 function displayData(button_id){
     m = document.getElementById("data_viewer");
@@ -321,39 +357,4 @@ function displayData(button_id){
 
 	// Send request
 	update_form.send();
-}
-
-
-
-/* ************************************ */
-/*               SETTINGS               */
-/* ************************************ */
-function export_smss() {
-	const req = new XMLHttpRequest();
-	req.open("GET", "/settings/export_smss");
-	req.send();
-}
-
-function settings_clean_database() {
-	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			// Typical action to be performed when the document is ready:
-			alert("Database cleaned");
-		}
-	};
-	xhttp.open("GET", "/settings/database/clean", true);
-	xhttp.send();
-}
-
-function settings_update_targets() {
-	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			// Typical action to be performed when the document is ready:
-			alert("Database cleaned");
-		}
-	};
-	xhttp.open("GET", "/settings/database/targets_update", true);
-	xhttp.send();
 }

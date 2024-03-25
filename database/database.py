@@ -1,6 +1,7 @@
 # System imports
 from datetime import date
 import json
+import csv
 import sys
 sys.path.extend(['../'])
 
@@ -39,16 +40,16 @@ class Database:
         self.conn = None
 
 class DatabaseInterface:
-    
     def is_database_healthy():
         try:
             Database().connect()
         except Exception as e:
             raise e
-#############################################################################
-# HANDLE SMSS
-    
 
+
+################################### SMSS #########################################
+# The following section is dedicated to SQL request that read or write SMS table #
+##################################################################################
     def sms_get_by_search(search, input_data, input_interesting):
         cursor = Database().connect()
         excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
@@ -140,8 +141,9 @@ class DatabaseInterface:
             raise e
 
 
-#############################################################################
-# HANDLE STATISTICS
+############################# STATISTICS ###################################
+# The following section is dedicated to SQL request that handle statistics #
+############################################################################
     def sms_count():
         cursor = Database().connect()
         cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
@@ -162,8 +164,11 @@ class DatabaseInterface:
         cursor.execute("""SELECT country, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 2 DESC;""")
         return cursor.fetchall()
 
-#############################################################################
-# HOME
+
+################################### HOME ###################################
+# The following section is dedicated to SQL request that handle the home   #
+# page, event if it also includes statistics.                              #
+############################################################################
     def sms_count_all():
         cursor = Database().connect()
         cursor.execute("SELECT COUNT(id) FROM SMSS;")
@@ -189,8 +194,11 @@ class DatabaseInterface:
         cursor.execute("SELECT id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' LIMIT 5;")
         return cursor.fetchall()
 
-#############################################################################
-# INVESTIGATION
+
+############################### INVESTIGATION ##############################
+# The following section is dedicated to the investigation pane, where      #
+# targets can be modified.                                                 #
+############################################################################
     def sms_get_unqualified_targets(search, unique):
         query = ""
         where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
@@ -228,7 +236,6 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
-
 
     def sms_update_unqualified_targets_interesting(domain, is_interesting, tags):
         # Check if target exists
@@ -288,49 +295,23 @@ class DatabaseInterface:
         return r
 
 
-
-    # All -> No URLs
-    def sms_count_all_no_urls():
-        cursor = Database().connect()
-        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL = '';")
-        return cursor.fetchone()
-
-    # All -> No URLs -> Interesting
-    def sms_count_all_no_urls_interesting():
-        cursor = Database().connect()
-        cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL = '';")
-        return cursor.fetchone()
-
-    
-    # SANITIZED STATISTICS
-    # TODO
-
+############################### DATA WORKER ################################
+# The following section is dedicated to SQL queries used by the data       #
+# worker, which needs to review all interesting URLs found in modules.     #
+############################################################################
     # DATA HANDLERS
     def get_sms_by_url(url):
         cursor = Database().connect()
         cursor.execute("""SELECT id,url,msg FROM SMSS WHERE URL LIKE '{}%' AND DATA_HANDLED=False;""".format(url))
         return cursor.fetchall()
-    
 
 
 
-#############################################################################
-# UTILS
-    def clean_database():
-        cursor = Database().connect()
-        query = """DELETE FROM SMSS;"""
-        cursor.execute(query)
-        print("Database cleaned!")    
-
-
-
-
-
-
-#############################################################################
-# TARGETS
+############################### TARGETS ####################################
+# The following section is dedicated to SQL queries used by the target     #
+# view, but not by the investigation one!                                  #
+############################################################################
     def targets_get_all(search):
-
         if search != '':
             query = """SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE LOWER(domain) LIKE LOWER('%{}%') LIMIT 1000;""".format(search)
         else:
@@ -350,7 +331,6 @@ class DatabaseInterface:
         cursor = None
         while cursor is None:
             cursor = Database().connect()
-        
 
         # If targets has already been init, return
         if not init or DatabaseInterface.targets_has_been_init():
@@ -365,7 +345,7 @@ class DatabaseInterface:
 
             query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, is_automated, is_interesting, is_interesting_desc)
             cursor.execute(query)
-        
+
         # Update configuration
         query   = "UPDATE CONFIG SET is_targets_imported = True"
         cursor.execute(query)
@@ -380,28 +360,65 @@ class DatabaseInterface:
         res = cursor.fetchone()[0]
         return res
         
-#############################################################################
-# EXPORTS
+
+
+
+############################### SETTINGS ###################################
+# Well, all options accessible using the settings page.                    #
+############################################################################
     def export_smss():
         cursor = Database().connect()
         with open(Config.EXPORT_SMSS, 'a') as f:
-            cursor.copy_expert("COPY smss TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+            cursor.copy_expert("COPY smss TO STDOUT WITH CSV DELIMITER ';' HEADER", f)
         return
 
     def export_targets():
         cursor = Database().connect()
         with open(Config.EXPORT_TARGETS, 'a') as f:
-            cursor.copy_expert("COPY targets TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+            cursor.copy_expert("COPY targets TO STDOUT WITH CSV DELIMITER ';' HEADER", f)
         return
 
     def export_data():
         cursor = Database().connect()
         with open(Config.EXPORT_DATA, 'a') as f:
-            cursor.copy_expert("COPY data TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+            cursor.copy_expert("COPY data TO STDOUT WITH CSV DELIMITER ';' HEADER", f)
         return
 
     def export_config():
         cursor = Database().connect()
         with open(Config.EXPORT_CONFIG, 'a') as f:
-            cursor.copy_expert("COPY config TO STDOUT WITH CSV DELIMITER ',' HEADER", f)
+            cursor.copy_expert("COPY config TO STDOUT WITH CSV DELIMITER ';' HEADER", f)
         return
+    
+    def targets_update():
+        cursor = Database().connect()
+        with open('/etc/data/imports/targets.csv', 'r') as csvfile:
+            reader = csv.reader(csvfile, delimiter=';', quotechar=' ')
+            next(reader, None)
+            for row in reader:
+                domain              = row[1]
+                is_automated        = row[2]
+                is_interesting      = row[3]
+                is_interesting_desc = row[4]
+                query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, is_automated, is_interesting, is_interesting_desc)
+                try:
+                    cursor.execute(query)
+                except:
+                    continue
+    
+    def switch_mode(mode):
+        query = """UPDATE config SET mode = '{}'""".format(mode)
+        cursor = Database().connect()
+        cursor.execute(query)
+
+    def get_mode():
+        query = "SELECT mode FROM config"
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchone()[0]
+    
+    def clean_database():
+        cursor = Database().connect()
+        query = """DELETE FROM SMSS;"""
+        cursor.execute(query)
+        print("Database cleaned!")    

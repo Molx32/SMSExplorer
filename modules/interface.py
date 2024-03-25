@@ -16,7 +16,7 @@ class TargetInterface:
 
 class ModuleInterface:
 
-    def create_instance_mock():
+    def create_data_fetcher():
         while 1:
             AirIndia()
             Instagram()
