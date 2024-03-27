@@ -30,6 +30,7 @@ import rq
 from rq.worker import Worker, WorkerStatus
 from rq.command import send_kill_horse_command
 from rq.command import send_stop_job_command
+from rq.registry import StartedJobRegistry
 
 # Send jobs to queue
 healthy_database = False
@@ -44,11 +45,14 @@ while not healthy_database:
         time.sleep(5)
         print("******************Try new connection********************")
 
-redis_queue = Redis.from_url(Config.REDIS_URL)
-task_queue  = rq.Queue(default_timeout=-1, connection=redis_queue)
+redis_server = Redis.from_url(Config.REDIS_URL)
+task_queue  = rq.Queue(default_timeout=-1, connection=redis_server)
 task_queue.enqueue(DatabaseInterface.targets_initialize)
 task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
 task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
+
+
+
 
 # Configure Flask app
 app = Flask(__name__)
@@ -57,6 +61,7 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
 app.config['UPLOAD_FOLDER'] = '/etc/data/imports/'
 
 # Populate database with configuration
+
 
 
 
@@ -266,6 +271,10 @@ def settings():
 
 @app.route("/settings/update_mode", methods = ['POST'])
 def settings_update_mode():
+    # Wait for 15 seconds to ensure workers exist
+    time.sleep(15)
+
+    # Parse inputs
     mode  = request.args.get('mode')
     if not mode in Config.MODES:
         print("In mode list")
@@ -278,24 +287,18 @@ def settings_update_mode():
         print("Same value in database!")
         return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
     
-    
-    workers = Worker.all(redis_queue)
-    for worker in workers:
-        print(worker.get_current_job_id())
-        # send_kill_horse_command(redis, worker.name)
-
 
     # Set to passive
-    if current_mode == Config.MODE_AGRESSIVE:
+    if mode == Config.MODE_AGRESSIVE:
+        DatabaseInterface.switch_mode(mode)
+        print("Set to aggressive")
+        task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
+    # Set to agressive
+    if mode == Config.MODE_PASSIVE:
         DatabaseInterface.switch_mode(mode)
         print("Set to passive")
-        # send_stop_job_command(redis_queue, Config.REDIS_JOB_ID_DATA)
-    # Set to agressive
-    if current_mode == Config.MODE_PASSIVE:
-        DatabaseInterface.switch_mode(mode)
-        print("Set to agressive")
-        # send_stop_job_command(redis_queue, Config.REDIS_JOB_ID_DATA)
-        task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
+        send_stop_job_command(redis_server, Config.REDIS_JOB_ID_DATA)
+        # send_kill_horse_command(redis_server, "data")
 
     # Check database for current mode
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
@@ -378,7 +381,7 @@ def clean():
     time.sleep(2)
     DatabaseInterface.clean_database()
     # Relaunch workers
-    task_queue.enqueue(DatabaseInterface.targets_initialize)
+    # task_queue.enqueue(DatabaseInterface.targets_initialize)
     task_queue.enqueue(TargetInterface.create_instance_receivesmss)
 
 @app.route("/settings/database/targets_update", methods = ['GET'])

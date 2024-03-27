@@ -31,14 +31,14 @@ services:
         depends_on:
             - redisserver
             - database
-        command: rq worker --url redis://redisserver:6379
+        command: rq worker --name fetcher --url redis://redisserver:6379
     
     data_worker:
         image: opensms:latest
         depends_on:
             - fetcher_worker
             - database
-        command: rq worker --url redis://redisserver:6379
+        command: rq worker --name data --url redis://redisserver:6379
 
     # Web server
     opensms:

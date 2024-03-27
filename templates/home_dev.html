@@ -13,26 +13,38 @@
     </head>
     <body>
         <div class="navbar">
-            <span class="logo">
-                <img src="../static/logo.png" width="100%">
-                <span>SMS Explorer</span>
-            </span>
-            <span class="cat">Dashboard</span>
-            <a id="menu_home" href="/home" class="subcat">Home</a>
-            <!-- Search -->
-            <span class="cat">Search</span>
-            <a id="menu_search" href="/search" class="subcat">SMSs</a>
-            <a id="menu_targets" href="/search_targets" class="subcat">Targets</a>
-            <a id="menu_investigation" href="/investigation" class="subcat">Investigation</a>
-            <!-- Statistics -->
-            <span class="cat">Statistics</span>
-            <a id="menu_statistics_raw" href="/statistics_raw" class="subcat">Raw</a>
-            <a id="menu_statistics_san" href="/statistics_san" class="subcat">Sanitized</a>
-            <!-- Settings -->
-            <span class="cat">Settings</span>
-            <a id="menu_settings" href="/settings" class="subcat">Settings</a>
-            <!-- About -->
-            <a id="menu_about" href="/about" class="subcat">About</a>
+            <div>
+                <span class="logo">
+                    <img src="../static/logo.png" width="100%">
+                    <span>SMS Explorer</span>
+                </span>
+                <span class="cat">Dashboard</span>
+                <a id="menu_home" href="/home" class="subcat">Home</a>
+                <!-- Search -->
+                <span class="cat">Search</span>
+                <a id="menu_search" href="/search" class="subcat">SMSs</a>
+                <a id="menu_targets" href="/search_targets" class="subcat">Targets</a>
+                <a id="menu_investigation" href="/investigation" class="subcat">Investigation</a>
+                <!-- Statistics -->
+                <span class="cat">Statistics</span>
+                <a id="menu_statistics_raw" href="/statistics_raw" class="subcat">Raw</a>
+                <a id="menu_statistics_san" href="/statistics_san" class="subcat">Sanitized</a>
+                <!-- Settings -->
+                <span class="cat">Settings</span>
+                <a id="menu_settings" href="/settings" class="subcat">Settings</a>
+                <!-- About -->
+                <a id="menu_about" href="/about" class="subcat">About</a>
+            </div>
+            <div>
+                <div id="notification1" class="notification">
+                    <span class="notification-close" onclick="this.parentElement.style.display='none';">&times;</span> 
+                    <strong>Danger!</strong> Indicates a dangerous or potentially negative action.
+                </div>
+                <div id="notification2" class="notification">
+                    <span class="notification-close" onclick="this.parentElement.style.display='none';">&times;</span> 
+                    <strong>Danger!</strong> Indicates a dangerous or potentially negative action.
+                </div>
+            </div>
         </div>
         
         <div class="content">

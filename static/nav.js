@@ -301,12 +301,13 @@ function settingsSetMode(mode) {
 }
 
 function settingsSendModeForm() {
+	displayNotification("Switch mode", "Trying to change mode")
 	mode = document.getElementById("settings_toggle_mode_selector").innerText;
 	const req = new XMLHttpRequest();
 	req.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
 			// Typical action to be performed when the document is ready:
-			alert("Mode updated");
+			displayNotification("Switch mode", "Mode changed")
 		}
 	};
 	req.open("POST", "/settings/update_mode?mode="+mode);
@@ -357,4 +358,44 @@ function displayData(button_id){
 
 	// Send request
 	update_form.send();
+}
+
+/* ***************************************** */
+/*               NOTIFICATIONS               */
+/* ***************************************** */
+function displayNotification(title, description){
+	content = '\n<strong>' + title + '</strong><br>' + description
+	notification1 = document.getElementById("notification1")
+	notification2 = document.getElementById("notification2")
+	notification3 = document.getElementById("notification3")
+
+	// Check where to place new notification
+	if (notification1.style.display==='none' || notification1.style.display==='')  {
+		html = '<span id="notification-close1" class="notification-close" onclick="this.parentElement.style.display=\'none\';">&times;</span>'
+		html = html + content
+		notification1.innerHTML = html
+		notification1.style.display = 'block'
+		setTimeout(function() { notification1.display = 'none' }, 10000);
+		return
+	} else if (notification2.style.display==='none' || notification2.style.display==='') {
+		html = '<span id="notification-close2" class="notification-close" onclick="this.parentElement.style.display=\'none\';">&times;</span>'
+		html = html + content
+		notification2.innerHTML = html
+		notification2.style.display = 'block'
+		setTimeout(function() { notification2.display = 'none' }, 10000);
+		return
+	} else if (notification3.style.display==='none' || notification3.style.display==='') {
+		html = '<span id="notification-close3" class="notification-close" onclick="this.parentElement.style.display=\'none\';">&times;</span>'
+		html = html + content
+		notification3.innerHTML = html
+		notification3.style.display = 'block'
+		setTimeout(function() { notification3.display = 'none' }, 10000);
+		return
+	}
+
+	// If there are to many notifications, close the first one
+	notification1.innerHTML = html
+	notification1.style.display = 'block'
+	setTimeout(function() { notification1.display = 'none' }, 10000);
+	return
 }

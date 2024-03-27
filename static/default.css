@@ -35,6 +35,9 @@ p {
   top: 0;
   height: 100%;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .navbar a, .navbar span {
@@ -412,6 +415,43 @@ span.close {
   float: right;
   font-size: 28px;
   font-weight: bold;
+}
+
+/* *********************************** */
+/* *          NOTIFICATIONS          * */
+/* *********************************** */
+.notification-close {
+  /* margin-left: 15px; */
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.notification {
+  padding: 20px;
+  display: none;
+  background-color: rgb(45, 170, 184);
+  color: white;
+  transition: 0.3s;
+}
+
+#notification1, #notification2, #notification3 {
+  display: none;
+}
+
+#notification-close1, #notification-close2, #notification-close3 {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 
