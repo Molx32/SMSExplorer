@@ -390,9 +390,9 @@ class DatabaseInterface:
             cursor.copy_expert("COPY config TO STDOUT WITH CSV DELIMITER ';' HEADER", f)
         return
     
-    def targets_update():
+    def targets_update(file_path):
         cursor = Database().connect()
-        with open('/etc/data/imports/targets.csv', 'r') as csvfile:
+        with open(file_path, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=';', quotechar=' ')
             next(reader, None)
             for row in reader:

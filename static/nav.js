@@ -24,8 +24,6 @@ function findGetParameter(parameterName) {
 }
 
 
-
-
 /* ************************************** */
 /*               SMS SEARCH               */
 /* ************************************** */
@@ -108,7 +106,7 @@ function smsSearchSendSearchForm() {
 	form.submit();
 }
 
-/* ****************************************** */
+/* ***************************************** */
 /*               INVESTIGATION               */
 /* ***************************************** */
 function investigationDisplaySearchBar(){
@@ -246,22 +244,6 @@ function investigationUpdateSendInterestingForm(domain) {
 	xhttp.send();
 }
 
-function investigationUpdateSendTagForm() {
-	
-}
-
-
-
-function set_search_form_investigation_is_interesting() {
-	// Send a request
-	param_search 		= document.getElementById('input_search').value;
-	param_interesting 	= document.getElementById('investigation_toggle_unique_selector').innerText;
-	
-	document.getElementById('form_input_search').value	= param_search;
-	document.getElementById('form_input_unique').value = param_interesting;
-}
-
-
 
 /* *********************************** */
 /*               TARGETS               */
@@ -274,9 +256,6 @@ function targetsSendSearchForm() {
 	document.getElementById('form_input_search').value = param_search;
 	form.submit();
 }
-
-
-
 
 /* ************************************ */
 /*               SETTINGS               */
@@ -314,12 +293,10 @@ function settingsSendModeForm() {
 	req.send();
 }
 
-
-
 /* **************************************** */
 /*               DATA DISPLAY               */
 /* **************************************** */
-function open_modal(modal_id){
+function openModal(modal_id){
 	m = document.getElementById(modal_id);
 	m.style.display = "block";
 	window.onclick = function(event){
@@ -338,7 +315,7 @@ function displayData(button_id){
     m = document.getElementById("data_viewer");
     // Local vars
 	id = button_id.split('_').pop().replace('"','');
-	url = "/api/get_data?id=" + id;
+	url = "/data/get?id=" + id;
 
     // Build request
 	var update_form = new XMLHttpRequest();
@@ -352,7 +329,7 @@ function displayData(button_id){
                 el:document.getElementById("result"),
                 data:obj
             });
-          open_modal('data_viewer');
+          openModal('data_viewer');
         }
       };
 

@@ -4,9 +4,10 @@ import sys
 from datetime import datetime
 import time
 import json
+import shutil
 
 from config.config import Config
-from modules.interface import TargetInterface, ModuleInterface
+from modules.interface import TargetInterface, DataInterface, SecurityInterface
 
 # Database
 from database.database import DatabaseInterface
@@ -32,35 +33,43 @@ from rq.command import send_kill_horse_command
 from rq.command import send_stop_job_command
 from rq.registry import StartedJobRegistry
 
-# Send jobs to queue
-healthy_database = False
-while not healthy_database:
-    healthy_database = True
+
+# --------------------------------------------------------------------- #
+# -                            START UP                               - #
+# --------------------------------------------------------------------- #
+# Ensure database is up before running jobs
+is_database_up = False
+while not is_database_up:
+    is_database_up = True
     try:
         DatabaseInterface.is_database_healthy()
     except:
         print("******************Database not ready********************")
         print("******************Waiting for 5 secs********************")
-        healthy_database = False
+        is_database_up = False
         time.sleep(5)
         print("******************Try new connection********************")
 
+# Copy targets base to volumes so that workers
+# can access it before adding them to the database
+src = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
+dst = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
+shutil.copyfile(src, dst)
+
+# Connect to redis and enqueue jobs
 redis_server = Redis.from_url(Config.REDIS_URL)
 task_queue  = rq.Queue(default_timeout=-1, connection=redis_server)
-task_queue.enqueue(DatabaseInterface.targets_initialize)
+task_queue.enqueue(DatabaseInterface.targets_update, dst, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
 task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
-task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
 
-
-
+# This is the aggressive mode and should not be enabled by default
+# task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
 
 # Configure Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
-app.config['UPLOAD_FOLDER'] = '/etc/data/imports/'
-
-# Populate database with configuration
+app.config['UPLOAD_FOLDER'] = Config.FOLDER_UPLOAD
 
 
 
@@ -68,12 +77,9 @@ app.config['UPLOAD_FOLDER'] = '/etc/data/imports/'
 
 
 
-
-
-
-# --------------------------------------------------------------------------------------------------------------------------------------------- #
-# ----------------------------------------------------------------- WEB PAGES ----------------------------------------------------------------- #
-# --------------------------------------------------------------------------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------- #
+# -                            WEB PAGES                               - #
+# ---------------------------------------------------------------------- #
 # ----------------------------------------------------------------- #
 # -                            HOME                               - #
 # ----------------------------------------------------------------- #
@@ -105,19 +111,9 @@ def search():
     input_interesting   = request.args.get('interesting')
     input_search        = request.args.get('search')
 
+    if not SecurityInterface.controlerSearch(input_data, input_interesting, input_search):
+        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
 
-    # Check if input is safe
-    if input_data not in Config.SEARCH_FILTERS_DATA:
-        input_data = 'NONE'
-    if input_interesting not in Config.SEARCH_FILTERS_INTERESTING:
-        input_interesting = 'NO'
-    if input_search is None:
-        input_search = ''
-
-    # Upper case
-    input_data = input_data.upper()
-    input_interesting = input_interesting.upper()
-    
     # Get SMSs
     data = DatabaseInterface.sms_get_by_search(input_search, input_data, input_interesting)
     total_count   = DatabaseInterface.sms_count()
@@ -139,11 +135,6 @@ def search_targets():
     count   = DatabaseInterface.targets_count()
 
     return render_template('targets.html', data=data, count=count)
-
-
-
-
-
 
 # ---------------------------------------------------------------- #
 # -                       INVESTIGATION                          - #
@@ -258,9 +249,6 @@ def statistics_san():
         sms_get_statistics_interesting_tags_yes_labels=sms_get_statistics_interesting_tags_yes_labels, sms_get_statistics_interesting_tags_yes_values=sms_get_statistics_interesting_tags_yes_values,
         sms_get_statistics_interesting_tags_no_labels=sms_get_statistics_interesting_tags_no_labels, sms_get_statistics_interesting_tags_no_values=sms_get_statistics_interesting_tags_no_values)
 
-
-
-
 # ----------------------------------------------------------------- #
 # -                     SETTINGS ENDPOINT                         - #
 # ----------------------------------------------------------------- #
@@ -292,7 +280,7 @@ def settings_update_mode():
     if mode == Config.MODE_AGRESSIVE:
         DatabaseInterface.switch_mode(mode)
         print("Set to aggressive")
-        task_queue.enqueue(ModuleInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
+        task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
     # Set to agressive
     if mode == Config.MODE_PASSIVE:
         DatabaseInterface.switch_mode(mode)
@@ -324,12 +312,14 @@ def settings_export_config():
     return send_file(Config.EXPORT_CONFIG, as_attachment=True)
 
 @app.route("/settings/targets/upload", methods = ['POST'])
-def upload_targets_upload():
+def settings_upload_targets():
+    file_path = Config.FOLDER_UPLOAD + Config.FILENAME_IMPORT_TARGETS
     if request.method == 'POST':
         uploaded_file = request.files['file']
         if uploaded_file.filename != '':
-            uploaded_file.save(app.config['UPLOAD_FOLDER'] + 'targets.csv')
-        DatabaseInterface.targets_update()  
+            uploaded_file.save(file_path)
+        
+        DatabaseInterface.targets_update(file_path)  
 
         return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
@@ -344,21 +334,10 @@ def about():
     return render_template('about.html')
 
 
-# --------------------------------------------------------------- #
-# -                       STATIC FILES                          - #
-# --------------------------------------------------------------- #
-
-
-
-
-# --------------------------------------------------------------------------------------------------------------------------------------------- #
-# -------------------------------------------------------------------- APIs ------------------------------------------------------------------- #
-# --------------------------------------------------------------------------------------------------------------------------------------------- #
-# ----------------------------------------------------------------- #
-# -                       CLEAN DATABASE                          - #
-# ----------------------------------------------------------------- #
-
-@app.route("/api/get_data", methods = ['GET'])
+# ------------------------------------------------------- #
+# -                       DATA                          - #
+# ------------------------------------------------------- #
+@app.route("/data/get", methods = ['GET'])
 def data():
 
     # Get searched SMSs
@@ -371,22 +350,6 @@ def data():
     else:
         data = {}
     return jsonify(data)
-
-
-@app.route("/settings/database/clean", methods = ['GET'])
-def clean():
-    workers = Worker.all(redis)
-    for worker in workers:
-        send_kill_horse_command(redis, worker.name)
-    time.sleep(2)
-    DatabaseInterface.clean_database()
-    # Relaunch workers
-    # task_queue.enqueue(DatabaseInterface.targets_initialize)
-    task_queue.enqueue(TargetInterface.create_instance_receivesmss)
-
-@app.route("/settings/database/targets_update", methods = ['GET'])
-def targets_update():
-    pass
 
 @app.template_filter('decode')
 def decode_msg(encoded):

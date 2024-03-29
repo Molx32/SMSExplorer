@@ -28,6 +28,9 @@ services:
     # Redis workers
     fetcher_worker:
         image: opensms:latest
+        volumes:
+            - exports:/etc/data/exports
+            - imports:/etc/data/imports
         depends_on:
             - redisserver
             - database
@@ -35,6 +38,9 @@ services:
     
     data_worker:
         image: opensms:latest
+        volumes:
+            - exports:/etc/data/exports
+            - imports:/etc/data/imports
         depends_on:
             - fetcher_worker
             - database
@@ -52,7 +58,7 @@ services:
             - 9000:9000
         volumes:
             - exports:/etc/data/exports
-            - exports:/etc/data/imports
+            - imports:/etc/data/imports
     
 volumes:
     exports:
