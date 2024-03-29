@@ -73,7 +73,7 @@ class DatabaseInterface:
             where   = where + """AND (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
 
         # Handle data filter
-        if input_data == 'ALL':
+        if input_data == 'ALL' or input_data == '':
             where = where + ""
         if input_data == 'YES':
             where = where + " AND data_handled = True "
@@ -81,7 +81,7 @@ class DatabaseInterface:
             where = where + " AND data_handled = False "
 
         # Handle interesting filter
-        if input_interesting == 'ALL':
+        if input_interesting == 'ALL' or input_interesting == '':
             where = where + ""
         if input_interesting == 'NONE':
             where = where + " AND is_interesting IS NULL "
@@ -219,13 +219,17 @@ class DatabaseInterface:
     def sms_get_targets(search, unique, unqualified):
         query = ""
         where = ""
-        if unqualified:
+
+        if not search:
+            search = ''
+
+        if unqualified == 'YES':
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
         else:
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
         group_by = "GROUP BY smss.domain LIMIT 500;"
 
-        if unique:
+        if unique == 'YES':
             select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
             query   = select + where + group_by
         else:

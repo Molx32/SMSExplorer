@@ -34,8 +34,8 @@ function smsSearchDisplaySearchBar(){
 	interesting = findGetParameter('interesting');
 	// Update visuals
 	document.getElementById("smssearch_search_button").value = search
-	smsSearchDisplayToggleButtonData(data)
 	smsSearchDisplayToggleButtonInteresting(interesting);
+	smsSearchDisplayToggleButtonData(data)
 }
 
 function smsSearchDisplayToggleButtonInteresting(filter){
@@ -45,7 +45,7 @@ function smsSearchDisplayToggleButtonInteresting(filter){
 	var yes 		= document.getElementById("smssearch_toggle_interesting_yes");
 	var no 			= document.getElementById("smssearch_toggle_interesting_no");
 	var selector 	= document.getElementById("smssearch_toggle_interesting_selector");
-	if(filter.toUpperCase() === "ALL"){
+	if(filter.toUpperCase() === "ALL" || filter.toUpperCase() === ""){
 		selector.style.left = 0;
 		selector.style.width = all.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
@@ -74,7 +74,7 @@ function smsSearchDisplayToggleButtonData(filter){
 	var yes 	= document.getElementById("smssearch_toggle_data_yes");
 	var no 		= document.getElementById("smssearch_toggle_data_no");
 	var selector = document.getElementById("smssearch_toggle_data_selector");
-	if(filter.toUpperCase() === "NONE"){
+	if(filter.toUpperCase() === "NONE"  || filter.toUpperCase() === ""){
 		selector.style.left = 0;
 		selector.style.width = none.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
@@ -113,9 +113,11 @@ function investigationDisplaySearchBar(){
 	// Set search input
 	search = findGetParameter('search');
 	unique = findGetParameter('unique');
+	unqualified = findGetParameter('unqualified');
 	
 	document.getElementById("investigation_search_button").value = search
 	investigationDisplayToggleButton(unique);
+	investigationDisplayUnqualifiedButton(unqualified);
 }
 
 function investigationDisplayToggleButton(unique){
@@ -123,7 +125,7 @@ function investigationDisplayToggleButton(unique){
 	var yes 		= document.getElementById("investigation_toggle_unique_yes");
 	var no 			= document.getElementById("investigation_toggle_unique_no");
 	var selector 	= document.getElementById("investigation_toggle_unique_selector");
-	if(unique.toUpperCase() === "NO"){
+	if(unique.toUpperCase() === "NO"  || unique.toUpperCase() === ""){
 		selector.style.left = 0;
 		selector.style.width = no.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
@@ -141,7 +143,7 @@ function investigationDisplayUnqualifiedButton(unqualified){
 	var yes 		= document.getElementById("investigation_toggle_unqualified_yes");
 	var no 			= document.getElementById("investigation_toggle_unqualified_no");
 	var selector 	= document.getElementById("investigation_toggle_unqualified_selector");
-	if(unqualified.toUpperCase() === "NO"){
+	if(unqualified.toUpperCase() === "NO"  || unqualified.toUpperCase() === ""){
 		selector.style.left = 0;
 		selector.style.width = no.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
@@ -240,7 +242,7 @@ function investigationUpdateSendInterestingForm(domain) {
 			alert("Updated");
 		}
 	};
-	xhttp.open("POST", "/investigation/target/interesting?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
+	xhttp.open("POST", "/investigation/target/update?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
 	xhttp.send();
 }
 

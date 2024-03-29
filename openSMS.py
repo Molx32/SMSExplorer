@@ -102,16 +102,16 @@ def home():
         activities_last_data=activities_last_data)
 
 
-# ----------------------------------------------------------------- #
-# -                      SEARCH ENDPOINT                          - #
-# ----------------------------------------------------------------- #
+# ------------------------------------------------------------ #
+# -                      SMS ENDPOINT                        - #
+# ------------------------------------------------------------ #
 @app.route("/search", methods = ['GET'])
 def search():
     input_data          = request.args.get('data')
     input_interesting   = request.args.get('interesting')
     input_search        = request.args.get('search')
 
-    if not SecurityInterface.controlerSearch(input_data, input_interesting, input_search):
+    if not SecurityInterface.controlerSmsSearch(input_data, input_interesting, input_search):
         return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
 
     # Get SMSs
@@ -121,14 +121,17 @@ def search():
 
     return render_template('search.html', data=data, total_count=total_count, select_count=select_count)
 
-# ----------------------------------------------------------------- #
-# -                       SEARCH TARGETS                          - #
-# ----------------------------------------------------------------- #
+# ---------------------------------------------------------------- #
+# -                      TARGETS ENDPOINT                        - #
+# ---------------------------------------------------------------- #
 @app.route("/search_targets", methods = ['GET'])
 def search_targets():
     input_search  = request.args.get('search')
     if input_search is None:
         input_search = ''
+
+    if not SecurityInterface.controlerTargetSearch(input_search):
+        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
 
     # Get SMSs
     data    = DatabaseInterface.targets_get_all(input_search)
@@ -146,27 +149,11 @@ def investigation():
     input_unique        = request.args.get('unique')
     input_unqualified   = request.args.get('unqualified')
 
-    # FILTER
-    # Search
-    if input_search is None:
-        input_search = ''
-    # Unique
-    if input_unique is None:
-        input_unique = False
-    if input_unique == 'YES':
-        input_unique = True
-    else:
-        input_unique = False
-    # Unqualified
-    if input_unqualified is None:
-        input_unqualified = False
-    if input_unqualified == 'YES':
-        input_unqualified = True
-    else:
-        input_unqualified = False
+    if not SecurityInterface.controlerInvestigationSearch(input_search, input_unique, input_unqualified):
+        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
 
-    tags_not_interesting = Config.LIST_METADATA_INTERESTING_NO
-    tags_interesting = Config.LIST_METADATA_INTERESTING_YES
+    tags_not_interesting    = Config.LIST_METADATA_INTERESTING_NO
+    tags_interesting        = Config.LIST_METADATA_INTERESTING_YES
 
     # Get SMSs
     data    = DatabaseInterface.sms_get_targets(input_search, input_unique, input_unqualified)
@@ -175,34 +162,17 @@ def investigation():
     return render_template('investigation.html', data=data, count=count,
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
-@app.route("/investigation/target/interesting", methods = ['POST'])
+@app.route("/investigation/target/update", methods = ['POST'])
 def investigation_update_interesting():
     # Get params
-    is_interesting  = request.args.get('is_interesting')
-    domain          = request.args.get('domain')
-    tags            = request.args.get('tags')
+    input_is_interesting  = request.args.get('is_interesting')
+    input_domain          = request.args.get('domain')
+    input_tags            = request.args.get('tags')
 
-    # FILTER INPUT
-    # is_interesting
-    if is_interesting == 'NO':
-        is_interesting = False
-    elif is_interesting == 'YES':
-        is_interesting = True
-    else:
-        return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
-    # domain
-    if domain == '' or not domain:
-        return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
-    # tags
-    if is_interesting:
-        if not set(tags.split(',')) <= set(Config.LIST_METADATA_INTERESTING_YES):
-            tags = ''
-    else:
-        if not set(tags.split(',')) <= set(Config.LIST_METADATA_INTERESTING_NO):
-            tags = ''
+    if not SecurityInterface.controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
+        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
 
-
-    DatabaseInterface.sms_update_unqualified_targets_interesting(domain, is_interesting, tags)
+    DatabaseInterface.sms_update_unqualified_targets_interesting(input_domain, input_is_interesting, input_tags)
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
