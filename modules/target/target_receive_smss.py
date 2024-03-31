@@ -14,8 +14,6 @@ from config.config import Config
 # Web
 import grequests
 import requests
-import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 class ReceiveSMSS:    

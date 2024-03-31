@@ -15,7 +15,6 @@ from config.config import Config
 # Web
 import requests
 requests.packages.urllib3.disable_warnings()
-import pandas as pd
 from bs4 import BeautifulSoup
 
 class DataModule:    

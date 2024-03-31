@@ -69,11 +69,11 @@ class DatabaseInterface:
 
 
         # Handle Search
-        if search != '':
+        if search != '' and search is not None:
             where   = where + """AND (LOWER(receiver) LIKE LOWER('%{}%') or LOWER(msg) LIKE LOWER('%{}%')) """.format(search, search)
 
         # Handle data filter
-        if input_data == 'ALL' or input_data == '':
+        if input_data == 'ALL' or input_data == '' or input_data is None:
             where = where + ""
         if input_data == 'YES':
             where = where + " AND data_handled = True "
@@ -81,13 +81,13 @@ class DatabaseInterface:
             where = where + " AND data_handled = False "
 
         # Handle interesting filter
-        if input_interesting == 'ALL' or input_interesting == '':
+        if input_interesting == 'ALL' or input_interesting == '' or input_interesting is None:
             where = where + ""
-        if input_interesting == 'NONE':
+        elif input_interesting == 'NONE':
             where = where + " AND is_interesting IS NULL "
-        if input_interesting == 'YES':
+        elif input_interesting == 'YES':
             where = where + " AND is_interesting = True "
-        if input_interesting == 'NO':
+        elif input_interesting == 'NO':
             where = where + " AND is_interesting = False "
 
         order_by            = """ ORDER BY receive_date DESC """.format(search, search, excluded_domains)
@@ -241,19 +241,6 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
-    def sms_update_unqualified_targets_interesting(domain, is_interesting, tags):
-        # Check if target exists
-        query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
-        cursor = Database().connect()
-        cursor.execute(query)
-        results = cursor.fetchone()
-        if not results:
-            query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, False, is_interesting, tags)
-            cursor.execute(query)
-        else:
-            query = """UPDATE targets SET is_interesting = {}, is_interesting_desc = '{}'  WHERE domain = '{}'""".format(is_interesting, tags, domain)
-            cursor.execute(query)
-
     def sms_get_statistics_interesting():
         # All -> URLs -> Interesting
         def _count_all_interesting(is_interesting):
@@ -311,8 +298,8 @@ class DatabaseInterface:
 
 
 
-############################### TARGETS ####################################
-# The following section is dedicated to SQL queries used by the target     #
+############################# AUTOMATION ###################################
+# The following section is dedicated to SQL queries used by the automation #
 # view, but not by the investigation one!                                  #
 ############################################################################
     def targets_get_all(search):
@@ -320,6 +307,16 @@ class DatabaseInterface:
             query = """SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE LOWER(domain) LIKE LOWER('%{}%') LIMIT 1000;""".format(search)
         else:
             query = "SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS LIMIT 1000;"
+        
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+    
+    def targets_get_interesting(search):
+        if search != '' or search is not None:
+            query = """SELECT id, domain, is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE LOWER(domain) LIKE LOWER('%{}%') AND is_interesting = True LIMIT 1000;""".format(search)
+        else:
+            query = "SELECT id, domain, is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE is_interesting = True LIMIT 1000;"
         
         cursor = Database().connect()
         cursor.execute(query)
@@ -364,8 +361,33 @@ class DatabaseInterface:
         res = cursor.fetchone()[0]
         return res
         
+    def targets_update_automation(domain, is_legal, is_automated):
 
 
+        # Check if target exists
+        query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
+        cursor = Database().connect()
+        cursor.execute(query)
+        results = cursor.fetchone()
+        if not results:
+            query   = """INSERT INTO TARGETS(DOMAIN, IS_LEGAL, IS_AUTOMATED) VALUES('{}', '{}', '{}'); """.format(domain, is_legal, is_automated)
+            cursor.execute(query)
+        else:
+            query = """UPDATE targets SET is_legal = {}, is_automated = {}  WHERE domain = '{}'""".format(is_legal, is_automated, domain)
+            cursor.execute(query)
+
+    def targets_update_interesting(domain, is_interesting, tags):
+        # Check if target exists
+        query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
+        cursor = Database().connect()
+        cursor.execute(query)
+        results = cursor.fetchone()
+        if not results:
+            query   = """INSERT INTO TARGETS(DOMAIN, IS_LEGAL, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}', '{}'); """.format(domain, False, False, is_interesting, tags)
+            cursor.execute(query)
+        else:
+            query = """UPDATE targets SET is_interesting = {}, is_interesting_desc = '{}'  WHERE domain = '{}'""".format(is_interesting, tags, domain)
+            cursor.execute(query)
 
 ############################### SETTINGS ###################################
 # Well, all options accessible using the settings page.                    #
@@ -401,10 +423,11 @@ class DatabaseInterface:
             next(reader, None)
             for row in reader:
                 domain              = row[1]
-                is_automated        = row[2]
-                is_interesting      = row[3]
-                is_interesting_desc = row[4]
-                query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, is_automated, is_interesting, is_interesting_desc)
+                is_legal            = row[2]
+                is_automated        = row[3]
+                is_interesting      = row[4]
+                is_interesting_desc = row[5]
+                query   = """INSERT INTO TARGETS(DOMAIN, IS_LEGAL, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}','{}', '{}', '{}'); """.format(domain, is_legal, is_automated, is_interesting, is_interesting_desc)
                 try:
                     cursor.execute(query)
                 except:

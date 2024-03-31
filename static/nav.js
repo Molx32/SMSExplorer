@@ -12,6 +12,11 @@ if (location.pathname.includes('search')) {
 if (location.pathname.includes('investigation')) {
 	investigationDisplaySearchBar();
 }
+// AUTOMATION PAGE
+if (location.pathname.includes('automation')) {
+	automationSearchDisplaySearchBar();
+}
+
 
 // Read get parameters to set button in an appropriate way
 function findGetParameter(parameterName) {
@@ -247,9 +252,9 @@ function investigationUpdateSendInterestingForm(domain) {
 }
 
 
-/* *********************************** */
-/*               TARGETS               */
-/* *********************************** */
+/* ************************************** */
+/*               AUTOMATION               */
+/* ************************************** */
 function targetsSendSearchForm() {
 	form = document.getElementById('form_search');
 	param_search 	= document.getElementById('input_search_targets').value;
@@ -257,6 +262,133 @@ function targetsSendSearchForm() {
 	// Normalize param_include
 	document.getElementById('form_input_search').value = param_search;
 	form.submit();
+}
+
+function automationSearchDisplaySearchBar(){
+	// Get params
+	search 		= findGetParameter('search');
+	legal 		= findGetParameter('legal');
+	automated 	= findGetParameter('automated');
+	// Update visuals
+	document.getElementById("automation_search_button").value = search
+	automationDisplayLegalButton(legal);
+	automationDisplayAutomatedButton(automated)
+}
+
+function automationDisplayLegalButton(legal){
+	// Handle new settings
+	var all 		= document.getElementById("automation_toggle_legal_all");
+	var yes 		= document.getElementById("automation_toggle_legal_yes");
+	var no 			= document.getElementById("automation_toggle_legal_no");
+	var selector 	= document.getElementById("automation_toggle_legal_selector");
+	if(legal.toUpperCase() === "ALL" || legal.toUpperCase() === ""){
+		selector.style.left = 0;
+		selector.style.width = all.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "ALL";
+	}else if(legal.toUpperCase() === "YES"){
+		selector.style.left = all.clientWidth + "px";
+		selector.style.width = yes.clientWidth + "px";
+		selector.innerHTML = "YES";
+		selector.style.backgroundColor = "#2daab8";
+	}else if(legal.toUpperCase() === "NO"){
+		selector.style.left = all.clientWidth + yes.clientWidth + 1 + "px";
+		selector.style.width = no.clientWidth + "px";
+		selector.innerHTML = "NO";
+		selector.style.backgroundColor = "#2daab8";
+	}
+}
+
+function automationDisplayAutomatedButton(automated){
+	// Handle new settings
+	var all 		= document.getElementById("automation_toggle_automated_all");
+	var yes 		= document.getElementById("automation_toggle_automated_yes");
+	var no 			= document.getElementById("automation_toggle_automated_no");
+	var selector 	= document.getElementById("automation_toggle_automated_selector");
+	if(automated.toUpperCase() === "ALL" || automated.toUpperCase() === ""){
+		selector.style.left = 0;
+		selector.style.width = all.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "ALL";
+	}else if(automated.toUpperCase() === "YES"){
+		selector.style.left = all.clientWidth + "px";
+		selector.style.width = yes.clientWidth + "px";
+		selector.innerHTML = "YES";
+		selector.style.backgroundColor = "#2daab8";
+	}else if(automated.toUpperCase() === "NO"){
+		selector.style.left = all.clientWidth + yes.clientWidth + 1 + "px";
+		selector.style.width = no.clientWidth + "px";
+		selector.innerHTML = "NO";
+		selector.style.backgroundColor = "#2daab8";
+	}
+}
+
+function automationUpdateDisplayLegalButton(domain, value){
+	// Handle new settings
+	var no 			= document.getElementsByName(domain + "_legal_no")[0];
+	var yes 		= document.getElementsByName(domain + "_legal_yes")[0];
+	var selector 	= document.getElementsByName(domain + "_legal_selector")[0];
+
+	if(value.toUpperCase() === "NO"){
+		selector.style.left = 0;
+		selector.style.width = no.clientWidth + "px";
+		selector.style.backgroundColor = "#2daab8";
+		selector.innerHTML = "NO";
+	}else if(value.toUpperCase() === "YES"){
+		selector.style.left = no.clientWidth + "px";
+		selector.style.width = yes.clientWidth + "px";
+		selector.innerHTML = "YES";
+		selector.style.backgroundColor = "#2daab8";
+	}
+}
+
+function automationUpdateDisplayAutomatedButton(domain, value){
+		// Handle new settings
+		var no 			= document.getElementsByName(domain + "_automated_no")[0];
+		var yes 		= document.getElementsByName(domain + "_automated_yes")[0];
+		var selector 	= document.getElementsByName(domain + "_automated_selector")[0];
+	
+		if(value.toUpperCase() === "NO"){
+			selector.style.left = 0;
+			selector.style.width = no.clientWidth + "px";
+			selector.style.backgroundColor = "#2daab8";
+			selector.innerHTML = "NO";
+		}else if(value.toUpperCase() === "YES"){
+			selector.style.left = no.clientWidth + "px";
+			selector.style.width = yes.clientWidth + "px";
+			selector.innerHTML = "YES";
+			selector.style.backgroundColor = "#2daab8";
+		}
+}
+
+function automationSendSearchForm(){
+	// Retrieve values from buttons
+	param_search 		= document.getElementById('automation_form_search').value;
+	param_legal 		= document.getElementById('automation_toggle_legal_selector').innerText;
+	param_automated 	= document.getElementById('automation_toggle_automated_selector').innerText;
+	// Update form
+	document.getElementById('automation_form_search').value				= param_search;
+	document.getElementById('automation_form_toggle_legal').value 		= param_legal;
+	document.getElementById('automation_form_toggle_automated').value 	= param_automated;
+	// Send form
+	form = document.getElementById('automation_search_form');
+	form.submit();
+}
+
+function automationUpdateSendForm(domain){
+	// Retrieve is_interesting
+	var is_legal 		= document.getElementsByName(domain + "_legal_selector")[0].innerHTML;
+	var is_automated 	= document.getElementsByName(domain + "_automated_selector")[0].innerHTML;
+	
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			// Typical action to be performed when the document is ready:
+			alert("Updated");
+		}
+	};
+	xhttp.open("POST", "/automation/target/update?domain=" + domain + "&is_legal=" + is_legal + "&is_automated=" + is_automated, true);
+	xhttp.send();
 }
 
 /* ************************************ */

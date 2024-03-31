@@ -80,19 +80,13 @@ The project uses docker to instanciate the following containers :
 🛠️
 ❌
 
+- Everything
+    - Add proper data handling (reassigned values e.g. 'YES' becomes True)
+    - Add security for every endpoint
 - Statistics
     - 'Contains URLs'     --> Display statistics with only SMSs with URLs
     - 'Known valid URLs'  --> Display statistics with only SMSs with URLs known to hide data
     - 'Data URL'          --> Display statistics with only SMSs with URLs with automated data collection
-- TARGET FEATURE 🛠️🛠️🛠️
-  - Investigation
-    - Edit existing targets
-      - Edit isAutomated
-      - Edit isInteresingData
-      - Edit isInteresingDataDesc
-  - Automation
-    - Add an automation page for non-automated targets.
-	  
 - Collection
   - Add new data sources
 - RESOLVE THE RACE CONDITION CASE...

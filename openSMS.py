@@ -122,10 +122,10 @@ def search():
     return render_template('search.html', data=data, total_count=total_count, select_count=select_count)
 
 # ---------------------------------------------------------------- #
-# -                      TARGETS ENDPOINT                        - #
+# -                      AUTOMATION ENDPOINT                     - #
 # ---------------------------------------------------------------- #
-@app.route("/search_targets", methods = ['GET'])
-def search_targets():
+@app.route("/automation", methods = ['GET'])
+def automation():
     input_search  = request.args.get('search')
     if input_search is None:
         input_search = ''
@@ -134,10 +134,35 @@ def search_targets():
         return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
 
     # Get SMSs
-    data    = DatabaseInterface.targets_get_all(input_search)
+    data    = DatabaseInterface.targets_get_interesting(input_search)
     count   = DatabaseInterface.targets_count()
 
-    return render_template('targets.html', data=data, count=count)
+    return render_template('automation.html', data=data, count=count)
+
+
+@app.route("/automation/target/update", methods = ['POST'])
+def targets_update_automation():
+    # Get params
+    input_domain        = request.args.get('domain')
+    input_is_legal      = request.args.get('is_legal')
+    input_is_automated  = request.args.get('is_automated')
+
+    if not SecurityInterface.controlerTargetUpdateAutomation(input_domain, input_is_legal, input_is_automated):
+        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
+
+    if input_is_legal == 'YES':
+        is_legal = True
+    if input_is_legal == 'NO':
+        is_legal = False
+
+    if input_is_automated == 'YES':
+        is_automated = True
+    if input_is_automated == 'NO':
+        is_automated = False
+
+    DatabaseInterface.targets_update_automation(input_domain, is_legal, is_automated)
+
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 # ---------------------------------------------------------------- #
 # -                       INVESTIGATION                          - #
@@ -163,16 +188,17 @@ def investigation():
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
 @app.route("/investigation/target/update", methods = ['POST'])
-def investigation_update_interesting():
+def targets_update_interesting():
     # Get params
     input_is_interesting  = request.args.get('is_interesting')
     input_domain          = request.args.get('domain')
     input_tags            = request.args.get('tags')
 
-    if not SecurityInterface.controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
+    if not SecurityInterface.controlerTargetUpdateInteresting(input_is_interesting, input_domain, input_tags):
         return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
+  
 
-    DatabaseInterface.sms_update_unqualified_targets_interesting(input_domain, input_is_interesting, input_tags)
+    DatabaseInterface.targets_update_interesting(input_domain, input_is_interesting, input_tags)
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 

@@ -3,7 +3,6 @@ psycopg2-binary
 redis==4.3.3
 Requests==2.31.0
 rq==1.16.1
-pandas
 lxml
 html5lib
 beautifulsoup4

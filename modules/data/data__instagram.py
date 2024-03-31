@@ -16,8 +16,6 @@ from data__module import DataModule
 
 # Web
 import requests
-import pandas as pd
-import requests
 requests.packages.urllib3.disable_warnings()
 from bs4 import BeautifulSoup
 

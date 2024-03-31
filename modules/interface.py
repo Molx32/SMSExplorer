@@ -54,7 +54,7 @@ class SecurityInterface:
         c = sec.filter_investigation_search_unqualified(input_unqualified)
         return all([a, b, c])
 
-    def controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
+    def controlerTargetUpdateInteresting(input_is_interesting, input_domain, input_tags):
         print("input_is_interesting" + str(input_is_interesting))
         print("input_domain" + str(input_domain))
         print("input_tags" + str(input_tags))
@@ -63,3 +63,6 @@ class SecurityInterface:
         b = sec.filter_investigation_update_domain(input_domain)
         c = sec.filter_investigation_update_tags(input_is_interesting, input_tags)
         return all([a, b, c])
+
+    def controlerTargetUpdateAutomation(input_domain, input_is_legal, input_is_automated):
+        return True
