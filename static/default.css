@@ -970,3 +970,38 @@ justify-content: space-between;
   font-weight: bold;
   color: #2e4765;
 }
+
+/* *************************************** */
+/*               STATISTICS                */
+/* *************************************** */
+.statistics-row {
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: calc(var(--bs-gutter-y) * -1);
+  margin-right: calc(var(--bs-gutter-x) * -.5);
+  margin-left: calc(var(--bs-gutter-x) * -.5);
+  justify-content: center!important;
+}
+
+.graphs {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  grid-gap: 30px;
+  margin-bottom: 30px;
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.graph {
+  background-color: #fff;
+  border-radius: 10px;
+  -webkit-transition: .5s;
+  transition: .5s;
+  padding: 43px 30px;
+  position: relative;
+  display: flex!important;
+  align-items: center;
+  justify-content: space-evenly;
+}

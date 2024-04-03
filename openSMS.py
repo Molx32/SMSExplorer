@@ -16,7 +16,7 @@ from database.database import DatabaseInterface
 from database.models import SMS
 
 # Flask
-from flask import Flask
+from flask import Flask, abort
 from flask import redirect, url_for, request
 from flask import render_template
 from flask import send_file
@@ -107,17 +107,17 @@ def home():
 # ------------------------------------------------------------ #
 @app.route("/search", methods = ['GET'])
 def search():
+    input_search        = request.args.get('search')
     input_data          = request.args.get('data')
     input_interesting   = request.args.get('interesting')
-    input_search        = request.args.get('search')
 
-    if not SecurityInterface.controlerSmsSearch(input_data, input_interesting, input_search):
-        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
+    if not SecurityInterface.controlerSmsSearch(input_search, input_data, input_interesting):
+        abort(403)
 
     # Get SMSs
-    data = DatabaseInterface.sms_get_by_search(input_search, input_data, input_interesting)
-    total_count   = DatabaseInterface.sms_count()
-    select_count  = len(data)
+    data            = DatabaseInterface.sms_get_by_search(input_search, input_data, input_interesting)
+    total_count     = DatabaseInterface.sms_count()
+    select_count    = len(data)
 
     return render_template('search.html', data=data, total_count=total_count, select_count=select_count)
 
@@ -126,19 +126,23 @@ def search():
 # ---------------------------------------------------------------- #
 @app.route("/automation", methods = ['GET'])
 def automation():
-    input_search  = request.args.get('search')
-    if input_search is None:
-        input_search = ''
+    # GET INPUTS
+    input_search    = request.args.get('search')
+    input_legal     = request.args.get('legal')
+    input_automated = request.args.get('automated')
 
-    if not SecurityInterface.controlerTargetSearch(input_search):
-        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
+    # SECURITY CHECKS
+    if not SecurityInterface.controlerAutomationSearch(input_search, input_legal, input_automated):
+        abort(403)
+    search      = SecurityInterface.controlerReassignString(input_search)
+    legal       = SecurityInterface.controlerReassignBoolean(input_legal)
+    automated   = SecurityInterface.controlerReassignBoolean(input_automated)
 
     # Get SMSs
-    data    = DatabaseInterface.targets_get_interesting(input_search)
+    data    = DatabaseInterface.automation_get_targets(search, legal, automated)
     count   = DatabaseInterface.targets_count()
 
     return render_template('automation.html', data=data, count=count)
-
 
 @app.route("/automation/target/update", methods = ['POST'])
 def targets_update_automation():
@@ -147,18 +151,11 @@ def targets_update_automation():
     input_is_legal      = request.args.get('is_legal')
     input_is_automated  = request.args.get('is_automated')
 
-    if not SecurityInterface.controlerTargetUpdateAutomation(input_domain, input_is_legal, input_is_automated):
-        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
-
-    if input_is_legal == 'YES':
-        is_legal = True
-    if input_is_legal == 'NO':
-        is_legal = False
-
-    if input_is_automated == 'YES':
-        is_automated = True
-    if input_is_automated == 'NO':
-        is_automated = False
+    if not SecurityInterface.controlerAutomationUpdate(input_domain, input_is_legal, input_is_automated):
+        abort(403)
+    is_legal        = SecurityInterface.controlerReassignBoolean(input_is_legal)
+    is_automated    = SecurityInterface.controlerReassignBoolean(input_is_automated)
+    # domain = SecurityInterface.controlerReassignBoolean(input_domain)
 
     DatabaseInterface.targets_update_automation(input_domain, is_legal, is_automated)
 
@@ -169,13 +166,17 @@ def targets_update_automation():
 # ---------------------------------------------------------------- #
 @app.route("/investigation", methods = ['GET'])
 def investigation():
-    # Get params
+    # GET INPUTS
     input_search        = request.args.get('search')
     input_unique        = request.args.get('unique')
     input_unqualified   = request.args.get('unqualified')
 
+    # SECURITY CHECKS
     if not SecurityInterface.controlerInvestigationSearch(input_search, input_unique, input_unqualified):
-        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
+        abort(403)
+    search      = SecurityInterface.controlerReassignString(input_search)
+    unique      = SecurityInterface.controlerReassignBoolean(input_unique)
+    unqualified = SecurityInterface.controlerReassignBoolean(input_unqualified)
 
     tags_not_interesting    = Config.LIST_METADATA_INTERESTING_NO
     tags_interesting        = Config.LIST_METADATA_INTERESTING_YES
@@ -188,17 +189,20 @@ def investigation():
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
 @app.route("/investigation/target/update", methods = ['POST'])
-def targets_update_interesting():
+def targets_update_investigation():
     # Get params
     input_is_interesting  = request.args.get('is_interesting')
     input_domain          = request.args.get('domain')
     input_tags            = request.args.get('tags')
 
-    if not SecurityInterface.controlerTargetUpdateInteresting(input_is_interesting, input_domain, input_tags):
-        return json.dumps({'success':False}), 403, {'ContentType':'application/json'}
-  
+    if not SecurityInterface.controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
+        abort(403)
 
-    DatabaseInterface.targets_update_interesting(input_domain, input_is_interesting, input_tags)
+    is_interesting  = SecurityInterface.controlerReassignBoolean(input_is_interesting)
+    # tags            = SecurityInterface.controlerReassignTags(input_tags)
+    # domain          = SecurityInterface.controlerReassignTags(input_domain)
+
+    DatabaseInterface.targets_update_investigation(input_domain, is_interesting, input_tags)
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
@@ -353,4 +357,15 @@ def decode_msg(encoded):
     decoded = decoded.replace("%26", "&")
     return decoded
 
+# --------------------------------------------------------- #
+# -                       ERRORS                          - #
+# --------------------------------------------------------- #
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('404.html'), 404
 
+@app.errorhandler(403)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('403.html'), 403

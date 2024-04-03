@@ -81,8 +81,9 @@ The project uses docker to instanciate the following containers :
 ❌
 
 - Everything
-    - Add proper data handling (reassigned values e.g. 'YES' becomes True)
-    - Add security for every endpoint
+    - Add proper data handling (reassigned values e.g. 'YES' becomes True) - In progress
+    - Add security for every endpoint - In progress
+    - Handle error pages
 - Automated 'About' tables based on database
 - Statistics
     - 'Contains URLs'     --> Display statistics with only SMSs with URLs

@@ -29,20 +29,15 @@ class DataInterface:
             SuitsMeCard()
 
 class SecurityInterface:
-    def controlerSmsSearch(input_data, input_interesting, input_search):
+    def controlerSmsSearch(input_search, input_data, input_interesting):
+        print("input_search" + str(input_search))
         print("input_data" + str(input_data))
         print("input_interesting" + str(input_interesting))
-        print("input_search" + str(input_search))
         sec = Security()
         a = sec.filter_sms_search_data(input_data)
         b = sec.filter_sms_search_interesting(input_interesting)
         c = sec.filter_sms_search_search(input_search)
         return all([a, b, c])
-
-    def controlerTargetSearch(input_search):
-        sec = Security()
-        a = sec.filter_target_search_search(input_search)
-        return all([a])
 
     def controlerInvestigationSearch(input_search, input_unique, input_unqualified):
         print("input_search" + str(input_search))
@@ -54,7 +49,7 @@ class SecurityInterface:
         c = sec.filter_investigation_search_unqualified(input_unqualified)
         return all([a, b, c])
 
-    def controlerTargetUpdateInteresting(input_is_interesting, input_domain, input_tags):
+    def controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
         print("input_is_interesting" + str(input_is_interesting))
         print("input_domain" + str(input_domain))
         print("input_tags" + str(input_tags))
@@ -64,5 +59,37 @@ class SecurityInterface:
         c = sec.filter_investigation_update_tags(input_is_interesting, input_tags)
         return all([a, b, c])
 
-    def controlerTargetUpdateAutomation(input_domain, input_is_legal, input_is_automated):
-        return True
+    def controlerAutomationSearch(input_search, input_legal, input_automated):
+        sec = Security()
+        a = sec.filter_automation_search_search(input_search)
+        b = sec.filter_automation_search_legal(input_legal)
+        c = sec.filter_automation_search_automated(input_automated)
+        print(str(input_search) + str(a))
+        print(str(input_legal) + str(b))
+        print(str(input_automated) + str(c))
+        return all([a, b, c])
+
+    def controlerAutomationUpdate(input_domain, input_is_legal, input_is_automated):
+        print("input_domain" + str(input_domain))
+        print("input_is_legal" + str(input_is_legal))
+        print("input_is_automated" + str(input_is_automated))
+        sec = Security()
+        a = sec.filter_automation_update_domain(input_domain)
+        b = sec.filter_automation_update_is_legal(input_is_legal)
+        c = sec.filter_automation_update_is_automated(input_is_automated)
+        return all([a, b, c])
+    
+    def controlerReassignBoolean(input):
+        if input == 'YES':
+            return True
+        elif input == 'NO':
+            return False
+        elif input == 'ALL':
+            return None
+        else:
+            return input
+    
+    def controlerReassignString(input):
+        if input is None:
+            return ''
+        return input

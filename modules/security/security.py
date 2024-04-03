@@ -4,8 +4,34 @@ from config.config import Config
 
 class Security:
     def __init__(self):
-        self.FREE_SEARCH_ALLOWED_CHARS = ':/.-_' + string.ascii_letters + string.digits
-        self.TAGS_ALLOWED_CHARS = ',_' + string.ascii_uppercase
+        self.ALLOWED_CHARS_FREE_SEARCH = ':/.-_' + string.ascii_letters + string.digits
+        self.ALLOWED_CHARS_TAGS = ',_' + string.ascii_uppercase
+        self.ALLOWED_CHARS_DOMAIN = '.-_' + string.ascii_letters + string.digits
+    
+    def is_empty_or_not_set(self, input):
+        if input is None:
+            return True
+        if input == '':
+            return True
+        return False
+
+    def is_yes_no(self, input):
+        if input in ['YES','NO']:
+            return True
+        return False
+
+    def is_yes_no_all(self, input):
+        if input in ['YES','NO','ALL']:
+            return True
+        return False
+    
+    def is_domain_safe(self, domain):
+        for char in domain:
+            if char not in self.ALLOWED_CHARS_DOMAIN:
+                return False
+        return True
+
+
         
 
     # ------------------------------------------------------------ #
@@ -37,7 +63,7 @@ class Security:
         
         # Check each char
         for char in input_search:
-            if char not in self.FREE_SEARCH_ALLOWED_CHARS:
+            if char not in self.ALLOWED_CHARS_FREE_SEARCH:
                 return False
 
         return True
@@ -51,7 +77,7 @@ class Security:
             return True
 
         for char in input_search:
-            if char not in self.FREE_SEARCH_ALLOWED_CHARS:
+            if char not in self.ALLOWED_CHARS_FREE_SEARCH:
                 return False
         
         return True
@@ -68,7 +94,7 @@ class Security:
             return True
 
         for char in input_search:
-            if char not in self.FREE_SEARCH_ALLOWED_CHARS:
+            if char not in self.ALLOWED_CHARS_FREE_SEARCH:
                 return False
 
         return True
@@ -103,9 +129,7 @@ class Security:
         return True
 
     def filter_investigation_update_domain(self, input_domain):
-        if input_domain == '' or not input_domain:
-            return False
-        return True
+        return self.is_domain_safe(input_domain)
 
     def filter_investigation_update_tags(self, input_is_interesting, input_tags):
         if input_tags == '':
@@ -114,7 +138,7 @@ class Security:
 
         # Check what 'input_tags' contains
         for char in input_tags:
-            if char not in self.TAGS_ALLOWED_CHARS:
+            if char not in self.ALLOWED_CHARS_TAGS:
                 print("second")
                 return False
 
@@ -131,3 +155,48 @@ class Security:
                 return False
         print("last")
         return True
+
+
+    # ------------------------------------------------------------- #
+    # -                       AUTOMATION                          - #
+    # ------------------------------------------------------------- #
+    def filter_automation_search_search(self, input_search):
+        if self.is_empty_or_not_set(input_search):
+            return True
+
+        for char in input_search:
+            if char not in self.ALLOWED_CHARS_FREE_SEARCH:
+                return False
+
+        return True
+
+    def filter_automation_search_legal(self, input_legal):
+        if self.is_empty_or_not_set(input_legal):
+            return True
+        if self.is_yes_no_all(input_legal):
+            return True
+        return False
+
+    def filter_automation_search_automated(self, input_automated):
+        if self.is_empty_or_not_set(input_automated):
+            return True
+        if self.is_yes_no_all(input_automated):
+            return True
+        return False
+
+    def filter_automation_update_domain(self, input_domain):
+        return self.is_domain_safe(input_domain)
+    
+    def filter_automation_update_is_legal(self, input_legal):
+        if self.is_empty_or_not_set(input_legal):
+            return True
+        if self.is_yes_no(input_legal):
+            return True
+        return False
+
+    def filter_automation_update_is_automated(input_is_automated):
+        if self.is_empty_or_not_set(input_is_automated):
+            return True
+        if self.is_yes_no(input_is_automated):
+            return True
+        return False

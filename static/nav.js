@@ -363,7 +363,7 @@ function automationUpdateDisplayAutomatedButton(domain, value){
 
 function automationSendSearchForm(){
 	// Retrieve values from buttons
-	param_search 		= document.getElementById('automation_form_search').value;
+	param_search 		= document.getElementById('automation_search_button').value;
 	param_legal 		= document.getElementById('automation_toggle_legal_selector').innerText;
 	param_automated 	= document.getElementById('automation_toggle_automated_selector').innerText;
 	// Update form

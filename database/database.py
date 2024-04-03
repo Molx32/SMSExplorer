@@ -47,9 +47,10 @@ class DatabaseInterface:
             raise e
 
 
-################################### SMSS #########################################
+############################### SMSS & DATA ######################################
 # The following section is dedicated to SQL request that read or write SMS table #
 ##################################################################################
+    # GETTERS
     def sms_get_by_search(search, input_data, input_interesting):
         cursor = Database().connect()
         excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
@@ -97,21 +98,12 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
     
-    def sms_get_by_sender(sender):
-        cursor = Database().connect()
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), source, domain, url FROM SMSS WHERE sender=%s""", (sender))
-        return cursor.fetchall()
-    
-    def sms_get_by_receiver(receiver):
-        cursor = Database().connect()
-        cursor.execute("""SELECT id,sender,receiver,msg,to_char(receive_date, 'DD/MM/YY HH24:MI:SS'), source, domain, url FROM SMSS WHERE receiver=%s""", (receiver))
-        return cursor.fetchall()
-
     def sms_get_data_by_id(sms_id):
         cursor = Database().connect()
         cursor.execute("""SELECT sms_data FROM Data WHERE sms_id = {};""".format(sms_id))
         return cursor.fetchone()
-        
+
+    # SETTERS
     def sms_insert(sms):
         # Handle data
         columns = sms.getAttributes()
@@ -151,12 +143,12 @@ class DatabaseInterface:
 
     def sms_get_count_by_hour():
         cursor = Database().connect()
-        cursor.execute("""SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 1 ASC;""")
+        cursor.execute("""SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 1 ASC LIMIT 744;""")
         return cursor.fetchall()
 
     def sms_get_top_ten_domains():
         cursor = Database().connect()
-        cursor.execute("""SELECT domain, COUNT(id) FROM SMSS WHERE domain != '-'GROUP BY 1 ORDER BY 2 DESC;""")
+        cursor.execute("""SELECT domain, COUNT(id) FROM SMSS WHERE domain != '' GROUP BY 1 ORDER BY 2 DESC;""")
         return cursor.fetchall()
     
     def sms_get_top_ten_countries():
@@ -192,53 +184,6 @@ class DatabaseInterface:
     def sms_activities_last_data():
         cursor = Database().connect()
         cursor.execute("SELECT id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' LIMIT 5;")
-        return cursor.fetchall()
-
-
-############################### INVESTIGATION ##############################
-# The following section is dedicated to the investigation pane, where      #
-# targets can be modified.                                                 #
-############################################################################
-    def sms_get_unqualified_targets(search, unique):
-        query = ""
-        where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
-        group_by = "GROUP BY smss.domain LIMIT 500;"
-
-        if unique:
-            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + group_by
-        else:
-            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + " LIMIT 500;"
-
-        # Handle Search
-        cursor = Database().connect()
-        cursor.execute(query)
-        return cursor.fetchall()
-
-    def sms_get_targets(search, unique, unqualified):
-        query = ""
-        where = ""
-
-        if not search:
-            search = ''
-
-        if unqualified == 'YES':
-            where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
-        else:
-            where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
-        group_by = "GROUP BY smss.domain LIMIT 500;"
-
-        if unique == 'YES':
-            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + group_by
-        else:
-            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + " LIMIT 500;"
-
-        # Handle Search
-        cursor = Database().connect()
-        cursor.execute(query)
         return cursor.fetchall()
 
     def sms_get_statistics_interesting():
@@ -285,6 +230,34 @@ class DatabaseInterface:
             r[tag] = _count_all_interesting_tag(tag)[0]
         return r
 
+############################### INVESTIGATION ##############################
+# The following section is dedicated to the investigation pane, where      #
+# targets can be modified.                                                 #
+############################################################################
+    def sms_get_targets(search, unique, unqualified):
+        query = ""
+        where = ""
+
+        if not search:
+            search = ''
+
+        if unqualified == 'YES':
+            where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
+        else:
+            where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
+        group_by = "GROUP BY smss.domain LIMIT 500;"
+
+        if unique == 'YES':
+            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + group_by
+        else:
+            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+            query   = select + where + " LIMIT 500;"
+
+        # Handle Search
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
 
 ############################### DATA WORKER ################################
 # The following section is dedicated to SQL queries used by the data       #
@@ -302,22 +275,21 @@ class DatabaseInterface:
 # The following section is dedicated to SQL queries used by the automation #
 # view, but not by the investigation one!                                  #
 ############################################################################
-    def targets_get_all(search):
+    def automation_get_targets(search, is_legal, is_automated):
+        # SELECT
+        select = "SELECT id, domain, is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS"
+        # WHERE
+        where = " WHERE is_interesting = True"
         if search != '':
-            query = """SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE LOWER(domain) LIKE LOWER('%{}%') LIMIT 1000;""".format(search)
-        else:
-            query = "SELECT id, domain, is_automated, is_interesting, is_interesting_desc FROM TARGETS LIMIT 1000;"
-        
-        cursor = Database().connect()
-        cursor.execute(query)
-        return cursor.fetchall()
-    
-    def targets_get_interesting(search):
-        if search != '' or search is not None:
-            query = """SELECT id, domain, is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE LOWER(domain) LIKE LOWER('%{}%') AND is_interesting = True LIMIT 1000;""".format(search)
-        else:
-            query = "SELECT id, domain, is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS WHERE is_interesting = True LIMIT 1000;"
-        
+            where = where + " AND LOWER(domain) LIKE LOWER('%{}%')".format(search)
+        if is_legal is not None:
+            where = where + " AND is_legal = {}".format(is_legal)
+        if is_automated is not None:
+            where = where + " AND is_automated = {}".format(is_automated)
+        # LIMIT
+        limit = " LIMIT 500"
+
+        query = select + where + limit
         cursor = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
@@ -326,30 +298,6 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute('SELECT COUNT(id) FROM TARGETS;')
         return cursor.fetchone()
-
-    def targets_initialize(init=True):
-        # Connect to database
-        cursor = None
-        while cursor is None:
-            cursor = Database().connect()
-
-        # If targets has already been init, return
-        if not init or DatabaseInterface.targets_has_been_init():
-            return
-
-        # Else, init by inserting all targets
-        for item in Config.METADATA['data']:
-            domain              = item['domain']
-            is_automated        = item['is_automated']
-            is_interesting      = item['is_interesting']
-            is_interesting_desc = ','.join(item['is_interesting_desc'])
-
-            query   = """INSERT INTO TARGETS(DOMAIN, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}'); """.format(domain, is_automated, is_interesting, is_interesting_desc)
-            cursor.execute(query)
-
-        # Update configuration
-        query   = "UPDATE CONFIG SET is_targets_imported = True"
-        cursor.execute(query)
 
     def targets_has_been_init():
         # Connect to database
@@ -376,7 +324,7 @@ class DatabaseInterface:
             query = """UPDATE targets SET is_legal = {}, is_automated = {}  WHERE domain = '{}'""".format(is_legal, is_automated, domain)
             cursor.execute(query)
 
-    def targets_update_interesting(domain, is_interesting, tags):
+    def targets_update_investigation(domain, is_interesting, tags):
         # Check if target exists
         query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
         cursor = Database().connect()

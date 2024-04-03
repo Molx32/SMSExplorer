@@ -8,16 +8,49 @@
 <body>
     {% include '_menu.html' %}
     <div class="content">
-        <h1>Search SMS</h1>
-        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-            <canvas id="sms_get_count_by_hour"></canvas>
+      <div class="content-inner">
+        <div class="container">
+          <div class="satistics-row">
+            <div class="abouts">
+                <div class="about">
+                    <div class="about-header about-header-border">
+                        <div class="main_title">
+                            <h3>Received messages over time</h3>
+                        </div>
+                    </div>
+                    <div class="about-content">
+                        <div>
+                            <ul>
+                                <li>
+                                    <div class="about-row-1">
+                                        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+                                            <canvas id="sms_get_count_by_hour"></canvas>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="satistics-row">
+            <div class="graphs">
+                <div class="graph">
+                  <div class="chart-container" style="position: relative; height:40vh">
+                    <canvas id="sms_get_top_ten_domains"></canvas>
+                  </div>
+                </div>
+                <div class="graph">
+                  <div class="chart-container" style="position: relative; height:40vh">
+                    <canvas id="sms_get_top_ten_countries"></canvas>
+                  </div>
+                </div>
+            </div>
+          </div>
+          
         </div>
-        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-          <canvas id="sms_get_top_ten_domains"></canvas>
       </div>
-      <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-        <canvas id="sms_get_top_ten_countries"></canvas>
-    </div>
     </div>
 
     <script>
