@@ -331,7 +331,8 @@ def settings_upload_targets():
 # ----------------------------------------------------------------- #
 @app.route("/about", methods = ['GET'])
 def about():
-    return render_template('about.html')
+    supported_targets = DatabaseInterface.sms_get_supported_targets()
+    return render_template('about.html', targets=supported_targets)
 
 
 # ------------------------------------------------------- #

@@ -396,4 +396,15 @@ class DatabaseInterface:
         cursor = Database().connect()
         query = """DELETE FROM SMSS;"""
         cursor.execute(query)
-        print("Database cleaned!")    
+        print("Database cleaned!")
+
+############################### SETTINGS ###################################
+# Well, all options accessible using the settings page.                    #
+############################################################################
+    def sms_get_supported_targets():
+        query  = "SELECT domain, is_legal FROM targets WHERE is_automated = True;" 
+
+        # Handle Search
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
