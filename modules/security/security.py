@@ -133,27 +133,20 @@ class Security:
 
     def filter_investigation_update_tags(self, input_is_interesting, input_tags):
         if input_tags == '':
-            print("first")
             return True
 
         # Check what 'input_tags' contains
         for char in input_tags:
             if char not in self.ALLOWED_CHARS_TAGS:
-                print("second")
                 return False
 
         # Filter tags based on 'is_interesting'
         if input_is_interesting == 'YES':
-            print("yes")
             if not set(input_tags.split(',')) <= set(Config.LIST_METADATA_INTERESTING_YES):
-                print("no subset")
                 return False
         if input_is_interesting == 'NO':
-            print("yes")
             if not set(input_tags.split(',')) <= set(Config.LIST_METADATA_INTERESTING_NO):
-                print("no subset")
                 return False
-        print("last")
         return True
 
 

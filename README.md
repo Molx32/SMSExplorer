@@ -83,7 +83,8 @@ The project uses docker to instanciate the following containers :
 - Everything
     - Add proper data handling (reassigned values e.g. 'YES' becomes True) - In progress
     - Add security for every endpoint - In progress
-- Statistics
+- Telemetry statistics - Done
+- Data statistics - TODO
     - 'Contains URLs'     --> Display statistics with only SMSs with URLs
     - 'Known valid URLs'  --> Display statistics with only SMSs with URLs known to hide data
     - 'Data URL'          --> Display statistics with only SMSs with URLs with automated data collection

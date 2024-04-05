@@ -1001,9 +1001,6 @@ justify-content: space-between;
   transition: .5s;
   padding: 43px 30px;
   position: relative;
-  display: flex!important;
-  align-items: center;
-  justify-content: space-evenly;
 }
 
 

@@ -141,21 +141,56 @@ class DatabaseInterface:
         cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
         return cursor.fetchone()
 
-    def sms_get_count_by_hour():
-        cursor = Database().connect()
-        cursor.execute("""SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 1 ASC LIMIT 744;""")
+    def sms_get_count_by_hour(sanitized=False):
+        # Default query
+        select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS"
+        where   = ""
+        end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
+
+        # Sanitized query
+        if sanitized:
+            excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+            where = where + """ WHERE smss.domain NOT IN ({})""".format(excluded_domains)
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
         return cursor.fetchall()
 
-    def sms_get_top_ten_domains():
-        cursor = Database().connect()
-        cursor.execute("""SELECT domain, COUNT(id) FROM SMSS WHERE domain != '' GROUP BY 1 ORDER BY 2 DESC;""")
+    def sms_get_top_ten_domains(sanitized=False):
+        # Default query
+        select  = "SELECT domain, COUNT(id) FROM SMSS"
+        where   = " WHERE domain != ''"
+        end     = " GROUP BY 1 ORDER BY 2 DESC;"
+
+        # Sanitized query
+        if sanitized:
+            excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+            where = where + """ AND smss.domain NOT IN ({})""".format(excluded_domains)
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
         return cursor.fetchall()
     
-    def sms_get_top_ten_countries():
-        cursor = Database().connect()
-        cursor.execute("""SELECT country, COUNT(id) FROM SMSS GROUP BY 1 ORDER BY 2 DESC;""")
-        return cursor.fetchall()
+    def sms_get_top_ten_countries(sanitized=False):
+        # Default query
+        select  = "SELECT country, COUNT(id) FROM SMSS"
+        where   = ""
+        end     = " GROUP BY 1 ORDER BY 2 DESC;"
 
+        # Sanitized query
+        if sanitized:
+            excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+            where   = where + """ WHERE smss.domain NOT IN ({})""".format(excluded_domains)
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
 
 ################################### HOME ###################################
 # The following section is dedicated to SQL request that handle the home   #

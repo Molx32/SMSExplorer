@@ -209,9 +209,9 @@ def targets_update_investigation():
 # ----------------------------------------------------------------- #
 # -                    STATISTICS ENDPOINT                        - #
 # ----------------------------------------------------------------- #
-@app.route("/statistics_raw", methods = ['GET'])
-def statistics_raw():
-    # Chart - sms_get_count_by_hour
+@app.route("/statistics_telemetry", methods = ['GET'])
+def statistics_telemetry():
+    # GET RAW DATA
     sms_get_count_by_hour = DatabaseInterface.sms_get_count_by_hour()
     sms_get_count_by_hour_labels = [str(row[0]) for row in sms_get_count_by_hour]
     sms_get_count_by_hour_values = [str(row[1]) for row in sms_get_count_by_hour]
@@ -224,14 +224,32 @@ def statistics_raw():
     sms_get_top_ten_countries_labels = [str(row[0]) for row in sms_get_top_ten_countries]
     sms_get_top_ten_countries_values = [str(row[1]) for row in sms_get_top_ten_countries]
 
+    # GET SANITIZED DATA
+    san_sms_get_count_by_hour = DatabaseInterface.sms_get_count_by_hour(sanitized=True)
+    san_sms_get_count_by_hour_labels = [str(row[0]) for row in san_sms_get_count_by_hour]
+    san_sms_get_count_by_hour_values = [str(row[1]) for row in san_sms_get_count_by_hour]
 
-    return render_template('statistics_raw.html',
+    san_sms_get_top_ten_domains = DatabaseInterface.sms_get_top_ten_domains(sanitized=True)
+    san_sms_get_top_ten_domains_labels = [str(row[0]) for row in san_sms_get_top_ten_domains]
+    san_sms_get_top_ten_domains_values = [str(row[1]) for row in san_sms_get_top_ten_domains]
+
+    san_sms_get_top_ten_countries = DatabaseInterface.sms_get_top_ten_countries(sanitized=True)
+    san_sms_get_top_ten_countries_labels = [str(row[0]) for row in san_sms_get_top_ten_countries]
+    san_sms_get_top_ten_countries_values = [str(row[1]) for row in san_sms_get_top_ten_countries]
+
+
+    return render_template('statistics_telemetry.html',
         sms_get_count_by_hour_values=sms_get_count_by_hour_values, sms_get_count_by_hour_labels=sms_get_count_by_hour_labels,
         sms_get_top_ten_domains_labels=sms_get_top_ten_domains_labels, sms_get_top_ten_domains_values=sms_get_top_ten_domains_values,
-        sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values)
+        sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values,
 
-@app.route("/statistics_san", methods = ['GET'])
-def statistics_san():
+        san_sms_get_count_by_hour_values=san_sms_get_count_by_hour_values, san_sms_get_count_by_hour_labels=san_sms_get_count_by_hour_labels,
+        san_sms_get_top_ten_domains_labels=san_sms_get_top_ten_domains_labels, san_sms_get_top_ten_domains_values=san_sms_get_top_ten_domains_values,
+        san_sms_get_top_ten_countries_labels=san_sms_get_top_ten_countries_labels, san_sms_get_top_ten_countries_values=san_sms_get_top_ten_countries_values)
+
+@app.route("/statistics_data", methods = ['GET'])
+def statistics_data():
+    abort(404)
     sms_get_statistics_interesting = DatabaseInterface.sms_get_statistics_interesting()
     sms_get_statistics_interesting_labels = list(sms_get_statistics_interesting.keys())
     sms_get_statistics_interesting_values = list(sms_get_statistics_interesting.values())
@@ -244,7 +262,7 @@ def statistics_san():
     sms_get_statistics_interesting_tags_no_labels = list(sms_get_statistics_interesting_tags_no.keys())
     sms_get_statistics_interesting_tags_no_values = list(sms_get_statistics_interesting_tags_no.values())
 
-    return render_template('statistics_san.html', 
+    return render_template('statistics_data.html', 
         sms_get_statistics_interesting_labels=sms_get_statistics_interesting_labels, sms_get_statistics_interesting_values=sms_get_statistics_interesting_values,
         sms_get_statistics_interesting_tags_yes_labels=sms_get_statistics_interesting_tags_yes_labels, sms_get_statistics_interesting_tags_yes_values=sms_get_statistics_interesting_tags_yes_values,
         sms_get_statistics_interesting_tags_no_labels=sms_get_statistics_interesting_tags_no_labels, sms_get_statistics_interesting_tags_no_values=sms_get_statistics_interesting_tags_no_values)
