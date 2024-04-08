@@ -249,23 +249,23 @@ def statistics_telemetry():
 
 @app.route("/statistics_data", methods = ['GET'])
 def statistics_data():
-    abort(404)
-    sms_get_statistics_interesting = DatabaseInterface.sms_get_statistics_interesting()
-    sms_get_statistics_interesting_labels = list(sms_get_statistics_interesting.keys())
-    sms_get_statistics_interesting_values = list(sms_get_statistics_interesting.values())
+    # GET SANITIZED DATA
+    data_sms_get_count_by_hour = DatabaseInterface.data_get_count_by_hour(sanitized=True)
+    data_sms_get_count_by_hour_labels = [str(row[0]) for row in data_sms_get_count_by_hour]
+    data_sms_get_count_by_hour_values = [str(row[1]) for row in data_sms_get_count_by_hour]
 
-    sms_get_statistics_interesting_tags_yes = DatabaseInterface.sms_get_statistics_interesting_tags_yes()
-    sms_get_statistics_interesting_tags_yes_labels = list(sms_get_statistics_interesting_tags_yes.keys())
-    sms_get_statistics_interesting_tags_yes_values = list(sms_get_statistics_interesting_tags_yes.values())
+    data_sms_get_top_ten_domains = DatabaseInterface.data_get_top_ten_domains(sanitized=True)
+    data_sms_get_top_ten_domains_labels = [str(row[0]) for row in data_sms_get_top_ten_domains]
+    data_sms_get_top_ten_domains_values = [str(row[1]) for row in data_sms_get_top_ten_domains]
 
-    sms_get_statistics_interesting_tags_no = DatabaseInterface.sms_get_statistics_interesting_tags_no()
-    sms_get_statistics_interesting_tags_no_labels = list(sms_get_statistics_interesting_tags_no.keys())
-    sms_get_statistics_interesting_tags_no_values = list(sms_get_statistics_interesting_tags_no.values())
+    data_sms_get_top_ten_countries = DatabaseInterface.data_get_top_ten_countries(sanitized=True)
+    data_sms_get_top_ten_countries_labels = [str(row[0]) for row in data_sms_get_top_ten_countries]
+    data_sms_get_top_ten_countries_values = [str(row[1]) for row in data_sms_get_top_ten_countries]
 
     return render_template('statistics_data.html', 
-        sms_get_statistics_interesting_labels=sms_get_statistics_interesting_labels, sms_get_statistics_interesting_values=sms_get_statistics_interesting_values,
-        sms_get_statistics_interesting_tags_yes_labels=sms_get_statistics_interesting_tags_yes_labels, sms_get_statistics_interesting_tags_yes_values=sms_get_statistics_interesting_tags_yes_values,
-        sms_get_statistics_interesting_tags_no_labels=sms_get_statistics_interesting_tags_no_labels, sms_get_statistics_interesting_tags_no_values=sms_get_statistics_interesting_tags_no_values)
+        data_sms_get_count_by_hour_values=data_sms_get_count_by_hour_values, data_sms_get_count_by_hour_labels=data_sms_get_count_by_hour_labels,
+        data_sms_get_top_ten_domains_labels=data_sms_get_top_ten_domains_labels, data_sms_get_top_ten_domains_values=data_sms_get_top_ten_domains_values,
+        data_sms_get_top_ten_countries_labels=data_sms_get_top_ten_countries_labels, data_sms_get_top_ten_countries_values=data_sms_get_top_ten_countries_values)
 
 # ----------------------------------------------------------------- #
 # -                     SETTINGS ENDPOINT                         - #

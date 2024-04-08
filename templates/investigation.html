@@ -98,30 +98,26 @@
                     <div class="cell-is-interesting-div">
                         <div id="not_interesting_buttons" name="{{row[3]}}_not_interesting_buttons" {{hide_not_interesting}}>
                             {% for tag_not_interesting in tags_not_interesting %}
-                                {% set tag_active = "" %}
                                 {% if row[5] %}
-                                    {% for tag in row[5] %}
-                                        {% if tag == tag_not_interesting %}
-                                            {% set tag_active = "tag-active" %}
-                                        {% endif %}
-                                    {% endfor %}    
+                                    {% if tag_not_interesting in row[5].split(',') %}
+                                        <span class='databtnotinteresting tag-active' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                    {% else %}
+                                        <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                    {% endif %}
                                 {% endif %}
-                                <span class='databtnotinteresting {{tag_active}}' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
                             {% endfor %}
                         </div>
                     
 
                         <div id="interesting_buttons" name="{{row[3]}}_interesting_buttons" {{hide_interesting}}>
                             {% for tag_interesting in tags_interesting %}
-                                {% set tag_active = "" %}
                                 {% if row[5] %}
-                                    {% for tag in row[5] %}
-                                        {% if tag == tag_interesting %}
-                                            {% set tag_active = "tag-active" %}
-                                        {% endif %}
-                                    {% endfor %}    
+                                    {% if tag_interesting in row[5].split(',') %}
+                                        <span class='databtinteresting tag-active' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                    {% else %}
+                                        <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                    {% endif %}
                                 {% endif %}
-                                <span class='databtinteresting {{tag_active}}' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
                             {% endfor %}
                         </div>
                     </div>

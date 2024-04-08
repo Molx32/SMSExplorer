@@ -190,28 +190,35 @@ function investigationUpdateDisplayToggleButton(domain, value){
 			selector.style.width = no.clientWidth + "px";
 			selector.style.backgroundColor = "#2daab8";
 			selector.innerHTML = "NO";
-			document.getElementsByName(domain + "_not_interesting_buttons")[0].hidden = false;
-    		document.getElementsByName(domain + "_interesting_buttons")[0].hidden = true;
+			// Switch 'not_interesting' visible and 'interesting' invisible
+			elements = document.getElementsByName(domain + "_not_interesting_buttons")
+			for (j=0; j < elements.length; j++){elements[j].hidden=false}
+			elements = document.getElementsByName(domain + "_interesting_buttons")
+			for (j=0; j < elements.length; j++){elements[j].hidden=true}
 		}else if(value.toUpperCase() === "YES"){
 			selector.style.left = no.clientWidth + "px";
 			selector.style.width = yes.clientWidth + "px";
 			selector.innerHTML = "YES";
 			selector.style.backgroundColor = "#2daab8";
-			document.getElementsByName(domain + "_not_interesting_buttons")[0].hidden = true;
-    		document.getElementsByName(domain + "_interesting_buttons")[0].hidden = false;
+			// Switch 'not_interesting' visible and 'interesting' invisible
+			elements = document.getElementsByName(domain + "_not_interesting_buttons")
+			for (j=0; j < elements.length; j++){elements[j].hidden=true}
+			elements = document.getElementsByName(domain + "_interesting_buttons")
+			for (j=0; j < elements.length; j++){elements[j].hidden=false}
 		}
 	  }
 }
 
 function investigationUpdateDisplayTagsButton(domain, tag){
 	// Handle new settings
-	e 	= document.getElementsByName(domain + "_" + tag)[0]
-
-	// 
-	if (e.classList.contains("tag-active")) {
-		e.classList.remove("tag-active");
-	} else {
-		e.classList.add("tag-active")
+	elements = document.getElementsByName(domain + "_" + tag)
+	for (i=0; i < elements.length; i++){
+		e = elements[i];
+		if (e.classList.contains("tag-active")) {
+			e.classList.remove("tag-active");
+		} else {
+			e.classList.add("tag-active")
+		}
 	}
 }
 

@@ -192,6 +192,42 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
+    def data_get_count_by_hour(sanitized=False):
+        # Default query
+        select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM smss"
+        where   = " WHERE data_handled = True"
+        end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def data_get_top_ten_domains(sanitized=False):
+        # Default query
+        select  = "SELECT domain, COUNT(id) FROM SMSS"
+        where   = " WHERE domain != '' AND data_handled = True"
+        end     = " GROUP BY 1 ORDER BY 2 DESC;"
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+    
+    def data_get_top_ten_countries(sanitized=False):
+        # Default query
+        select  = "SELECT country, COUNT(id) FROM SMSS"
+        where   = " WHERE domain != '' AND data_handled = True"
+        end     = " GROUP BY 1 ORDER BY 2 DESC;"
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
 ################################### HOME ###################################
 # The following section is dedicated to SQL request that handle the home   #
 # page, event if it also includes statistics.                              #
@@ -361,15 +397,20 @@ class DatabaseInterface:
 
     def targets_update_investigation(domain, is_interesting, tags):
         # Check if target exists
+        print("targets_update_investigation domain " + str(domain))
+        print("targets_update_investigation is_interesting " + str(is_interesting))
+        print("targets_update_investigation tags " + str(tags))
         query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
         cursor = Database().connect()
         cursor.execute(query)
         results = cursor.fetchone()
         if not results:
             query   = """INSERT INTO TARGETS(DOMAIN, IS_LEGAL, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}', '{}'); """.format(domain, False, False, is_interesting, tags)
+            print("targets_update_investigation query " + str(query))
             cursor.execute(query)
         else:
             query = """UPDATE targets SET is_interesting = {}, is_interesting_desc = '{}'  WHERE domain = '{}'""".format(is_interesting, tags, domain)
+            print("targets_update_investigation query " + str(query))
             cursor.execute(query)
 
 ############################### SETTINGS ###################################

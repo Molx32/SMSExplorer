@@ -8,83 +8,153 @@
 <body>
     {% include '_menu.html' %}
     <div class="content">
-        <h1>Search SMS</h1>
-        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-            <canvas id="sms_get_statistics_interesting"></canvas>
+      <div class="content-inner">
+        <div class="container">
+          <!-- Top ten by domain -->
+          <div class="satistics-row">
+            <div class="graphs">
+                <div class="graph">
+                    <div class="about-header about-header-border">
+                        <div class="main_title">
+                            <h3>Received messages over time</h3>
+                        </div>
+                    </div>
+                    <div class="about-content">
+                        <div>
+                            <ul>
+                                <li>
+                                    <div class="about-row-1">
+                                        <div class="chart-container" style="position: relative; width:100%">
+                                            <canvas id="data_sms_get_count_by_hour"></canvas>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <!-- Top ten by domain -->
+          <div class="satistics-row">
+            <div class="graphs">
+                <div class="graph">
+                  <div class="about-header about-header-border">
+                    <div class="main_title">
+                      <h3>Top domain by message number</h3>
+                    </div>
+                  </div>
+                  <div class="about-content">
+                    <div>
+                        <ul>
+                            <li>
+                                <div class="about-row-1">
+                                  <div class="chart-container" style="position: relative; width:100%">
+                                    <canvas id="data_sms_get_top_ten_domains"></canvas>
+                                  </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Top ten by country -->
+          <div class="satistics-row">
+            <div class="graphs">
+              <div class="graph">
+                <div class="about-header about-header-border">
+                  <div class="main_title">
+                    <h3>Top country by message number</h3>
+                  </div>
+                </div>
+                <div class="about-content">
+                  <div>
+                      <ul>
+                          <li>
+                              <div class="about-row-1">
+                                <div class="chart-container" style="position: relative; width:100%">
+                                  <canvas id="data_sms_get_top_ten_countries"></canvas>
+                                </div>
+                              </div>
+                              
+                          </li>
+                      </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-          <canvas id="sms_get_statistics_interesting_tags_yes"></canvas>
       </div>
-      <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-        <canvas id="sms_get_statistics_interesting_tags_no"></canvas>
-    </div>
     </div>
 
     <script>
-      const ctx1 = document.getElementById('sms_get_statistics_interesting');
-      const ctx2 = document.getElementById('sms_get_statistics_interesting_tags_yes');
-      const ctx3 = document.getElementById('sms_get_statistics_interesting_tags_no');
+        const data_sms_get_count_by_hour     = document.getElementById('data_sms_get_count_by_hour');
+        const data_sms_get_top_ten_domains   = document.getElementById('data_sms_get_top_ten_domains');
+        const data_sms_get_top_ten_countries = document.getElementById('data_sms_get_top_ten_countries');
 
+        new Chart(data_sms_get_count_by_hour, {
+          type: 'bar',
+          data: {
+            labels: {{ data_sms_get_count_by_hour_labels | safe}},
+            datasets: [{
+              label: '# of SMS',
+              data: {{ data_sms_get_count_by_hour_values | safe}},
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
 
+        new Chart(data_sms_get_top_ten_domains, {
+          type: 'bar',
+          data: {
+            labels: {{ data_sms_get_top_ten_domains_labels | safe}},
+            datasets: [{
+              label: 'Top domains',
+              data: {{ data_sms_get_top_ten_domains_values | safe}},
+              borderWidth: 1
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
 
-      new Chart(ctx1, {
-        type: 'doughnut',
-        data: {
-          labels: {{ sms_get_statistics_interesting_labels | safe}},
-          datasets: [{
-            label: '# of Votes',
-            data: {{ sms_get_statistics_interesting_values | safe}},
-            borderWidth: 1
-          }]
-        },
-        backgroundColor: [
-          'rgb(255, 99, 132)',
-          'rgb(54, 162, 235)',
-          'rgb(255, 205, 86)',
-          'rgb(54, 162, 135)'
-        ],
-        hoverOffset: 4
-      });
-
-      new Chart(ctx2, {
-        type: 'doughnut',
-        data: {
-          labels: {{ sms_get_statistics_interesting_tags_yes_labels | safe}},
-          datasets: [{
-            label: '# of Votes',
-            data: {{ sms_get_statistics_interesting_tags_yes_values | safe}},
-            borderWidth: 1
-          }]
-        },
-        backgroundColor: [
-          'rgb(255, 99, 132)',
-          'rgb(54, 162, 235)',
-          'rgb(255, 205, 86)',
-          'rgb(54, 162, 135)'
-        ],
-        hoverOffset: 4
-      });
-
-      new Chart(ctx3, {
-        type: 'doughnut',
-        data: {
-          labels: {{ sms_get_statistics_interesting_tags_no_labels | safe}},
-          datasets: [{
-            label: '# of Votes',
-            data: {{ sms_get_statistics_interesting_tags_no_values | safe}},
-            borderWidth: 1
-          }]
-        },
-        backgroundColor: [
-          'rgb(255, 99, 132)',
-          'rgb(54, 162, 235)',
-          'rgb(255, 205, 86)',
-          'rgb(54, 162, 135)'
-        ],
-        hoverOffset: 4
-      });
-      
-    </script>
+        new Chart(data_sms_get_top_ten_countries, {
+          type: 'bar',
+          data: {
+            labels: {{ data_sms_get_top_ten_countries_labels | safe}},
+            datasets: [{
+              label: 'Top countries',
+              data: {{ data_sms_get_top_ten_countries_values | safe}},
+              borderWidth: 1
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      </script>
 
 </body>
 </html>

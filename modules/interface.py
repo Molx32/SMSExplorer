@@ -19,14 +19,18 @@ class DataInterface:
 
     def create_data_fetcher():
         while 1:
-            AirIndia()
-            Instagram()
-            Earnrwds()
-            # Ukrwds() -- Need to execute JS
-            Moj()
-            Superprof()
-            Konto()
-            SuitsMeCard()
+            try:
+                AirIndia()
+                Instagram()
+                Earnrwds()
+                # Ukrwds() -- Need to execute JS
+                Moj()
+                Superprof()
+                Konto()
+                SuitsMeCard()
+            except Exception as e:
+                print(e)
+                raise e
 
 class SecurityInterface:
     def controlerSmsSearch(input_search, input_data, input_interesting):
