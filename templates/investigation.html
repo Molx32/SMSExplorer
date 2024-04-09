@@ -104,6 +104,8 @@
                                     {% else %}
                                         <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
                                     {% endif %}
+                                {% else %}
+                                    <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -117,6 +119,8 @@
                                     {% else %}
                                         <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
                                     {% endif %}
+                                {% else %}
+                                    <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>
