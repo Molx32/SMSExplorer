@@ -409,10 +409,12 @@ function settingsSetMode(mode) {
 
 	if(mode.toUpperCase() === "AGRESSIVE"){
 		selector.style.left = 0;
+		selector.style.display = "block"
 		selector.style.width = agressive.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
 		selector.innerHTML = "AGRESSIVE";
 	}else if(mode.toUpperCase() === "PASSIVE"){
+		selector.style.display = "block"
 		selector.style.left = agressive.clientWidth + "px";
 		selector.style.width = passive.clientWidth + "px";
 		selector.innerHTML = "PASSIVE";
@@ -432,6 +434,12 @@ function settingsSendModeForm() {
 	};
 	req.open("POST", "/settings/update_mode?mode="+mode);
 	req.send();
+}
+
+function settingsFileUploaded(){
+	var name = document.getElementById('fileselector').files[0].name;
+	document.getElementById('filename').innerText = name;
+	document.getElementById('filename').hidden = false;
 }
 
 /* **************************************** */

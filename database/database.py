@@ -316,14 +316,14 @@ class DatabaseInterface:
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
         else:
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
-        group_by = "GROUP BY smss.domain LIMIT 500;"
+        group_by = "GROUP BY smss.domain LIMIT 200;"
 
         if unique == 'YES':
             select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
             query   = select + where + group_by
         else:
             select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + " LIMIT 500;"
+            query   = select + where + " LIMIT 200;"
 
         # Handle Search
         cursor = Database().connect()
@@ -358,7 +358,7 @@ class DatabaseInterface:
         if is_automated is not None:
             where = where + " AND is_automated = {}".format(is_automated)
         # LIMIT
-        limit = " LIMIT 500"
+        limit = " LIMIT 200"
 
         query = select + where + limit
         cursor = Database().connect()

@@ -23,8 +23,79 @@
                                         <li>
                                             <div class="about-row-1">
                                                 <div>
-                                                    <p>This project aims at</p>
+                                                    <p>SMS Explorer</b> aims at demonstrating the risk of temporary and public virtual phone numbers by analysing public SMSs and categorizing them (<i>c.f.</i> table below). For more information, take a look at the <a>detailed blog post</a>.
                                                 </div>
+                                                <table class="about-table" style="height: 25%; width: 100%; overflow: auto">
+                                                    <thead>
+                                                        <tr>
+                                                            <td>Is target interesting?</td>
+                                                            <td>Label</td>
+                                                            <td>Description</td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>✅</td>
+                                                            <td>DATA_INTERESTING_DESC_YES_PII</td>
+                                                            <td>This category refers to SMSs that contain Personal Identifiable Information (PII). This information may be visible either in the mesasge or by navigating to a URL.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>✅</td>
+                                                            <td>DATA_INTERESTING_DESC_YES_DISCOVERY</td>
+                                                            <td>This category refers to SMSs that contain sensitive information that may allow an attacker to gain information on a target.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>✅</td>
+                                                            <td>DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER</td>
+                                                            <td>This category refers to SMSs that may lead to account takeover.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>✅</td>
+                                                            <td>DATA_INTERESTING_DESC_YES_ACCOUNT_PASSWORD_RESET</td>
+                                                            <td>
+                                                                This category refers to SMSs that may lead to account takeover, using password reset URLs only.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>❌</td>
+                                                            <td>DATA_INTERESTING_DESC_NO_SCAM</td>
+                                                            <td>
+                                                                This category refers to SMSs that try to impersonate legitimate SMS from official enterprises, or SMS that contains promotions for gambling for instance.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>❌</td>
+                                                            <td>DATA_INTERESTING_DESC_NO_AD</td>
+                                                            <td>
+                                                                This category refers to SMSs that simply contain ads.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>❌</td>
+                                                            <td>DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY</td>
+                                                            <td>
+                                                                This category refers to SMSs that would be exploitable if the message wasn't cropped.
+                                                                An example of that can be found <a>here</a>.
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>❌</td>
+                                                            <td>DATA_INTERESTING_DESC_NO_OTHER</td>
+                                                            <td>
+                                                                This category refers to other SMSs that are not interesting <i>e.g.</i> a link to download an application.
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </li>
                                     </ul>
@@ -48,8 +119,7 @@
                                         <li>
                                             <div class="about-row-1">
                                                 <div>
-                                                    <p>When running aggressive mode, <b>SMS Explorer</b> will try to fetch data from various sources. In some cases, this may be illegal. For this reason, the default behavior of SMS Explorer is to run passive mode.</p>
-                                                    <p>The following table shows the list of all known data sources, their development state, and whether they're legal or not.</p>
+                                                    <p><b>SMS Explorer</b> is based on the following sources to watch public SMSs.</p>
                                                 </div>
                                                 <table class="about-table" style="height: 25%; width: 100%; overflow: auto">
                                                     <thead>
@@ -90,8 +160,7 @@
                                         <li>
                                             <div class="about-row-1">
                                                 <div>
-                                                    <p>When running aggressive mode, <b>SMS Explorer</b> will try to fetch data from various sources. In some cases, this may be illegal. For this reason, the default behavior of SMS Explorer is to run passive mode.</p>
-                                                    <p>The following table shows the list of all known data sources, their development state, and whether they're legal or not.</p>
+                                                    <p><b>SMS Explorer</b> can run in passive mode or aggressive mode. Passive mode does not collect data, whereas aggressive mode tries to navigate to URLs identified in SMSs, and fetch data hidding behind them.<p>
                                                 </div>
                                                 <table class="about-table" style="height: 25%; width: 100%; overflow: auto">
                                                     <thead>

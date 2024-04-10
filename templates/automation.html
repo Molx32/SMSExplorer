@@ -54,24 +54,6 @@
                     </th>
                 </tr>
         </table>
-        <!-- <table class="styled-table" style="height: 25%; width: 100%; overflow: auto">
-            <thead>
-                <tr>
-                    <th>
-                    <div class="search-bar">
-                        <input id="input_search_targets" type="text" name="form_input_search" placeholder="Search..." value="" class="form_input_search"/>
-                        <button id="input_submit" type="submit" value="Submit" onclick="targetsSendSearchForm()" class="form_input_submit">
-                            <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="#666666" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
-                            </svg>
-                        </button>   
-                    </div>
-                    <form id="form_search_targets">
-                        <input hidden id="form_input_search" type="text" name="search" value=""/>
-                        <button hidden id="form_input_submit" type="submit" value="Submit"></button>
-                    </form>
-                    </th>
-                </tr>
-        </table> -->
         <table id="data_table" class="styled-table" style="height: 25%; width: 100%; overflow: auto">
             <thead>
                 <tr onclick="window.location='#';">
@@ -87,7 +69,12 @@
             {% for row in data %}
                 <tr>
                     <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
+                    <td>
+                        <button class='icon-automation' onclick="window.open('/search?search={{row[1]}}', '_blank').focus();">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m17.545 15.467l-3.779-3.779a6.15 6.15 0 0 0 .898-3.21c0-3.417-2.961-6.377-6.378-6.377A6.185 6.185 0 0 0 2.1 8.287c0 3.416 2.961 6.377 6.377 6.377a6.15 6.15 0 0 0 3.115-.844l3.799 3.801a.953.953 0 0 0 1.346 0l.943-.943c.371-.371.236-.84-.135-1.211M4.004 8.287a4.282 4.282 0 0 1 4.282-4.283c2.366 0 4.474 2.107 4.474 4.474a4.284 4.284 0 0 1-4.283 4.283c-2.366-.001-4.473-2.109-4.473-4.474"/></svg>
+                        </button>
+                        {{ row[1] }}
+                    </td>
                     <td>
                         <div class="switch_3_ways">
                             <div id="automation_toggle_is_legal_no" class="switch no" name="{{row[1]}}_legal_no" onclick="automationUpdateDisplayLegalButton('{{row[1]}}', 'no')">No</div>
