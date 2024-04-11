@@ -8,9 +8,9 @@
 if (location.pathname.includes('search')) {
 	smsSearchDisplaySearchBar();
 }
-// INVESTIGATION PAGES
-if (location.pathname.includes('investigation')) {
-	investigationDisplaySearchBar();
+// CATEGORIZE PAGES
+if (location.pathname.includes('categorize')) {
+	categorizeDisplaySearchBar();
 }
 // AUTOMATION PAGE
 if (location.pathname.includes('automation')) {
@@ -112,42 +112,22 @@ function smsSearchSendSearchForm() {
 }
 
 /* ***************************************** */
-/*               INVESTIGATION               */
+/*               categorize               */
 /* ***************************************** */
-function investigationDisplaySearchBar(){
+function categorizeDisplaySearchBar(){
 	// Set search input
 	search = findGetParameter('search');
-	unique = findGetParameter('unique');
 	unqualified = findGetParameter('unqualified');
 	
-	document.getElementById("investigation_search_button").value = search
-	investigationDisplayToggleButton(unique);
-	investigationDisplayUnqualifiedButton(unqualified);
+	document.getElementById("categorize_search_button").value = search
+	categorizeDisplayUnqualifiedButton(unqualified);
 }
 
-function investigationDisplayToggleButton(unique){
+function categorizeDisplayUnqualifiedButton(unqualified){
 	// Visual update of the toggle button
-	var yes 		= document.getElementById("investigation_toggle_unique_yes");
-	var no 			= document.getElementById("investigation_toggle_unique_no");
-	var selector 	= document.getElementById("investigation_toggle_unique_selector");
-	if(unique.toUpperCase() === "NO"  || unique.toUpperCase() === ""){
-		selector.style.left = 0;
-		selector.style.width = no.clientWidth + "px";
-		selector.style.backgroundColor = "#2daab8";
-		selector.innerHTML = "NO";
-	}else if(unique.toUpperCase() === "YES"){
-		selector.style.left = no.clientWidth + "px";
-		selector.style.width = yes.clientWidth + "px";
-		selector.innerHTML = "YES";
-		selector.style.backgroundColor = "#2daab8";
-	}
-}
-
-function investigationDisplayUnqualifiedButton(unqualified){
-	// Visual update of the toggle button
-	var yes 		= document.getElementById("investigation_toggle_unqualified_yes");
-	var no 			= document.getElementById("investigation_toggle_unqualified_no");
-	var selector 	= document.getElementById("investigation_toggle_unqualified_selector");
+	var yes 		= document.getElementById("categorize_toggle_unqualified_yes");
+	var no 			= document.getElementById("categorize_toggle_unqualified_no");
+	var selector 	= document.getElementById("categorize_toggle_unqualified_selector");
 	if(unqualified.toUpperCase() === "NO"  || unqualified.toUpperCase() === ""){
 		selector.style.left = 0;
 		selector.style.width = no.clientWidth + "px";
@@ -161,21 +141,19 @@ function investigationDisplayUnqualifiedButton(unqualified){
 	}
 }
 
-function investigationSendSearchForm() {
+function categorizeSendSearchForm() {
 	// Retrieve values from buttons
-	search	= document.getElementById('investigation_search_button').value;
-	unique	= document.getElementById('investigation_toggle_unique_selector').innerText;
-	unqualified	= document.getElementById('investigation_toggle_unqualified_selector').innerText;
+	search	= document.getElementById('categorize_search_button').value;
+	unqualified	= document.getElementById('categorize_toggle_unqualified_selector').innerText;
 	// Update form
-	document.getElementById('investigation_form_search').value = search;
-	document.getElementById('investigation_form_toggle_unique').value = unique;
-	document.getElementById('investigation_form_toggle_unqualified').value = unqualified;
+	document.getElementById('categorize_form_search').value = search;
+	document.getElementById('categorize_form_toggle_unqualified').value = unqualified;
 	// Send form
-	form = document.getElementById('investigation_search_form');
+	form = document.getElementById('categorize_search_form');
 	form.submit();
 }
 
-function investigationUpdateDisplayToggleButton(domain, value){
+function categorizeUpdateDisplayToggleButton(domain, value){
 	// Handle new settings
 	var yess 		= document.getElementsByName(domain + "_no");
 	var nos 			= document.getElementsByName(domain + "_yes");
@@ -209,7 +187,7 @@ function investigationUpdateDisplayToggleButton(domain, value){
 	  }
 }
 
-function investigationUpdateDisplayTagsButton(domain, tag){
+function categorizeUpdateDisplayTagsButton(domain, tag){
 	// Handle new settings
 	elements = document.getElementsByName(domain + "_" + tag)
 	for (i=0; i < elements.length; i++){
@@ -222,7 +200,7 @@ function investigationUpdateDisplayTagsButton(domain, tag){
 	}
 }
 
-function investigationUpdateSendInterestingForm(domain) {
+function categorizeUpdateSendInterestingForm(domain) {
 	// Retrieve is_interesting
 	var is_interesting 	= document.getElementsByName(domain + "_selector")[0].innerHTML;
 	// Retrieve not interesting tags
@@ -254,7 +232,7 @@ function investigationUpdateSendInterestingForm(domain) {
 			alert("Updated");
 		}
 	};
-	xhttp.open("POST", "/investigation/target/update?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
+	xhttp.open("POST", "/categorize/target/update?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
 	xhttp.send();
 }
 

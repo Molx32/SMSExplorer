@@ -514,10 +514,10 @@ span.close {
   color: rgb(0,0,0);
 }
 
-/**************************************************************************/
-/***                         INVESTIGATION                              ***/
-/**************************************************************************/
-.icon-investigation, .icon-automation {
+/*************************************************************************/
+/***                           CATEGORIZE                              ***/
+/*************************************************************************/
+.icon-categorize, .icon-automation {
   background: none;
   color: inherit;
   border: none;
@@ -998,6 +998,13 @@ justify-content: space-between;
 .about-table tbody tr.active-row {
   font-weight: bold;
   color: #2e4765;
+}
+
+.table-search {
+  display: flex;
+  flex-direction: row;
+  /* align-content: center; */
+  align-items: center;
 }
 
 /* *************************************** */

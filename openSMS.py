@@ -164,45 +164,43 @@ def targets_update_automation():
 # ---------------------------------------------------------------- #
 # -                       INVESTIGATION                          - #
 # ---------------------------------------------------------------- #
-@app.route("/investigation", methods = ['GET'])
-def investigation():
+@app.route("/categorize", methods = ['GET'])
+def categorize():
     # GET INPUTS
     input_search        = request.args.get('search')
-    input_unique        = request.args.get('unique')
     input_unqualified   = request.args.get('unqualified')
 
     # SECURITY CHECKS
-    if not SecurityInterface.controlerInvestigationSearch(input_search, input_unique, input_unqualified):
+    if not SecurityInterface.controlerCategorizeSearch(input_search, input_unqualified):
         abort(403)
     search      = SecurityInterface.controlerReassignString(input_search)
-    unique      = SecurityInterface.controlerReassignBoolean(input_unique)
     unqualified = SecurityInterface.controlerReassignBoolean(input_unqualified)
 
     tags_not_interesting    = Config.LIST_METADATA_INTERESTING_NO
     tags_interesting        = Config.LIST_METADATA_INTERESTING_YES
 
     # Get SMSs
-    data    = DatabaseInterface.sms_get_targets(input_search, input_unique, input_unqualified)
+    data    = DatabaseInterface.sms_get_targets(input_search, input_unqualified)
     count   = len(data)
 
-    return render_template('investigation.html', data=data, count=count,
+    return render_template('categorize.html', data=data, count=count,
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
-@app.route("/investigation/target/update", methods = ['POST'])
-def targets_update_investigation():
+@app.route("/categorize/target/update", methods = ['POST'])
+def targets_update_categorize():
     # Get params
     input_is_interesting  = request.args.get('is_interesting')
     input_domain          = request.args.get('domain')
     input_tags            = request.args.get('tags')
 
-    if not SecurityInterface.controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
+    if not SecurityInterface.controlerCategorizeUpdate(input_is_interesting, input_domain, input_tags):
         abort(403)
 
     is_interesting  = SecurityInterface.controlerReassignBoolean(input_is_interesting)
     # tags            = SecurityInterface.controlerReassignTags(input_tags)
     # domain          = SecurityInterface.controlerReassignTags(input_domain)
 
-    DatabaseInterface.targets_update_investigation(input_domain, is_interesting, input_tags)
+    DatabaseInterface.targets_update_categorize(input_domain, is_interesting, input_tags)
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 

@@ -6,7 +6,7 @@ class Security:
     def __init__(self):
         self.ALLOWED_CHARS_FREE_SEARCH = ':/.-_' + string.ascii_letters + string.digits
         self.ALLOWED_CHARS_TAGS = ',_' + string.ascii_uppercase
-        self.ALLOWED_CHARS_DOMAIN = '.-_' + string.ascii_letters + string.digits
+        self.ALLOWED_CHARS_DOMAIN = '.-_:' + string.ascii_letters + string.digits
     
     def is_empty_or_not_set(self, input):
         if input is None:
@@ -84,9 +84,9 @@ class Security:
 
 
     # ---------------------------------------------------------------- #
-    # -                       INVESTIGATION                          - #
+    # -                         CATEGORIZE                           - #
     # ---------------------------------------------------------------- #
-    def filter_investigation_search_search(self, input_search):
+    def filter_categorize_search_search(self, input_search):
         if input_search is None:
             return True
 
@@ -99,19 +99,7 @@ class Security:
 
         return True
 
-    def filter_investigation_search_unique(self, input_unique):
-        if input_unique is None:
-            return True
-        
-        if input_unique == '':
-            return True
-
-        if input_unique not in ['YES','NO']:
-            return False
-
-        return True
-
-    def filter_investigation_search_unqualified(self, input_unqualified):
+    def filter_categorize_search_unqualified(self, input_unqualified):
         if input_unqualified is None:
             return True
 
@@ -123,15 +111,15 @@ class Security:
 
         return True
 
-    def filter_investigation_update_is_interesting(self, input_is_interesting):
+    def filter_categorize_update_is_interesting(self, input_is_interesting):
         if input_is_interesting not in ['YES','NO']:
             return False
         return True
 
-    def filter_investigation_update_domain(self, input_domain):
+    def filter_categorize_update_domain(self, input_domain):
         return self.is_domain_safe(input_domain)
 
-    def filter_investigation_update_tags(self, input_is_interesting, input_tags):
+    def filter_categorize_update_tags(self, input_is_interesting, input_tags):
         if input_tags == '':
             return True
 

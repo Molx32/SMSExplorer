@@ -11,7 +11,7 @@
             <tr>
                 <th>
                     <div class="search-bar">
-                        <input id="investigation_search_button" type="text" placeholder="Search..." value="" class="form_input_search"/>
+                        <input id="categorize_search_button" type="text" placeholder="Search..." value="" class="form_input_search"/>
                         <button type="submit" value="Submit" class="form_input_submit">
                             <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                                 <path fill="#666666" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
@@ -20,31 +20,22 @@
                     </div>
                 </th>
                 <th>
-                    <div class="switch_parent">
-                        <span class="filter-label">Unique?</span>
-                        <div class="switch_3_ways">
-                            <div id="investigation_toggle_unique_no" class="switch no" onclick="investigationDisplayToggleButton('no')">NO</div>
-                            <div id="investigation_toggle_unique_yes" class="switch yes" onclick="investigationDisplayToggleButton('yes')">YES</div>
-                            <div id="investigation_toggle_unique_selector" class="selector"></div>
-                        </div>
-                    </div>
                 </th>
                 <th>
                     <div class="switch_parent">
                         <span class="filter-label">Unqualified?</span>
                         <div class="switch_3_ways">
-                            <div id="investigation_toggle_unqualified_no" class="switch no" onclick="investigationDisplayUnqualifiedButton('no')">NO</div>
-                            <div id="investigation_toggle_unqualified_yes" class="switch yes" onclick="investigationDisplayUnqualifiedButton('yes')">YES</div>
-                            <div id="investigation_toggle_unqualified_selector" class="selector"></div>
+                            <div id="categorize_toggle_unqualified_no" class="switch no" onclick="categorizeDisplayUnqualifiedButton('no')">NO</div>
+                            <div id="categorize_toggle_unqualified_yes" class="switch yes" onclick="categorizeDisplayUnqualifiedButton('yes')">YES</div>
+                            <div id="categorize_toggle_unqualified_selector" class="selector"></div>
                         </div>
                     </div>
                 </th>
                 <th>
-                    <form id="investigation_search_form">
-                        <input hidden id="investigation_form_search" type="text" name="search" value=""/>
-                        <input hidden id="investigation_form_toggle_unique" type="text" name="unique" value=""/>
-                        <input hidden id="investigation_form_toggle_unqualified" type="text" name="unqualified" value=""/>
-                        <button type="button" id="form_input_submit" value="Search" onclick="investigationSendSearchForm()" class="form_button_search">Search</button>
+                    <form id="categorize_search_form">
+                        <input hidden id="categorize_form_search" type="text" name="search" value=""/>
+                        <input hidden id="categorize_form_toggle_unqualified" type="text" name="unqualified" value=""/>
+                        <button type="button" id="form_input_submit" value="Search" onclick="categorizeSendSearchForm()" class="form_button_search">Search</button>
                     </form>
                 </th>
                 <th>
@@ -71,20 +62,22 @@
                 <td>{{ row[1] }}</td>
                 <td>{{ row[2] | decode}}</td>
                 <td>
-                    <button class='icon-automation' onclick="window.open('/search?search={{row[1]}}', '_blank').focus();">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m17.545 15.467l-3.779-3.779a6.15 6.15 0 0 0 .898-3.21c0-3.417-2.961-6.377-6.378-6.377A6.185 6.185 0 0 0 2.1 8.287c0 3.416 2.961 6.377 6.377 6.377a6.15 6.15 0 0 0 3.115-.844l3.799 3.801a.953.953 0 0 0 1.346 0l.943-.943c.371-.371.236-.84-.135-1.211M4.004 8.287a4.282 4.282 0 0 1 4.282-4.283c2.366 0 4.474 2.107 4.474 4.474a4.284 4.284 0 0 1-4.283 4.283c-2.366-.001-4.473-2.109-4.473-4.474"/></svg>
-                    </button>
-                    {{ row[3] | decode}}
+                    <div class="table-search">
+                        <button class='icon-automation' onclick="window.open('/search?search={{row[3]}}', '_blank').focus();">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m17.545 15.467l-3.779-3.779a6.15 6.15 0 0 0 .898-3.21c0-3.417-2.961-6.377-6.378-6.377A6.185 6.185 0 0 0 2.1 8.287c0 3.416 2.961 6.377 6.377 6.377a6.15 6.15 0 0 0 3.115-.844l3.799 3.801a.953.953 0 0 0 1.346 0l.943-.943c.371-.371.236-.84-.135-1.211M4.004 8.287a4.282 4.282 0 0 1 4.282-4.283c2.366 0 4.474 2.107 4.474 4.474a4.284 4.284 0 0 1-4.283 4.283c-2.366-.001-4.473-2.109-4.473-4.474"/></svg>
+                        </button>
+                        {{ row[3] | decode}}
+                    </div>
                 </td>
                 <td>
                     <div class="switch_3_ways">
-                        <div id="investigation_toggle_is_interesting_no" class="switch no" name="{{row[3]}}_no" onclick="investigationUpdateDisplayToggleButton('{{row[3]}}', 'no')">No</div>
-                        <div id="investigation_toggle_is_interesting_yes" class="switch yes" name="{{row[3]}}_yes" onclick="investigationUpdateDisplayToggleButton('{{row[3]}}', 'yes')">Yes</div>
-                        <div id="investigation_toggle_is_interesting_selector" class="selector" name="{{row[3]}}_selector"></div>
+                        <div id="categorize_toggle_is_interesting_no" class="switch no" name="{{row[3]}}_no" onclick="categorizeUpdateDisplayToggleButton('{{row[3]}}', 'no')">No</div>
+                        <div id="categorize_toggle_is_interesting_yes" class="switch yes" name="{{row[3]}}_yes" onclick="categorizeUpdateDisplayToggleButton('{{row[3]}}', 'yes')">Yes</div>
+                        <div id="categorize_toggle_is_interesting_selector" class="selector" name="{{row[3]}}_selector"></div>
                         {%- if row[4] == True -%}
-                            <script defer>setTimeout(() => {  investigationUpdateDisplayToggleButton('{{row[3]}}','yes') }, 1000);</script>
+                            <script defer>setTimeout(() => {  categorizeUpdateDisplayToggleButton('{{row[3]}}','yes') }, 1000);</script>
                         {%- elif row[4] == False -%}
-                            <script defer>setTimeout(() => {  investigationUpdateDisplayToggleButton('{{row[3]}}','no') }, 1000);</script>
+                            <script defer>setTimeout(() => {  categorizeUpdateDisplayToggleButton('{{row[3]}}','no') }, 1000);</script>
                         {% endif %}
                     </div>
                     
@@ -105,12 +98,12 @@
                             {% for tag_not_interesting in tags_not_interesting %}
                                 {% if row[5] %}
                                     {% if tag_not_interesting in row[5].split(',') %}
-                                        <span class='databtnotinteresting tag-active' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                        <span class='databtnotinteresting tag-active' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
                                     {% else %}
-                                        <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                        <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
                                     {% endif %}
                                 {% else %}
-                                    <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                    <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -120,26 +113,26 @@
                             {% for tag_interesting in tags_interesting %}
                                 {% if row[5] %}
                                     {% if tag_interesting in row[5].split(',') %}
-                                        <span class='databtinteresting tag-active' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                        <span class='databtinteresting tag-active' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
                                     {% else %}
-                                        <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                        <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
                                     {% endif %}
                                 {% else %}
-                                    <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="investigationUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                    <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>
                     </div>
                 </td>
                 <td>
-                    <button class='icon-investigation' onclick="investigationUpdateSendInterestingForm('{{row[3]}}')">
+                    <button class='icon-categorize' onclick="categorizeUpdateSendInterestingForm('{{row[3]}}')">
                         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
                         </svg>
                     </button>
                 </td>
                 <td>
-                    <button class='icon-investigation' onclick="window.open('{{row[1]}}', '_blank').focus();">
+                    <button class='icon-categorize' onclick="window.open('{{row[1]}}', '_blank').focus();">
                         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.213 9.787a3.391 3.391 0 0 0-4.795 0l-3.425 3.426a3.39 3.39 0 0 0 4.795 4.794l.321-.304m-.321-4.49a3.39 3.39 0 0 0 4.795 0l3.424-3.426a3.39 3.39 0 0 0-4.794-4.795l-1.028.961"/>
                         </svg>

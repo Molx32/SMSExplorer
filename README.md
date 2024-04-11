@@ -80,11 +80,6 @@ The project uses docker to instanciate the following containers :
 🛠️
 ❌
 
-- Automation
-    - Should add a column redirecting to a SMS search with predefined domain
-- Investigation
-    - Should add unique only + a column redirecting to a SMS search with predefined domain
-    - May be renamed "Qualification" or else
 - Everything
     - Add proper data handling (reassigned values e.g. 'YES' becomes True) - In progress
     - Add security for every endpoint - In progress

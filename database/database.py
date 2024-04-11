@@ -305,25 +305,21 @@ class DatabaseInterface:
 # The following section is dedicated to the investigation pane, where      #
 # targets can be modified.                                                 #
 ############################################################################
-    def sms_get_targets(search, unique, unqualified):
-        query = ""
+    def sms_get_targets(search, unqualified):
+        select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
         where = ""
+        group_by = "GROUP BY smss.domain LIMIT 200;"
 
         if not search:
             search = ''
 
+        # Handled 'where'
         if unqualified == 'YES':
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
         else:
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
-        group_by = "GROUP BY smss.domain LIMIT 200;"
 
-        if unique == 'YES':
-            select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + group_by
-        else:
-            select  = "SELECT targets.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
-            query   = select + where + " LIMIT 200;"
+        query   = select + where + group_by
 
         # Handle Search
         cursor = Database().connect()
@@ -395,22 +391,17 @@ class DatabaseInterface:
             query = """UPDATE targets SET is_legal = {}, is_automated = {}  WHERE domain = '{}'""".format(is_legal, is_automated, domain)
             cursor.execute(query)
 
-    def targets_update_investigation(domain, is_interesting, tags):
+    def targets_update_categorize(domain, is_interesting, tags):
         # Check if target exists
-        print("targets_update_investigation domain " + str(domain))
-        print("targets_update_investigation is_interesting " + str(is_interesting))
-        print("targets_update_investigation tags " + str(tags))
         query = """SELECT id FROM targets WHERE domain = '{}';""".format(domain)
         cursor = Database().connect()
         cursor.execute(query)
         results = cursor.fetchone()
         if not results:
             query   = """INSERT INTO TARGETS(DOMAIN, IS_LEGAL, IS_AUTOMATED, IS_INTERESTING, IS_INTERESTING_DESC) VALUES('{}', '{}', '{}', '{}', '{}'); """.format(domain, False, False, is_interesting, tags)
-            print("targets_update_investigation query " + str(query))
             cursor.execute(query)
         else:
             query = """UPDATE targets SET is_interesting = {}, is_interesting_desc = '{}'  WHERE domain = '{}'""".format(is_interesting, tags, domain)
-            print("targets_update_investigation query " + str(query))
             cursor.execute(query)
 
 ############################### SETTINGS ###################################

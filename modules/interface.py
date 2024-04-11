@@ -40,18 +40,17 @@ class SecurityInterface:
         c = sec.filter_sms_search_search(input_search)
         return all([a, b, c])
 
-    def controlerInvestigationSearch(input_search, input_unique, input_unqualified):
+    def controlerCategorizeSearch(input_search, input_unqualified):
         sec = Security()
-        a = sec.filter_investigation_search_search(input_search)
-        b = sec.filter_investigation_search_unique(input_unique)
-        c = sec.filter_investigation_search_unqualified(input_unqualified)
-        return all([a, b, c])
+        a = sec.filter_categorize_search_search(input_search)
+        b = sec.filter_categorize_search_unqualified(input_unqualified)
+        return all([a, b])
 
-    def controlerInvestigationUpdate(input_is_interesting, input_domain, input_tags):
+    def controlerCategorizeUpdate(input_is_interesting, input_domain, input_tags):
         sec = Security()
-        a = sec.filter_investigation_update_is_interesting(input_is_interesting)
-        b = sec.filter_investigation_update_domain(input_domain)
-        c = sec.filter_investigation_update_tags(input_is_interesting, input_tags)
+        a = sec.filter_categorize_update_is_interesting(input_is_interesting)
+        b = sec.filter_categorize_update_domain(input_domain)
+        c = sec.filter_categorize_update_tags(input_is_interesting, input_tags)
         return all([a, b, c])
 
     def controlerAutomationSearch(input_search, input_legal, input_automated):
