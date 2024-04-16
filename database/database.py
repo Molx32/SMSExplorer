@@ -204,6 +204,26 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
+    def data_get_url_count_by_hour(sanitized=False):
+        # Default query
+        select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM smss"
+        where   = " WHERE url <> '' and url IS NOT NULL"
+        end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def data_get_count_by_category(sanitized=False):
+        # Default query
+        query  = "select count(smss.id), targets.domain, is_interesting,is_interesting_desc from targets join smss on smss.domain = targets.domain GROUP BY targets.domain, is_interesting, is_interesting_desc"
+        # Execute
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
     def data_get_top_ten_domains(sanitized=False):
         # Default query
         select  = "SELECT domain, COUNT(id) FROM SMSS"

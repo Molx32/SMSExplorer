@@ -252,6 +252,28 @@ def statistics_data():
     data_sms_get_count_by_hour_labels = [str(row[0]) for row in data_sms_get_count_by_hour]
     data_sms_get_count_by_hour_values = [str(row[1]) for row in data_sms_get_count_by_hour]
 
+    data_sms_get_url_count_by_hour = DatabaseInterface.data_get_url_count_by_hour(sanitized=True)
+    data_sms_get_url_count_by_hour_labels = [str(row[0]) for row in data_sms_get_url_count_by_hour]
+    data_sms_get_url_count_by_hour_values = [str(row[1]) for row in data_sms_get_url_count_by_hour]
+
+    # Get URL per cat - Init
+    count_by_category = {}
+    for cat in Config.LIST_METADATA_INTERESTING_YES:
+        count_by_category[cat] = 0
+    for cat in Config.LIST_METADATA_INTERESTING_NO:
+        count_by_category[cat] = 0
+    # Get URL per cat - Init
+    data_get_count_by_category = DatabaseInterface.data_get_count_by_category(sanitized=True)
+    for target in data_get_count_by_category:
+        count               = target[0]
+        is_interesting      = target[2]
+        is_interesting_desc = target[3]
+        if is_interesting:
+            for cat in Config.LIST_METADATA_INTERESTING_YES + Config.LIST_METADATA_INTERESTING_NO:
+                count_by_category[cat] = count_by_category[cat] + count
+    count_by_category_labels = list(count_by_category.keys())
+    count_by_category_values = list(count_by_category.values())
+
     data_sms_get_top_ten_domains = DatabaseInterface.data_get_top_ten_domains(sanitized=True)
     data_sms_get_top_ten_domains_labels = [str(row[0]) for row in data_sms_get_top_ten_domains]
     data_sms_get_top_ten_domains_values = [str(row[1]) for row in data_sms_get_top_ten_domains]
@@ -262,6 +284,8 @@ def statistics_data():
 
     return render_template('statistics_data.html', 
         data_sms_get_count_by_hour_values=data_sms_get_count_by_hour_values, data_sms_get_count_by_hour_labels=data_sms_get_count_by_hour_labels,
+        data_sms_get_url_count_by_hour_labels=data_sms_get_url_count_by_hour_labels, data_sms_get_url_count_by_hour_values=data_sms_get_url_count_by_hour_values,
+        count_by_category_labels=count_by_category_labels, count_by_category_values=count_by_category_values,
         data_sms_get_top_ten_domains_labels=data_sms_get_top_ten_domains_labels, data_sms_get_top_ten_domains_values=data_sms_get_top_ten_domains_values,
         data_sms_get_top_ten_countries_labels=data_sms_get_top_ten_countries_labels, data_sms_get_top_ten_countries_values=data_sms_get_top_ten_countries_values)
 
