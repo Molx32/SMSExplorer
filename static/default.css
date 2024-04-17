@@ -418,6 +418,7 @@ span.close {
   font-weight: bold;
 }
 
+
 /* *********************************** */
 /* *          NOTIFICATIONS          * */
 /* *********************************** */
@@ -432,29 +433,39 @@ span.close {
   transition: 0.3s;
 }
 
-.notification {
+.navbar div .notification {
   padding: 20px;
-  display: none;
+  display: flex;
   background-color: rgb(45, 170, 184);
   color: white;
   transition: 0.3s;
+  position: fixed;
+  bottom: 0px;
+  width: 250px;
+  /* box-shadow: -3px 0px 50px -20px rgba(0, 0, 0, 0.5); */
+  border: 2px solid rgb(45, 170, 184);
+  left: -250px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-#notification1, #notification2, #notification3 {
-  display: none;
+.navbar div .notification p {
+  color:white;
 }
 
-#notification-close1, #notification-close2, #notification-close3 {
-  margin-left: 15px;
-  color: white;
-  font-weight: bold;
-  float: right;
-  font-size: 22px;
-  line-height: 20px;
-  cursor: pointer;
-  transition: 0.3s;
+.navbar div .notification-visible {
+  animation: movein 0.5s ease forwards, moveout 0.5s 3s ease forwards;
 }
 
+@keyframes movein {
+  from { left: -250px; }
+  to   { left: 0px; }
+}
+
+@keyframes moveout {
+  from { left: 0px; }
+  to   { left: -250px; }
+}
 
 
 /* ********************************** */

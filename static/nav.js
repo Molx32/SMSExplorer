@@ -111,6 +111,7 @@ function smsSearchSendSearchForm() {
 	form.submit();
 }
 
+
 /* ***************************************** */
 /*               categorize               */
 /* ***************************************** */
@@ -228,8 +229,7 @@ function categorizeUpdateSendInterestingForm(domain) {
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
-			// Typical action to be performed when the document is ready:
-			alert("Updated");
+			displayNotification("Updated", "Target changed")
 		}
 	};
 	xhttp.open("POST", "/categorize/target/update?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
@@ -368,13 +368,13 @@ function automationUpdateSendForm(domain){
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
-			// Typical action to be performed when the document is ready:
-			alert("Updated");
+			displayNotification("Switch mode", "Mode changed")
 		}
 	};
 	xhttp.open("POST", "/automation/target/update?domain=" + domain + "&is_legal=" + is_legal + "&is_automated=" + is_automated, true);
 	xhttp.send();
 }
+
 
 /* ************************************ */
 /*               SETTINGS               */
@@ -420,6 +420,7 @@ function settingsFileUploaded(){
 	document.getElementById('filename').hidden = false;
 }
 
+
 /* **************************************** */
 /*               DATA DISPLAY               */
 /* **************************************** */
@@ -464,42 +465,21 @@ function displayData(button_id){
 	update_form.send();
 }
 
+
 /* ***************************************** */
 /*               NOTIFICATIONS               */
 /* ***************************************** */
 function displayNotification(title, description){
-	content = '\n<strong>' + title + '</strong><br>' + description
-	notification1 = document.getElementById("notification1")
-	notification2 = document.getElementById("notification2")
-	notification3 = document.getElementById("notification3")
-
-	// Check where to place new notification
-	if (notification1.style.display==='none' || notification1.style.display==='')  {
-		html = '<span id="notification-close1" class="notification-close" onclick="this.parentElement.style.display=\'none\';">&times;</span>'
-		html = html + content
-		notification1.innerHTML = html
-		notification1.style.display = 'block'
-		setTimeout(function() { notification1.display = 'none' }, 10000);
-		return
-	} else if (notification2.style.display==='none' || notification2.style.display==='') {
-		html = '<span id="notification-close2" class="notification-close" onclick="this.parentElement.style.display=\'none\';">&times;</span>'
-		html = html + content
-		notification2.innerHTML = html
-		notification2.style.display = 'block'
-		setTimeout(function() { notification2.display = 'none' }, 10000);
-		return
-	} else if (notification3.style.display==='none' || notification3.style.display==='') {
-		html = '<span id="notification-close3" class="notification-close" onclick="this.parentElement.style.display=\'none\';">&times;</span>'
-		html = html + content
-		notification3.innerHTML = html
-		notification3.style.display = 'block'
-		setTimeout(function() { notification3.display = 'none' }, 10000);
-		return
-	}
-
-	// If there are to many notifications, close the first one
-	notification1.innerHTML = html
-	notification1.style.display = 'block'
-	setTimeout(function() { notification1.display = 'none' }, 10000);
-	return
+	setTimeout(function() {
+		notification1 = document.getElementById("notification1");
+		notification1_title = document.getElementById('notification1-title');
+		notification1_description = document.getElementById('notification1-description');
+		
+		// if(notification1.classList.contains('notification-visible')){
+		// 	notification1.classList.toggle('notification-visible');
+		// }
+		notification1.classList.toggle('notification-visible');
+		notification1_title.innerHTML = '<strong>' + title + '</strong><br>'
+		notification1_description.innerText = description
+	}, 1000);
 }

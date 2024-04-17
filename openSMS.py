@@ -92,6 +92,12 @@ def home():
     count_data      = DatabaseInterface.sms_count_all_data()[0]
     count_unknown   = DatabaseInterface.sms_count_unknown()[0]
 
+    targets_count_known         = DatabaseInterface.targets_count_known()[0]
+    targets_count_interesting   = DatabaseInterface.targets_count_interesting()[0]
+    targets_count_automated     = DatabaseInterface.targets_count_automated()[0]
+
+    top_domains     = DatabaseInterface.sms_activities_top_domains()
+
     # Activities
     activities_last_data = DatabaseInterface.sms_activities_last_data()
 
@@ -99,7 +105,9 @@ def home():
     return render_template('home.html',
         count_messages=count_messages, count_urls=count_urls,
         count_data=count_data, count_unknown=count_unknown,
-        activities_last_data=activities_last_data)
+        activities_last_data=activities_last_data,
+        targets_count_known=targets_count_known, targets_count_interesting=targets_count_interesting, targets_count_automated=targets_count_automated,
+        top_domains=top_domains)
 
 
 # ------------------------------------------------------------ #
@@ -268,8 +276,8 @@ def statistics_data():
         count               = target[0]
         is_interesting      = target[2]
         is_interesting_desc = target[3]
-        if is_interesting:
-            for cat in Config.LIST_METADATA_INTERESTING_YES + Config.LIST_METADATA_INTERESTING_NO:
+        for cat in Config.LIST_METADATA_INTERESTING_YES + Config.LIST_METADATA_INTERESTING_NO:
+            if cat in is_interesting_desc:
                 count_by_category[cat] = count_by_category[cat] + count
     count_by_category_labels = list(count_by_category.keys())
     count_by_category_values = list(count_by_category.values())

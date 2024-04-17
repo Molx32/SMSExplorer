@@ -59,6 +59,7 @@
                 <tr onclick="window.location='#';">
                     <th>Id</th>
                     <th>Domain</th>
+                    <th>#</th>
                     <th>Legal?</th>
                     <th>Automated?</th>
                     <th>Details</th>
@@ -78,13 +79,16 @@
                         </div>
                     </td>
                     <td>
+                        {{ row[2] }}
+                    </td>
+                    <td>
                         <div class="switch_3_ways">
                             <div id="automation_toggle_is_legal_no" class="switch no" name="{{row[1]}}_legal_no" onclick="automationUpdateDisplayLegalButton('{{row[1]}}', 'no')">No</div>
                             <div id="automation_toggle_is_legal_yes" class="switch yes" name="{{row[1]}}_legal_yes" onclick="automationUpdateDisplayLegalButton('{{row[1]}}', 'yes')">Yes</div>
                             <div id="automation_toggle_is_legal_selector" class="selector" name="{{row[1]}}_legal_selector"></div>
-                            {%- if row[2] == True -%}
+                            {%- if row[3] == True -%}
                                 <script defer>setTimeout(() => {  automationUpdateDisplayLegalButton('{{row[1]}}','yes') }, 1000);</script>
-                            {%- elif row[2] == False -%}
+                            {%- elif row[3] == False -%}
                                 <script defer>setTimeout(() => {  automationUpdateDisplayLegalButton('{{row[1]}}','no') }, 1000);</script>
                             {% endif %}
                         </div>
@@ -94,17 +98,17 @@
                             <div id="automation_toggle_is_automated_no" class="switch no" name="{{row[1]}}_automated_no" onclick="automationUpdateDisplayAutomatedButton('{{row[1]}}', 'no')">No</div>
                             <div id="automation_toggle_is_automated_yes" class="switch yes" name="{{row[1]}}_automated_yes" onclick="automationUpdateDisplayAutomatedButton('{{row[1]}}', 'yes')">Yes</div>
                             <div id="automation_toggle_is_automated_selector" class="selector" name="{{row[1]}}_automated_selector"></div>
-                            {%- if row[3] == True -%}
+                            {%- if row[4] == True -%}
                                 <script defer>setTimeout(() => {  automationUpdateDisplayAutomatedButton('{{row[1]}}','yes') }, 1000);</script>
-                            {%- elif row[3] == False -%}
+                            {%- elif row[4] == False -%}
                                 <script defer>setTimeout(() => {  automationUpdateDisplayAutomatedButton('{{row[1]}}','no') }, 1000);</script>
                             {% endif %}
                         </div>
                     </td>
                     <td>
-                        {% set tags = row[5].split(',') %}
+                        {% set tags = row[6].split(',') %}
                         {% for tag in tags %}
-                            {%- if row[4] == True -%}
+                            {%- if row[5] == True -%}
                             <span class='databtinteresting'>{{ tag }}</span>
                             {%- else -%}
                             <span class='databtnotinteresting'>{{ tag }}</span>

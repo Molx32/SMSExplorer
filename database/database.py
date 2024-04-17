@@ -228,7 +228,7 @@ class DatabaseInterface:
         # Default query
         select  = "SELECT domain, COUNT(id) FROM SMSS"
         where   = " WHERE domain != '' AND data_handled = True"
-        end     = " GROUP BY 1 ORDER BY 2 DESC;"
+        end     = " GROUP BY 1 ORDER BY 2 DESC LIMIT 10;"
 
         # Execute
         query   = select + where + end
@@ -272,9 +272,29 @@ class DatabaseInterface:
         cursor.execute("SELECT COUNT(id) FROM SMSS WHERE URL = '';")
         return cursor.fetchone()
 
+    def targets_count_known():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM TARGETS;")
+        return cursor.fetchone()
+
+    def targets_count_interesting():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM TARGETS WHERE is_interesting = True;")
+        return cursor.fetchone()
+
+    def targets_count_automated():
+        cursor = Database().connect()
+        cursor.execute("SELECT COUNT(id) FROM TARGETS WHERE is_automated = True;")
+        return cursor.fetchone()
+
     def sms_activities_last_data():
         cursor = Database().connect()
-        cursor.execute("SELECT id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' LIMIT 5;")
+        cursor.execute("SELECT id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' ORDER BY smss.receive_date DESC LIMIT 5;")
+        return cursor.fetchall()
+
+    def sms_activities_top_domains():
+        cursor = Database().connect()
+        cursor.execute("SELECT domain, COUNT(id) FROM SMSS WHERE domain != '' AND data_handled = True GROUP BY 1 ORDER BY 2 DESC LIMIT 5;")
         return cursor.fetchall()
 
     def sms_get_statistics_interesting():
@@ -364,7 +384,8 @@ class DatabaseInterface:
 ############################################################################
     def automation_get_targets(search, is_legal, is_automated):
         # SELECT
-        select = "SELECT id, domain, is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS"
+                   
+        select = "SELECT targets.id, targets.domain, count(smss.id), is_legal, is_automated, is_interesting, is_interesting_desc FROM TARGETS LEFT OUTER JOIN smss ON smss.domain = targets.domain"
         # WHERE
         where = " WHERE is_interesting = True"
         if search != '':
@@ -374,9 +395,11 @@ class DatabaseInterface:
         if is_automated is not None:
             where = where + " AND is_automated = {}".format(is_automated)
         # LIMIT
-        limit = " LIMIT 200"
+        group_by = " GROUP BY targets.id, smss.domain, is_legal, is_automated, is_interesting, is_interesting_desc"
+        order_by = " ORDER BY count(smss.id) desc"
+        limit = " LIMIT 200;"
 
-        query = select + where + limit
+        query = select + where + group_by + order_by + limit
         cursor = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
