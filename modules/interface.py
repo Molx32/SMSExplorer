@@ -28,6 +28,8 @@ class DataInterface:
                 Superprof()
                 Konto()
                 SuitsMeCard()
+                Booksy()
+                Lilly()
             except Exception as e:
                 print(e)
                 raise e
