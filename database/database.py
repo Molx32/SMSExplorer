@@ -346,9 +346,9 @@ class DatabaseInterface:
 # targets can be modified.                                                 #
 ############################################################################
     def sms_get_targets(search, unqualified):
-        select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
+        select  = "SELECT min(targets.id), min(smss.url), min(smss.msg), min(smss.domain), bool_or(targets.is_interesting), min(targets.is_interesting_desc), count(smss.domain) FROM smss LEFT OUTER JOIN targets ON smss.domain = targets.domain "
         where = ""
-        group_by = "GROUP BY smss.domain LIMIT 200;"
+        group_by = "GROUP BY smss.domain ORDER BY count(smss.domain) DESC LIMIT 200;"
 
         if not search:
             search = ''
@@ -389,7 +389,7 @@ class DatabaseInterface:
         # WHERE
         where = " WHERE is_interesting = True"
         if search != '':
-            where = where + " AND LOWER(domain) LIKE LOWER('%{}%')".format(search)
+            where = where + " AND LOWER(smss.domain) LIKE LOWER('%{}%')".format(search)
         if is_legal is not None:
             where = where + " AND is_legal = {}".format(is_legal)
         if is_automated is not None:

@@ -30,6 +30,7 @@ class DataInterface:
                 SuitsMeCard()
                 Booksy()
                 Lilly()
+                Rwdsuk()
             except Exception as e:
                 print(e)
                 raise e

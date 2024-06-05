@@ -47,9 +47,10 @@
         <thead>
             <tr onclick="window.location='#';">
                 <!-- smss.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc  -->
-                <th style="width: 20%;">URL</th>
+                <th style="width: 15%;">URL</th>
                 <th style="width: 40%;">SMS</th>
                 <th style="width: 10%;">Domain</th>
+                <th style="width: 5%;">#</th>
                 <th style="width: 10%;">Interesting</th>
                 <th style="width: 18%;">Interesting desc</th>
                 <th style="width: 1%;">Save</th>
@@ -69,6 +70,7 @@
                         {{ row[3] | decode}}
                     </div>
                 </td>
+                <td>{{ row[6] }}</td>
                 <td>
                     <div class="switch_3_ways">
                         <div id="categorize_toggle_is_interesting_no" class="switch no" name="{{row[3]}}_no" onclick="categorizeUpdateDisplayToggleButton('{{row[3]}}', 'no')">No</div>

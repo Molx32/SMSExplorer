@@ -368,7 +368,7 @@ function automationUpdateSendForm(domain){
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
-			displayNotification("Switch mode", "Mode changed")
+			displayNotification("Updated domain", domain)
 		}
 	};
 	xhttp.open("POST", "/automation/target/update?domain=" + domain + "&is_legal=" + is_legal + "&is_automated=" + is_automated, true);

@@ -113,6 +113,8 @@ class Instagram(DataModule):
         try:
             # Get SVG tag that contains 'Profile', then get its parent
             svgs = soup.find_all('svg', attrs={"aria-label" : "Profile", "class":"simple-nav__svgIcon"})
+            if not svgs:
+                svgs = soup.find_all('svg', attrs={"aria-label" : "Profil", "class":"simple-nav__svgIcon"})
             a = svg.find_parent('a')
             acc = a['href'].replace('/','')
             return {"data":acc}
@@ -128,6 +130,15 @@ class Ukrwds(DataModule):
     def retrieve_data(self, url, msg):
         return self._retrieve_data_redirect(url)
         # https://earnbigrwds.com/default.aspx?Flow=E5A922B4-A9F1-37AA-AD61-831BEB2F3512C71E33F6&subaff1=11725869122&subaff2=92372&subaff3=204413&subaff4=credits&email=jj8322289@gmail.com&phone=6467323660&reward=cash2xsummer&EntranceVID=mSmIngqL%7ClIIt-hPMAb7UA2&firstname=jack&lastname=john&dobday=5&dobmonth=3&dobyear=1999&gender=male&zippost=99141&state=WA&dom=1&affsecid=11725869122&subaff5=smax
+
+class Rwdsuk(DataModule):
+    def __init__(self):
+        name        = 'Rwdsuk'
+        base_url    = 'https://rwdsuk.com/'
+        super().__init__(name, base_url)
+    
+    def retrieve_data(self, url, msg):
+        return self._retrieve_data_redirect(url)
 
 class Earnrwds(DataModule):
     def __init__(self):
@@ -288,7 +299,7 @@ class Lilly(DataModule):
             json_data = json.dumps(data, ensure_ascii=False)
             return json_data
         else:
-            return {"Data":"None"} 
+            return None
         
 class NextBike(DataModule):
     def __init__(self):

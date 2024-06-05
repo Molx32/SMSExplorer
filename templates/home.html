@@ -150,7 +150,7 @@
                                     </div>
                                 </div>
                                 {% for domain in top_domains %}
-                                    {% set domain   = domain[0] %}
+                                    {% set name     = domain[0] %}
                                     {% set count    = domain[1] %}
                                     <div class="event-content">
                                         <div>
@@ -158,7 +158,7 @@
                                                 <li>
                                                     <div class="event-row-1"></div>
                                                     <div class="event-row-2">
-                                                        <div><p>{{ domain }}</p></div>
+                                                        <div><p>{{ name }}</p></div>
                                                         <div>
                                                             <h3>{{ count }}</h3>
                                                         </div>
