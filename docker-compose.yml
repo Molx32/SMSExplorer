@@ -55,7 +55,7 @@ services:
         build: .
         restart: on-failure
         ports:
-            - 443:9000
+            - 80:9000
         volumes:
             - exports:/etc/data/exports
             - imports:/etc/data/imports
