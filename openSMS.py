@@ -154,6 +154,9 @@ def automation():
 
 @app.route("/automation/target/update", methods = ['POST'])
 def targets_update_automation():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     # Get params
     input_domain        = request.args.get('domain')
     input_is_legal      = request.args.get('is_legal')
@@ -196,6 +199,9 @@ def categorize():
 
 @app.route("/categorize/target/update", methods = ['POST'])
 def targets_update_categorize():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     # Get params
     input_is_interesting  = request.args.get('is_interesting')
     input_domain          = request.args.get('domain')
@@ -307,6 +313,9 @@ def settings():
 
 @app.route("/settings/update_mode", methods = ['POST'])
 def settings_update_mode():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     # Wait for 15 seconds to ensure workers exist
     time.sleep(15)
 
@@ -317,10 +326,7 @@ def settings_update_mode():
         return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
     current_mode = DatabaseInterface.get_mode()
-    print(current_mode)
-    print(mode)
     if current_mode == mode:
-        print("Same value in database!")
         return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
     
 
@@ -341,36 +347,61 @@ def settings_update_mode():
 
 @app.route("/settings/export_smss", methods = ['GET'])
 def settings_export_smss():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     DatabaseInterface.export_smss()
     return send_file(Config.EXPORT_SMSS, as_attachment=True)
 
 @app.route("/settings/export_targets", methods = ['GET'])
 def settings_export_targets():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     DatabaseInterface.export_targets()
     return send_file(Config.EXPORT_TARGETS, as_attachment=True)
 
 @app.route("/settings/export_data", methods = ['GET'])
 def settings_export_data():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     DatabaseInterface.export_data()
     return send_file(Config.EXPORT_DATA, as_attachment=True)
 
 @app.route("/settings/export_config", methods = ['GET'])
 def settings_export_config():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     DatabaseInterface.export_config()
     return send_file(Config.EXPORT_CONFIG, as_attachment=True)
 
 @app.route("/settings/targets/upload", methods = ['POST'])
 def settings_upload_targets():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
     file_path = Config.FOLDER_UPLOAD + Config.FILENAME_IMPORT_TARGETS
     if request.method == 'POST':
         uploaded_file = request.files['file']
         if uploaded_file.filename != '':
             uploaded_file.save(file_path)
         
-        DatabaseInterface.targets_update(file_path)  
+        DatabaseInterface.targets_update(file_path)
 
         return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
+    return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
+
+@app.route("/settings/lock", methods = ['POST'])
+def settings_lock_app():
+    # Check if app is locked
+    if DatabaseInterface.getLock():
+        abort(403)
+    DatabaseInterface.setLock()
+    mode  = request.args.get('mode')
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
     return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
 

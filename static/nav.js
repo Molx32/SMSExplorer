@@ -420,6 +420,18 @@ function settingsFileUploaded(){
 	document.getElementById('filename').hidden = false;
 }
 
+function settingsSendLock(){
+	const req = new XMLHttpRequest();
+	req.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			// Typical action to be performed when the document is ready:
+			displayNotification("Lock", "Application locked")
+		}
+	};
+	req.open("POST", "/settings/lock");
+	req.send();
+}
+
 
 /* **************************************** */
 /*               DATA DISPLAY               */

@@ -507,6 +507,17 @@ class DatabaseInterface:
         query = """DELETE FROM SMSS;"""
         cursor.execute(query)
         print("Database cleaned!")
+    
+    def setLock():
+        query = "UPDATE config SET lock = 't'"
+        cursor = Database().connect()
+        cursor.execute(query)
+    
+    def getLock():
+        query = "SELECT lock FROM config"
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchone()[0]
 
 ############################### SETTINGS ###################################
 # Well, all options accessible using the settings page.                    #
