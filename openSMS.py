@@ -416,7 +416,6 @@ def audit_logs():
 
     # Get data
     audit_logs = DatabaseInterface.get_audit_logs(input_search, input_start, input_offset)
-    print(audit_logs)
     try:
         start   = input_start
         end     = input_start + input_offset
@@ -445,8 +444,6 @@ def data():
     if request.args.get('id'):
         sms_id = request.args.get('id')
         data = DatabaseInterface.sms_get_data_by_id(sms_id)[0]
-        print(data)
-        print(jsonify(data))
     # Get all SMSs
     else:
         data = {}

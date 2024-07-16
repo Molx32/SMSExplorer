@@ -92,21 +92,29 @@
                         </td>
                         <td>{{ row[10] }}</td>
                         <td>
-                            {% if row[11] is not none %}
-                                {% set tags = row[11].split(',') %}
-                                {% for tag in tags %}
-                                    {%- if row[9] == True -%}
-                                    <span class='databtinteresting'>{{ tag }}</span>
-                                    {%- else -%}
-                                    <span class='databtnotinteresting'>{{ tag }}</span>
-                                    {% endif %}
-                                    {% if not loop.last %}
-                                    <br>
-                                    {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                <span>{{ tag }}</span><br>
-                            {% endif %}
+                            <div class="cell-is-interesting-div">
+                                {% if row[11] is not none %}
+                                    {% set tags = row[11].split(',') %}
+                                    {% for tag in tags %}
+                                        {%- if row[9] == True -%}
+                                        <span class='databtinteresting tooltip'>
+                                            <img src="../static/label_{{ tag }}.png">
+                                            <span class="tooltiptext tooltip-left">{{ tag }}</span>
+                                        </span>
+                                        {%- else -%}
+                                        <span class='databtnotinteresting tooltip'>
+                                            <img src="../static/label_{{ tag }}.png">
+                                            <span class="tooltiptext tooltip-left">{{ tag }}</span>
+                                        </span>
+                                        {% endif %}
+                                        <!-- {% if not loop.last %}
+                                        <br>
+                                        {% endif %} -->
+                                    {% endfor %}
+                                {% else %}
+                                    <span>{{ tag }}</span><br>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}

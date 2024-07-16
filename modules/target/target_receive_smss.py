@@ -174,8 +174,8 @@ class Browser:
                 if self.class_sender in " ".join(div.get('class')):
                     sender = div.get_text().replace("Sender",'')
                 if self.class_msg in " ".join(div.get('class')):
-                    msg = div.get_text().replace("Message",'').replace('\n','')
-                    msg = msg.replace('***word', 'assword')
+                    msg = div.get_text().replace("Message",'')
+                    msg = sanitize_msg(msg)
                 if self.class_time in " ".join(div.get('class')):
                     time_t = div.get_text().replace("Time",'')
             except:
@@ -193,3 +193,9 @@ class Browser:
 
         return smss
     
+    def sanitize_msg(self, msg):
+        msg = msg.replace('\n',' ')
+        msg = msg.replace('***word', 'assword')
+        msg = msg.replace('iden***y', 'identity')
+        msg = msg.replace('do***ent', 'document')
+        return msg

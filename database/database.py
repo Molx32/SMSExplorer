@@ -95,7 +95,6 @@ class DatabaseInterface:
         order_by            = """ ORDER BY receive_date DESC """.format(search, search, excluded_domains)
         limit               = """ LIMIT 1000 """
         query = select + join + where + order_by + limit
-        print(query)
         cursor.execute(query)
         return cursor.fetchall()
     

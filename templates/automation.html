@@ -50,7 +50,7 @@
                         </form>
                     </th>
                     <th>
-                        <span class="filter-label">Filtered on {{ count }} targets</span>
+                        <span class="filter-label">Filtered on {{ count[0] }} targets</span>
                     </th>
                 </tr>
         </table>
@@ -109,12 +109,15 @@
                         {% set tags = row[6].split(',') %}
                         {% for tag in tags %}
                             {%- if row[5] == True -%}
-                            <span class='databtinteresting'>{{ tag }}</span>
+                            <span class='databtinteresting tooltip'>
+                                <img src="../static/label_{{ tag }}.png">
+                                <span class="tooltiptext tooltip-left">{{ tag }}</span>
+                            </span>
                             {%- else -%}
-                            <span class='databtnotinteresting'>{{ tag }}</span>
-                            {% endif %}
-                            {% if not loop.last %}
-                                <br>
+                            <span class='databtnotinteresting tooltip'>
+                                <img src="../static/label_{{ tag }}.png">
+                                <span class="tooltiptext tooltip-left">{{ tag }}</span>
+                            </span>
                             {% endif %}
                         {% endfor %} 
                     </td>
