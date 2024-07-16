@@ -22,19 +22,25 @@
                         </th>
                         <th>
                             <div class="switch_parent">
-                                <span class="filter-label">Data</span>
-                                <div class="switch_3_ways">
-                                    <a href="/audit_logs?prev">
-                                        <div id="auditlogs_page_prev"><</div>
+                                <span class="filter-label">Pages</span>
+                                <div class="page_indexing">
+                                    <a href="/settings/audit_logs?search={{ input_search }}&start={{ prev_start }}&end={{ prev_end }}">
+                                        <div id="auditlogs_page_prev">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                                          </svg>
+                                        </div>
                                     </a>
-                                    <a href="/audit_logs?next">
-                                        <div id="auditlogs_page_next"><</div>
+                                    <span class="page_indexing_count">{{ start }} - {{ end }}</span>
+                                    <a href="/settings/audit_logs?search={{ input_search }}&start={{ next_start }}&end={{ next_end }}">
+                                        <div id="auditlogs_page_next">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                          </svg>
+                                        </div>
                                     </a>
                                 </div>
                             </div>
-                        </th>
-                        <th>
-                            <span class="filter-label">{{ start }} - {{ end }}</span>
                         </th>
                     </tr>
             </table>

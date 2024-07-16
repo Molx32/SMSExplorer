@@ -547,17 +547,17 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchone()[0]
 
-    def get_audit_logs(search, start=0, offset=50):
+    def get_audit_logs(search, start=0, end=50):
         if not start:
             start=0
-        if not offset:
-            offset = 50
+        if not end:
+            end = 50
         if not search:
             search = ""
         # SELECT
         select  = "SELECT to_char(http_req_date, 'DD/MM/YY HH24:MI:SS'), http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
         where   = "WHERE LOWER(http_req) LIKE LOWER('%{}%') OR http_resp_code LIKE LOWER('%{}%') ".format(search, search)
-        limit   = "LIMIT " + str(start + offset) + " "
+        limit   = "LIMIT " + str(end) + " "
         offset  = "OFFSET " + str(start) + ";"
         query   = select + where + limit + offset
         # WHERE

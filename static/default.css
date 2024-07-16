@@ -18,6 +18,9 @@ p {
   color: #676b84;
 }
 
+a, a:visited, a:hover, a:active {
+  color: inherit;
+}
 /* *************************************************** */
 /* LATERAL MENU                                        */
 /* *************************************************** */
@@ -1173,4 +1176,21 @@ margin: 0 0 0 0;
 
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+/* *************************************** */
+/*               PAGE INDEX                */
+/* *************************************** */
+.page_indexing {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.page_indexing_count {
+  margin: 0px 10px 0px 10px;
 }

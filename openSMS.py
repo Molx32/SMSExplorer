@@ -409,21 +409,30 @@ def audit_logs():
     
     input_search    = request.args.get('search')
     input_start     = request.args.get('start')
-    input_offset    = request.args.get('offset')
+    input_end       = request.args.get('end')
 
-    if not SecurityInterface.controlerAuditLogsSearch(input_search, input_start, input_offset):
+    if not SecurityInterface.controlerAuditLogsSearch(input_search, input_start, input_end):
         abort(403)
+    input_search    = SecurityInterface.controlerReassignString(input_search)
 
     # Get data
-    audit_logs = DatabaseInterface.get_audit_logs(input_search, input_start, input_offset)
-    try:
-        start   = input_start
-        end     = input_start + input_offset
-    except:
-        start = 0
-        end = 50
+    audit_logs = DatabaseInterface.get_audit_logs(input_search, input_start, input_end)
 
-    return render_template('audit_logs.html', data=audit_logs, start=start, end=end)
+    try:
+        start       = max(int(input_start), 0)
+        end         = max(int(input_end), 50)
+    except:
+        start       = 0
+        end         = 50
+    prev_start  = max(start - 50, 0)
+    prev_end    = prev_start + 50
+    next_start  = start + 50
+    next_end    = next_start + 50
+
+    return render_template('audit_logs.html', input_search=input_search, data=audit_logs,
+        start=start, end=end,
+        prev_start=prev_start, prev_end=prev_end,
+        next_start=next_start, next_end=next_end)
 
 # ----------------------------------------------------------------- #
 # -                       ABOUT ENDPOINT                          - #
