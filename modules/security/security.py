@@ -30,6 +30,16 @@ class Security:
             if char not in self.ALLOWED_CHARS_DOMAIN:
                 return False
         return True
+    
+    def is_integer(self, i):
+        try:
+            int(i)
+            return True
+        except:
+            return False
+
+    def is_multiple_of(self, mod,i):
+        return (i % mod) == 0
 
 
         
@@ -180,4 +190,35 @@ class Security:
             return True
         if self.is_yes_no(input_is_automated):
             return True
+        return False
+
+    # ------------------------------------------------------------- #
+    # -                       AUDIT LOGS                          - #
+    # ------------------------------------------------------------- #
+    def filter_auditlogs_search(self, input_search):
+        if self.is_empty_or_not_set(input_search):
+            return True
+
+        for char in input_search:
+            if char not in self.ALLOWED_CHARS_FREE_SEARCH:
+                return False
+
+        return True
+
+    def filter_auditlogs_start(self, input_start):
+        if self.is_empty_or_not_set(input_start):
+            return True
+
+        if self.is_integer(input_start):
+            if self.is_multiple_of(50,int(input_start)):
+                return True
+        return False
+
+    def filter_auditlogs_offset(self, input_offset):
+        if self.is_empty_or_not_set(input_offset):
+            return True
+
+        if self.is_integer(input_offset):
+            if self.is_multiple_of(50,int(input_offset)):
+                return True
         return False

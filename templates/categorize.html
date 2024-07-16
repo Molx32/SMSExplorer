@@ -100,12 +100,21 @@
                             {% for tag_not_interesting in tags_not_interesting %}
                                 {% if row[5] %}
                                     {% if tag_not_interesting in row[5].split(',') %}
-                                        <span class='databtnotinteresting tag-active' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                        <span class='databtnotinteresting tag-active tooltip' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">
+                                            <img src="../static/label_{{tag_not_interesting}}.png">
+                                            <span class="tooltiptext tooltip-top">{{tag_not_interesting}}</span>
+                                        </span>
                                     {% else %}
-                                        <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                        <span class='databtnotinteresting tooltip' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">
+                                            <img src="../static/label_{{tag_not_interesting}}.png">
+                                            <span class="tooltiptext tooltip-top">{{tag_not_interesting}}</span>
+                                        </span>
                                     {% endif %}
                                 {% else %}
-                                    <span class='databtnotinteresting' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">{{tag_not_interesting}}</span>
+                                    <span class='databtnotinteresting tooltip' name="{{row[3]}}_{{tag_not_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_not_interesting}}')">
+                                        <img src="../static/label_{{tag_not_interesting}}.png">
+                                        <span class="tooltiptext tooltip-top">{{tag_not_interesting}}</span>
+                                    </span>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -115,12 +124,21 @@
                             {% for tag_interesting in tags_interesting %}
                                 {% if row[5] %}
                                     {% if tag_interesting in row[5].split(',') %}
-                                        <span class='databtinteresting tag-active' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                        <span class='databtinteresting tag-active tooltip' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">
+                                            <img src="../static/label_{{tag_interesting}}.png">
+                                            <span class="tooltiptext tooltip-top">{{tag_interesting}}</span>
+                                        </span>
                                     {% else %}
-                                        <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                        <span class='databtinteresting tooltip' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">
+                                            <img src="../static/label_{{tag_interesting}}.png">
+                                            <span class="tooltiptext tooltip-top">{{tag_interesting}}</span>
+                                        </span>
                                     {% endif %}
                                 {% else %}
-                                    <span class='databtinteresting' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">{{tag_interesting}}</span>
+                                    <span class='databtinteresting tooltip' name="{{row[3]}}_{{tag_interesting}}" onclick="categorizeUpdateDisplayTagsButton('{{row[3]}}','{{tag_interesting}}')">
+                                        <img src="../static/label_{{tag_interesting}}.png">
+                                        <span class="tooltiptext tooltip-top">{{tag_interesting}}</span>
+                                    </span>
                                 {% endif %}
                             {% endfor %}
                         </div>

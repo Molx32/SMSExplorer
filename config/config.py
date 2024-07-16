@@ -12,10 +12,6 @@ class Config:
     REDIS_JOB_ID_INITIALIZE_TARGETS    = "REDIS_JOB_ID_INITIALIZE_TARGETS"
     REDIS_JOB_ID_DATA       = "REDIS_JOB_ID_DATA"
     REDIS_JOB_ID_FETCHER    = "REDIS_JOB_ID_FETCHER"
-    CELERY_CONFIG           = {
-        'broker_url'     : 'redis://localhost:6379',
-        'result_backend' : 'redis://localhost:6379',
-    }
     
     #####################################################
     # FILE SYSTEM
@@ -58,78 +54,6 @@ class Config:
         "DATA_INTERESTING_DESC_NO_AD",
         "DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY",
         "DATA_INTERESTING_DESC_NO_OTHER"
-    ]
-
-    def getApplicationStatus():
-        #####################################################
-        # APP CONFIGURATION - SERACH FILTERS
-        DATA_AUTOMATED_YES                                  = []
-        DATA_AUTOMATED_NO                                   = []
-        DATA_INTERESTING_YES                                = []
-        DATA_INTERESTING_NO                                 = []
-        DATA_INTERESTING_DESC_NO_SCAM                       = []
-        DATA_INTERESTING_DESC_NO_AD                         = []
-        DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY         = []
-        DATA_INTERESTING_DESC_NO_OTHER                      = []
-        DATA_INTERESTING_DESC_YES_PII                       = []
-        DATA_INTERESTING_DESC_YES_DISCOVERY                 = []
-        DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER          = []
-        DATA_INTERESTING_DESC_YES_ACCOUNT_PASSWORD_RESET    = []
-
-        for item in Config.METADATA['data']:
-
-            # AUTOMATED
-            if item['is_automated'] == True:
-                DATA_AUTOMATED_YES.append(item['domain'])
-            else: 
-                DATA_AUTOMATED_NO.append(item['domain'])
-
-            # INTERESING
-            if item['is_interesting'] == True:
-                DATA_INTERESTING_YES.append(item['domain'])
-            else: 
-                DATA_INTERESTING_NO.append(item['domain'])
-
-            # NO INTERESING DESC 
-            if "DATA_INTERESTING_DESC_NO_SCAM"                 in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_NO_SCAM.append(item['domain'])
-            if "DATA_INTERESTING_DESC_NO_AD"                   in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_NO_AD.append(item['domain'])
-            if "DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY"   in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY.append(item['domain'])
-            if "DATA_INTERESTING_DESC_NO_OTHER"                in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_NO_OTHER.append(item['domain'])
-            if "DATA_INTERESTING_DESC_NO_OTHER"                in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_NO_OTHER.append(item['domain'])
-
-            # INTERESING DESC 
-            if "DATA_INTERESTING_DESC_YES_PII"                                      in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_YES_PII.append(item['domain'])
-            if "DATA_INTERESTING_DESC_YES_DISCOVERY"                                in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_YES_DISCOVERY.append(item['domain'])
-            if "DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER"                         in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER.append(item['domain'])
-            if "DATA_INTERESTING_DESC_YES_ACCOUNT_PASSWORD_RESET"                   in item['is_interesting_desc']:
-                DATA_INTERESTING_DESC_YES_ACCOUNT_PASSWORD_RESET.append(item['domain'])
-
-        TARGET_DATA = {}
-        TARGET_DATA['DATA_AUTOMATED_YES']                               = DATA_AUTOMATED_YES
-        TARGET_DATA['DATA_AUTOMATED_NO']                                = DATA_AUTOMATED_NO
-        TARGET_DATA['DATA_INTERESTING_YES']                             = DATA_INTERESTING_YES
-        TARGET_DATA['DATA_INTERESTING_NO']                              = DATA_INTERESTING_NO
-        TARGET_DATA['DATA_INTERESTING_DESC_NO_SCAM']                    = DATA_INTERESTING_DESC_NO_SCAM
-        TARGET_DATA['DATA_INTERESTING_DESC_NO_AD']                      = DATA_INTERESTING_DESC_NO_AD
-        TARGET_DATA['DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY']      = DATA_INTERESTING_DESC_NO_MISSED_OPPORTUNITY
-        TARGET_DATA['DATA_INTERESTING_DESC_NO_OTHER']                   = DATA_INTERESTING_DESC_NO_OTHER
-        TARGET_DATA['DATA_INTERESTING_DESC_YES_PII']                    = DATA_INTERESTING_DESC_YES_PII
-        TARGET_DATA['DATA_INTERESTING_DESC_YES_DISCOVERY']              = DATA_INTERESTING_DESC_YES_DISCOVERY
-        TARGET_DATA['DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER']       = DATA_INTERESTING_DESC_YES_ACCOUNT_TAKEOVER
-        TARGET_DATA['DATA_INTERESTING_DESC_YES_ACCOUNT_PASSWORD_RESET'] = DATA_INTERESTING_DESC_YES_ACCOUNT_PASSWORD_RESET
-        
-        return TARGET_DATA
-
-    SEARCH_URL = [
-        'nps.airindia.in'
     ]
 
     SEARCH_FILTERS_DATA = [

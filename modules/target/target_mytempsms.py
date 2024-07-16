@@ -34,8 +34,7 @@ class MyTempSMS:
                 self.fetch_smss()
                 self.populate_database()
             except Exception as e:
-                Logger.err("Main : " + str(e))
-                raise Exception() from e
+                raise Exception("Data module - " + str(e))
 
     def fetch_phones(self):
         # Send request
@@ -63,7 +62,6 @@ class MyTempSMS:
                     pass
                 self.smss_hist[phone_num] = smss_temp
         except Exception as e:
-            Logger.err('FETCH SMS - ' + str(e))
             raise Exception('fetch_smss()') from e
 
     def populate_database(self):
@@ -78,7 +76,6 @@ class MyTempSMS:
                         raise Exception('sms_insert()') from e
                         continue
         except Exception as er:
-            Logger.err('POPULATE EXCEPTION - ' + str(num) + ' - ' + str(er))
             raise Exception("populate_database()") from er
 
 class Browser:
@@ -120,7 +117,6 @@ class Browser:
                 # Increment page num
                 page_num = page_num + 1
         except Exception as e:
-            Logger.err('FETCH PHONES - Get countries' + str(e))
             raise Exception('fetch_phones() - countries') from e
 
         try:
@@ -150,7 +146,6 @@ class Browser:
                     # Increment page num
                     page_num = page_num + 1
         except Exception as e:
-            Logger.err('FETCH PHONES - Get countries' + str(e))
             raise Exception('fetch_phones() - phones numbers') from e
         
         return list(phones)
@@ -208,5 +203,4 @@ class Browser:
                     time_t  = None
             return smss
         except Exception as e:
-            Logger.err('PARSE SMS - ' + str(e))
             raise Exception('parse_sms()') from e

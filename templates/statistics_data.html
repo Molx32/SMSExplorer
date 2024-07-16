@@ -45,7 +45,7 @@
                               <li>
                                   <div class="about-row-1">
                                       <div class="chart-container" style="position: relative; width:100%">
-                                          <canvas id="data_sms_get_count_by_hour"></canvas>
+                                          <canvas id="data_sms_get_count_by_day"></canvas>
                                       </div>
                                   </div>
                               </li>
@@ -132,19 +132,19 @@
     </div>
 
     <script>
-        const data_sms_get_count_by_hour     = document.getElementById('data_sms_get_count_by_hour');
+        const data_sms_get_count_by_day     = document.getElementById('data_sms_get_count_by_day');
         const data_sms_get_url_count_by_hour = document.getElementById('data_sms_get_url_count_by_hour');
         const data_sms_get_top_ten_domains   = document.getElementById('data_sms_get_top_ten_domains');
         const data_sms_get_top_ten_countries = document.getElementById('data_sms_get_top_ten_countries');
         const count_by_category              = document.getElementById('count_by_category');
 
-        new Chart(data_sms_get_count_by_hour, {
+        new Chart(data_sms_get_count_by_day, {
           type: 'bar',
           data: {
-            labels: {{ data_sms_get_count_by_hour_labels | safe}},
+            labels: {{ data_sms_get_count_by_day_labels | safe}},
             datasets: [{
               label: '# of SMS',
-              data: {{ data_sms_get_count_by_hour_values | safe}},
+              data: {{ data_sms_get_count_by_day_values | safe}},
               borderWidth: 1
             }]
           },

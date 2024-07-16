@@ -32,7 +32,6 @@ class DataInterface:
                 Lilly()
                 Rwdsuk()
             except Exception as e:
-                print(e)
                 raise e
 
 class SecurityInterface:
@@ -80,7 +79,19 @@ class SecurityInterface:
         else:
             return input
     
+    def controlerReassignInteger(input):
+        if input:
+            return input
+        return 0
+    
     def controlerReassignString(input):
         if input is None:
             return ''
         return input
+
+    def controlerAuditLogsSearch(input_search, input_start, input_offset):
+        sec = Security()
+        a = sec.filter_auditlogs_search(input_search)
+        b = sec.filter_auditlogs_start(input_start)
+        c = sec.filter_auditlogs_offset(input_offset)
+        return all([a, b, c])

@@ -41,14 +41,14 @@ class DataModule:
                         self.populate_database(sms_id, data)
 
         except Exception as e:
-            Logger.log('DATA - ' + self.name + ' - run - ' + str(e))
+            raise Exception("Data module - " + str(e))
 
     def populate_database(self, sms_id, data):
         try:
             # Insert new SMSs into database
             DatabaseInterface.sms_insert_data(sms_id, data)
         except Exception as e:
-            Logger.log('DATA - ' + self.name + ' - populate_database - ' + str(e))
+            raise Exception("Data module - Populate database" + str(e))
 
     def retrieve_data(self, url, msg):
         return None
@@ -60,6 +60,7 @@ class DataModule:
         # Get additional data
         data = {}
         resp = requests.get(url, allow_redirects=False, verify=False)
+        DatabaseInterface.log(resp)
         redirect_url = resp.headers['Location']
         if redirect_url:
             params = redirect_url.split('?')[1]
@@ -80,11 +81,12 @@ class Instagram(DataModule):
         base_url    = 'https://ig.me/'
 
         self.current_url = ""
+        self.rate_limit = 20  # Equiv. 200 req/hour
 
         super().__init__(name, base_url)
 
-    
     def retrieve_data(self, url, msg):
+        time.sleep(self.rate_limit)
         self.current_url = url
         self._parse_instagram_transform_url()
         return self._parse_instagram()
@@ -97,6 +99,7 @@ class Instagram(DataModule):
             self.current_url = self.current_url[:l-1]
 
         source  = requests.get(self.current_url, allow_redirects=False)
+        DatabaseInterface.log(source)
         next_url = source.headers['Location']
         
         # Handle mobile shit
@@ -107,8 +110,9 @@ class Instagram(DataModule):
         
     def _parse_instagram(self):
         # Send request and parse it
-        response = requests.get(self.current_url, allow_redirects=True)
-        soup = BeautifulSoup(response.text, features="lxml")
+        resp = requests.get(self.current_url, allow_redirects=True)
+        DatabaseInterface.log(resp)
+        soup = BeautifulSoup(resp.text, features="lxml")
 
         try:
             # Get SVG tag that contains 'Profile', then get its parent
@@ -179,6 +183,7 @@ class Superprof(DataModule):
     def retrieve_data(self, url, msg):
         # Access app and get SESSION cookie
         response    = requests.get(url, allow_redirects=False, verify=False)
+        DatabaseInterface.log(response)
         cookies     = response.headers['Set-Cookie']
         cookie      = re.search(r'PHPSESSID=.*;', cookies).group(0)
         session_cookie_k    = cookie.split('=')[0]
@@ -188,12 +193,14 @@ class Superprof(DataModule):
         # Use SESSION cookie to get API Authorization token
         url = self.base_url + 'api/v3/authorize/'
         response    = requests.get(url, allow_redirects=False, verify=False, cookies=session_cookie)
+        DatabaseInterface.log(response)
         data        = response.json()
         token       = data['token_type'] + ' ' + data['access_token']
         headers     = {'Authorization': token}
         # Get data
         url = self.base_url + 'api/v3/me/'
         response    = requests.get(url, allow_redirects=False, verify=False, cookies=session_cookie, headers=headers)
+        DatabaseInterface.log(response)
         if response.json():
             return response.json()
         return {"Data":"None"}
@@ -235,6 +242,7 @@ class Booksy(DataModule):
         regex = r"window\.top\.location.*;"
         # Send request and parse
         resp = requests.get(url, allow_redirects=False)
+        DatabaseInterface.log(resp)
         line = re.search(regex, resp.text).group(0)
         line = line.replace('windows.top.location = ', '')
         line = line.replace('validateProtocol', '')
@@ -264,6 +272,7 @@ class Lilly(DataModule):
         if 'HIPAA' in msg:
             # Request 1 - Get session information
             resp = requests.get(url, allow_redirects=True)
+            DatabaseInterface.log(resp)
             # Parse
             soup        = BeautifulSoup(resp.text, features="lxml")
             hidden_tags = soup.find("input", type="hidden")
@@ -279,17 +288,20 @@ class Lilly(DataModule):
             url     = "https://www.assuresign.net/api/signing/v1/unauthenticatedModel/" + signatory_id + "?bypassLanding=false&suppressHeader=false&redirectUrl="
             headers = {'Authorization': 'SigningSessionToken ' + str(session_token), 'SigningSmsAuthExpiration':'SigningSmsAuthExpirationToken', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0', 'X-Requested-With':'XMLHttpRequest'}
             r       = requests.get(url, headers=headers)
+            DatabaseInterface.log(r)
             session_token = r.headers['SigningSessionToken']
 
             # Request 3 - Authenticate and get PII
             url     = "https://www.assuresign.net/api/signing/v1/authenticatedModel/" + signatory_id
             headers = {'Authorization': 'SigningSessionToken ' + str(session_token), 'SigningSmsAuthExpiration':'SigningSmsAuthExpirationToken', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0', 'X-Requested-With':'XMLHttpRequest'}
             r       = requests.get(url, headers=headers)
+            DatabaseInterface.log(r)
             session = json.loads(r.text)['session']
 
             # Request 4 - Get document download token
             url     = "https://www.assuresign.net/api/signing/v1/downloadToken/document/" + document_id
             r       = requests.get(url, headers=headers)
+            DatabaseInterface.log(r)
             token   = json.loads(r.text)['downloadToken']
 
             # Data

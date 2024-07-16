@@ -25,7 +25,7 @@
                                 <li>
                                     <div class="about-row-1">
                                         <div class="chart-container" style="position: relative; width:100%">
-                                            <canvas id="sms_get_count_by_hour"></canvas>
+                                            <canvas id="sms_get_count_by_day"></canvas>
                                         </div>
                                     </div>
                                 </li>
@@ -134,28 +134,28 @@
     </div>
 
     <script>
-        const sms_get_count_by_hour     = document.getElementById('sms_get_count_by_hour');
+        const sms_get_count_by_day     = document.getElementById('sms_get_count_by_day');
         const sms_get_top_ten_domains   = document.getElementById('sms_get_top_ten_domains');
         const sms_get_top_ten_countries = document.getElementById('sms_get_top_ten_countries');
-        const san_sms_get_count_by_hour     = document.getElementById('san_sms_get_count_by_hour');
+        const san_sms_get_count_by_day     = document.getElementById('san_sms_get_count_by_day');
         const san_sms_get_top_ten_domains   = document.getElementById('san_sms_get_top_ten_domains');
         const san_sms_get_top_ten_countries = document.getElementById('san_sms_get_top_ten_countries');
 
-        new Chart(sms_get_count_by_hour, {
+        new Chart(sms_get_count_by_day, {
           type: 'bar',
           data: {
-            labels: {{ sms_get_count_by_hour_labels | safe}},
+            labels: {{ sms_get_count_by_day_labels | safe}},
             datasets: [
               {
                 label: '# of SMS',
-                data: {{ sms_get_count_by_hour_values | safe}},
+                data: {{ sms_get_count_by_day_values | safe}},
                 borderWidth: 1,
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.5)'
               },
               {
                 label: '# of SMS sanitized',
-                data: {{ san_sms_get_count_by_hour_values | safe}},
+                data: {{ san_sms_get_count_by_day_values | safe}},
                 borderWidth: 1,
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)'
@@ -215,13 +215,13 @@
         });
 
 
-        new Chart(san_sms_get_count_by_hour, {
+        new Chart(san_sms_get_count_by_day, {
           type: 'bar',
           data: {
-            labels: {{ san_sms_get_count_by_hour_labels | safe}},
+            labels: {{ san_sms_get_count_by_day_labels | safe}},
             datasets: [{
               label: '# of SMS',
-              data: {{ san_sms_get_count_by_hour_values | safe}},
+              data: {{ san_sms_get_count_by_day_values | safe}},
               borderWidth: 1
             }]
           },

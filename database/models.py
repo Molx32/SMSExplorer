@@ -1,5 +1,10 @@
 import sys
 import re
+
+# Parse URLs
+# import validator
+# from urllib.parse import urlparse
+
 sys.path.extend(['../'])
 
 import urllib.parse
@@ -67,6 +72,14 @@ class SMS:
 
     # Methods
     def _parseUrl(self):
+        # # Analyze each word
+        # for word in self.msg.split(" "):
+        #     try:
+        #         if validators.url(word):
+        #             url = word
+        #     except:
+        #         continue
+        # return url
         url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
         return re.findall(url_pattern, self.msg)
 
@@ -81,8 +94,8 @@ class SMS:
         return re.findall(dom_pattern, self.msg)
 
     def _parse_msg(self):
-        self.msg.replace('p***word', 'password')
-        self.msg.replace('do***ent', 'document')
+        self.msg = self.msg.replace('p***word', 'password')
+        self.msg = self.msg.replace('do***ent', 'document')
 
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))

@@ -204,26 +204,35 @@ function categorizeUpdateDisplayTagsButton(domain, tag){
 function categorizeUpdateSendInterestingForm(domain) {
 	// Retrieve is_interesting
 	var is_interesting 	= document.getElementsByName(domain + "_selector")[0].innerHTML;
+	console.log(is_interesting)
 	// Retrieve not interesting tags
 	div_not_interesting_button = document.getElementsByName(domain + '_not_interesting_buttons')[0]
+	console.log(div_not_interesting_button)
 	is_not_interesting_tags = div_not_interesting_button.getElementsByClassName('tag-active')
+	console.log(is_not_interesting_tags)
 	div_interesting_button = document.getElementsByName(domain + '_interesting_buttons')[0]
+	console.log(div_interesting_button)
 	is_interesting_tags = div_interesting_button.getElementsByClassName('tag-active')
+	console.log(is_interesting_tags)
 	
 	// 
 	tags_list = []
 	if (is_interesting === 'YES') {
 		for (tag of is_interesting_tags) {
-			tags_list.push(tag.innerHTML)
+			label = tag.getAttribute('name').replace(domain + '_','')
+			tags_list.push(label)
 		}
 		tags = tags_list.join()
 	} else if (is_interesting === 'NO') {
 		for (tag of is_not_interesting_tags) {
-			tags_list.push(tag.innerHTML)
+			label = tag.getAttribute('name').replace(domain + '_','')
+			tags_list.push(label)
 		}
 		tags = tags_list.join()
+		console.log(tags)
 	} else {
 		tags = ''
+		console.log(tags)
 	}
 	
 	var xhttp = new XMLHttpRequest();
@@ -232,6 +241,7 @@ function categorizeUpdateSendInterestingForm(domain) {
 			displayNotification("Updated", "Target changed")
 		}
 	};
+	console.log("POST", "/categorize/target/update?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags)
 	xhttp.open("POST", "/categorize/target/update?domain=" + domain + "&is_interesting=" + is_interesting + "&tags=" + tags, true);
 	xhttp.send();
 }

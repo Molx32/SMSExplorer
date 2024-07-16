@@ -169,85 +169,44 @@
                                     </div>
                                 {% endfor %}
                             </div>
-                            <!-- Last data collected -->
+                            <!-- Last errors -->
                             <div class="event">
                                 <div class="event-header event-header-border">
                                     <div class="main_title">
                                         <h3>Last errors</h3>
                                     </div>
                                 </div>
-                                <div class="event-content">
-                                    <div>
-                                        <ul>
-                                            <li>
-                                                <div class="event-row-1">
-                                                    <div>
-                                                        <img src="../static/icon_sms.png" style="max-width: 50px;">
-                                                        <p>+33659874 --> +33659874</p>
+                                {% for error in top_errors %}
+                                    {% set date             = error[0] %}
+                                    {% set http_verb        = error[1] %}
+                                    {% set http_req         = error[2] %}
+                                    {% set http_resp_code   = error[3] %}
+                                    <div class="event-content">
+                                        <div>
+                                            <ul>
+                                                <li>
+                                                    <div class="event-row-1">
+                                                        <div>
+                                                            <img src="../static/icon_error.png" style="max-width: 30px;margin-right: 10px;">
+                                                            <p>{{ http_resp_code }}</p>
+                                                        </div>
+                                                        <p>{{ date }}</p>
                                                     </div>
-                                                    <p>Tues, 5th 2024</p>
-                                                </div>
-                                                <div class="event-row-2">
-                                                    <div><p>message sfzedrgzdfzdgzdfzeg</p></div>
-                                                    <div>
-                                                        <button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                                <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
-                                                        </button>
+                                                    <div class="event-row-2">
+                                                        <div><p>{{ http_verb }} {{ http_req }}</p></div>
+                                                        <div>
+                                                            <!-- <button>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                                                    <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
+                                                            </button> -->
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </li>
-                                        </ul>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="event-content">
-                                    <div>
-                                        <ul>
-                                            <li>
-                                                <div class="event-row-1">
-                                                    <div>
-                                                        <img src="../static/icon_sms.png" style="max-width: 50px;">
-                                                        <p>+33659874 --> +33659874</p>
-                                                    </div>
-                                                    <p>Tues, 5th 2024</p>
-                                                </div>
-                                                <div class="event-row-2">
-                                                    <div><p>message sfzedrgzdfzdgzdfzeg</p></div>
-                                                    <div>
-                                                        <button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                                <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="event-content">
-                                    <div>
-                                        <ul>
-                                            <li>
-                                                <div class="event-row-1">
-                                                    <div>
-                                                        <img src="../static/icon_sms.png" style="max-width: 50px;">
-                                                        <p>+33659874 --> +33659874</p>
-                                                    </div>
-                                                    <p>Tues, 5th 2024</p>
-                                                </div>
-                                                <div class="event-row-2">
-                                                    <div><p>message sfzedrgzdfzdgzdfzeg</p></div>
-                                                    <div>
-                                                        <button>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                                <path d="M15 12c0 1.654-1.346 3-3 3s-3-1.346-3-3 1.346-3 3-3 3 1.346 3 3zm9-.449s-4.252 8.449-11.985 8.449c-7.18 0-12.015-8.449-12.015-8.449s4.446-7.551 12.015-7.551c7.694 0 11.985 7.551 11.985 7.551zm-7 .449c0-2.757-2.243-5-5-5s-5 2.243-5 5 2.243 5 5 5 5-2.243 5-5z"/></svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                {% endfor %}
+                                
                             </div>
                         </div>
                     </div>

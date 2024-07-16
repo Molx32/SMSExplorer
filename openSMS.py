@@ -43,7 +43,7 @@ while not is_database_up:
     is_database_up = True
     try:
         DatabaseInterface.is_database_healthy()
-    except:
+    except Exception as e:
         print("******************Database not ready********************")
         print("******************Waiting for 5 secs********************")
         is_database_up = False
@@ -59,7 +59,7 @@ shutil.copyfile(src, dst)
 # Connect to redis and enqueue jobs
 redis_server = Redis.from_url(Config.REDIS_URL)
 task_queue  = rq.Queue(default_timeout=-1, connection=redis_server)
-task_queue.enqueue(DatabaseInterface.targets_update, dst, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+# task_queue.enqueue(DatabaseInterface.targets_update, dst, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
 task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
 
 # This is the aggressive mode and should not be enabled by default
@@ -96,18 +96,18 @@ def home():
     targets_count_interesting   = DatabaseInterface.targets_count_interesting()[0]
     targets_count_automated     = DatabaseInterface.targets_count_automated()[0]
 
-    top_domains     = DatabaseInterface.sms_activities_top_domains()
 
     # Activities
-    activities_last_data = DatabaseInterface.sms_activities_last_data()
+    activities_last_data    = DatabaseInterface.sms_activities_last_data()
+    top_domains             = DatabaseInterface.sms_activities_top_domains()
+    top_errors              = DatabaseInterface.logs_get_errors()
 
     # Load forms
     return render_template('home.html',
         count_messages=count_messages, count_urls=count_urls,
         count_data=count_data, count_unknown=count_unknown,
-        activities_last_data=activities_last_data,
         targets_count_known=targets_count_known, targets_count_interesting=targets_count_interesting, targets_count_automated=targets_count_automated,
-        top_domains=top_domains)
+        activities_last_data=activities_last_data, top_domains=top_domains, top_errors=top_errors)
 
 
 # ------------------------------------------------------------ #
@@ -224,9 +224,9 @@ def targets_update_categorize():
 @app.route("/statistics_telemetry", methods = ['GET'])
 def statistics_telemetry():
     # GET RAW DATA
-    sms_get_count_by_hour = DatabaseInterface.sms_get_count_by_hour()
-    sms_get_count_by_hour_labels = [str(row[0]) for row in sms_get_count_by_hour]
-    sms_get_count_by_hour_values = [str(row[1]) for row in sms_get_count_by_hour]
+    sms_get_count_by_day = DatabaseInterface.sms_get_count_by_day()
+    sms_get_count_by_day_labels = [str(row[0]) for row in sms_get_count_by_day]
+    sms_get_count_by_day_values = [str(row[1]) for row in sms_get_count_by_day]
 
     sms_get_top_ten_domains = DatabaseInterface.sms_get_top_ten_domains()
     sms_get_top_ten_domains_labels = [str(row[0]) for row in sms_get_top_ten_domains]
@@ -237,9 +237,9 @@ def statistics_telemetry():
     sms_get_top_ten_countries_values = [str(row[1]) for row in sms_get_top_ten_countries]
 
     # GET SANITIZED DATA
-    san_sms_get_count_by_hour = DatabaseInterface.sms_get_count_by_hour(sanitized=True)
-    san_sms_get_count_by_hour_labels = [str(row[0]) for row in san_sms_get_count_by_hour]
-    san_sms_get_count_by_hour_values = [str(row[1]) for row in san_sms_get_count_by_hour]
+    san_sms_get_count_by_day = DatabaseInterface.sms_get_count_by_day(sanitized=True)
+    san_sms_get_count_by_day_labels = [str(row[0]) for row in san_sms_get_count_by_day]
+    san_sms_get_count_by_day_values = [str(row[1]) for row in san_sms_get_count_by_day]
 
     san_sms_get_top_ten_domains = DatabaseInterface.sms_get_top_ten_domains(sanitized=True)
     san_sms_get_top_ten_domains_labels = [str(row[0]) for row in san_sms_get_top_ten_domains]
@@ -251,20 +251,20 @@ def statistics_telemetry():
 
 
     return render_template('statistics_telemetry.html',
-        sms_get_count_by_hour_values=sms_get_count_by_hour_values, sms_get_count_by_hour_labels=sms_get_count_by_hour_labels,
+        sms_get_count_by_day_values=sms_get_count_by_day_values, sms_get_count_by_day_labels=sms_get_count_by_day_labels,
         sms_get_top_ten_domains_labels=sms_get_top_ten_domains_labels, sms_get_top_ten_domains_values=sms_get_top_ten_domains_values,
         sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values,
 
-        san_sms_get_count_by_hour_values=san_sms_get_count_by_hour_values, san_sms_get_count_by_hour_labels=san_sms_get_count_by_hour_labels,
+        san_sms_get_count_by_day_values=san_sms_get_count_by_day_values, san_sms_get_count_by_day_labels=san_sms_get_count_by_day_labels,
         san_sms_get_top_ten_domains_labels=san_sms_get_top_ten_domains_labels, san_sms_get_top_ten_domains_values=san_sms_get_top_ten_domains_values,
         san_sms_get_top_ten_countries_labels=san_sms_get_top_ten_countries_labels, san_sms_get_top_ten_countries_values=san_sms_get_top_ten_countries_values)
 
 @app.route("/statistics_data", methods = ['GET'])
 def statistics_data():
     # GET SANITIZED DATA
-    data_sms_get_count_by_hour = DatabaseInterface.data_get_count_by_hour(sanitized=True)
-    data_sms_get_count_by_hour_labels = [str(row[0]) for row in data_sms_get_count_by_hour]
-    data_sms_get_count_by_hour_values = [str(row[1]) for row in data_sms_get_count_by_hour]
+    data_sms_get_count_by_day = DatabaseInterface.data_get_count_by_hour(sanitized=True)
+    data_sms_get_count_by_day_labels = [str(row[0]) for row in data_sms_get_count_by_day]
+    data_sms_get_count_by_day_values = [str(row[1]) for row in data_sms_get_count_by_day]
 
     data_sms_get_url_count_by_hour = DatabaseInterface.data_get_url_count_by_hour(sanitized=True)
     data_sms_get_url_count_by_hour_labels = [str(row[0]) for row in data_sms_get_url_count_by_hour]
@@ -297,7 +297,7 @@ def statistics_data():
     data_sms_get_top_ten_countries_values = [str(row[1]) for row in data_sms_get_top_ten_countries]
 
     return render_template('statistics_data.html', 
-        data_sms_get_count_by_hour_values=data_sms_get_count_by_hour_values, data_sms_get_count_by_hour_labels=data_sms_get_count_by_hour_labels,
+        data_sms_get_count_by_day_values=data_sms_get_count_by_day_values, data_sms_get_count_by_day_labels=data_sms_get_count_by_day_labels,
         data_sms_get_url_count_by_hour_labels=data_sms_get_url_count_by_hour_labels, data_sms_get_url_count_by_hour_values=data_sms_get_url_count_by_hour_values,
         count_by_category_labels=count_by_category_labels, count_by_category_values=count_by_category_values,
         data_sms_get_top_ten_domains_labels=data_sms_get_top_ten_domains_labels, data_sms_get_top_ten_domains_values=data_sms_get_top_ten_domains_values,
@@ -404,6 +404,27 @@ def settings_lock_app():
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
     return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
+@app.route("/settings/audit_logs", methods = ['GET'])
+def audit_logs():
+    
+    input_search    = request.args.get('search')
+    input_start     = request.args.get('start')
+    input_offset    = request.args.get('offset')
+
+    if not SecurityInterface.controlerAuditLogsSearch(input_search, input_start, input_offset):
+        abort(403)
+
+    # Get data
+    audit_logs = DatabaseInterface.get_audit_logs(input_search, input_start, input_offset)
+    print(audit_logs)
+    try:
+        start   = input_start
+        end     = input_start + input_offset
+    except:
+        start = 0
+        end = 50
+
+    return render_template('audit_logs.html', data=audit_logs, start=start, end=end)
 
 # ----------------------------------------------------------------- #
 # -                       ABOUT ENDPOINT                          - #

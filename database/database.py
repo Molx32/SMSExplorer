@@ -1,5 +1,6 @@
 # System imports
 from datetime import date
+from datetime import datetime, timedelta
 import json
 import csv
 import sys
@@ -146,6 +147,23 @@ class DatabaseInterface:
         select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS"
         where   = ""
         end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
+
+        # Sanitized query
+        if sanitized:
+            excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
+            where = where + """ WHERE smss.domain NOT IN ({})""".format(excluded_domains)
+
+        # Execute
+        query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def sms_get_count_by_day(sanitized=False):
+        # Default query
+        select  = "SELECT to_char(DATE_TRUNC('day', receive_date), 'DD/MM/YY') as day, COUNT(id) FROM SMSS"
+        where   = ""
+        end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 365;"
 
         # Sanitized query
         if sanitized:
@@ -341,6 +359,17 @@ class DatabaseInterface:
             r[tag] = _count_all_interesting_tag(tag)[0]
         return r
 
+    def logs_get_errors():
+        # SELECT
+        select  = "SELECT to_char(http_req_date, 'DD/MM/YY HH24:MI:SS'), http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
+        where   = "WHERE http_resp_code <> '200 OK' "
+        limit   = "LIMIT 5;"
+        query   = select + where + limit
+        # WHERE
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
 ############################### INVESTIGATION ##############################
 # The following section is dedicated to the investigation pane, where      #
 # targets can be modified.                                                 #
@@ -518,6 +547,38 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute(query)
         return cursor.fetchone()[0]
+
+    def get_audit_logs(search, start=0, offset=50):
+        if not start:
+            start=0
+        if not offset:
+            offset = 50
+        if not search:
+            search = ""
+        # SELECT
+        select  = "SELECT to_char(http_req_date, 'DD/MM/YY HH24:MI:SS'), http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
+        where   = "WHERE LOWER(http_req) LIKE LOWER('%{}%') OR http_resp_code LIKE LOWER('%{}%') ".format(search, search)
+        limit   = "LIMIT " + str(start + offset) + " "
+        offset  = "OFFSET " + str(start) + ";"
+        query   = select + where + limit + offset
+        # WHERE
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def log(resp):
+        http_req_date       = datetime.now()
+        http_req_date       = http_req_date.strftime("%m/%d/%Y %H:%M:%S")
+        http_verb           = resp.request.method
+        http_resp_code      = str(resp.status_code) + " " + resp.reason
+        http_resp_content   = ""
+        http_req            = resp.url
+        
+        # SELECT
+        query  = "INSERT INTO AUDITLOGS(http_req_date, http_verb, http_req, http_resp_code, http_resp_content) VALUES('{}' ,'{}','{}','{}','{}');".format(http_req_date, http_verb, http_req, http_resp_code, http_resp_content)
+        # WHERE
+        cursor = Database().connect()
+        cursor.execute(query)
 
 ############################### SETTINGS ###################################
 # Well, all options accessible using the settings page.                    #

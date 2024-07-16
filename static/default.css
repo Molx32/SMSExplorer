@@ -495,6 +495,8 @@ span.close {
 /* *          TAGS          * */
 /* ************************** */
 .databtinteresting {
+  height: 50px;
+  width: 50px;
   color: white;
   padding: 10px;
   display: inherit;
@@ -503,11 +505,21 @@ span.close {
   font-weight: bold;
   cursor: pointer;
   font-size: 10px;
-  background-color:rgb(46, 71, 101);
+  background-color: #ababab;
+  /* background-color:rgb(46, 71, 101); */
+}
+
+.databtinteresting img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+
 }
 
 .databtnotinteresting {
   color: white;
+  height: 50px;
+  width: 50px;
   padding: 10px;
   display: inherit;
   border: none;
@@ -521,8 +533,16 @@ span.close {
   margin-top: 4px;
 }
 
+.databtnotinteresting img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+
+}
+
 .tag-active {
   color: rgb(0,0,0);
+  background-color: #2e4765;
 }
 
 /*************************************************************************/
@@ -984,6 +1004,11 @@ justify-content: space-between;
   box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
 }
 
+thead {
+  z-index: 1;
+  position: relative;
+}
+
 .about-table th {
   
   padding: 12px 15px;
@@ -1116,4 +1141,35 @@ margin: 0 0 0 0;
 .error-row-1 div {
   word-wrap: break-word;
   align-items: center;
+}
+
+/* *************************************** */
+/*                TOOLTIPS                 */
+/* *************************************** */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-top {
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }

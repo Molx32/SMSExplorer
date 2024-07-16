@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import sys
 import re
 import time
-from io import StringIO
+import uuid
 
 # Project
 from database.database import DatabaseInterface
@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 class ReceiveSMSS:    
     def __init__(self):
         self.base_url = "https://receive-smss.com"
+        self.user_agent = None
         self.phone_urls = []
         self.phone_nums = []
 
@@ -30,6 +31,7 @@ class ReceiveSMSS:
         # Run the worker
         while 1:
             try:
+                self.randomize_user_agent()
                 start = time.time()
                 self.fetch_phones()
                 self.fetch_smss()
@@ -37,30 +39,33 @@ class ReceiveSMSS:
                 end = time.time()
                 Logger.log('MAIN - ' + str(end - start))
             except Exception as e:
-                Logger.log('ReceiveSMSS - loop reset' + str(e))
+                raise Exception('MAIN') from e
                 continue
+
+    def randomize_user_agent(self):
+        self.user_agent = str(uuid.uuid4())
 
     def fetch_phones(self):
         try:
             # Send request
-            Logger.log('ReceiveSMSS - fetch_phones')
             self.phone_urls = self.browser.fetch_phones()
             for phone_url in self.phone_urls:
                 self.phone_nums.append(phone_url.split('/')[-2])
         except Exception as e:
-            Logger.err('ReceiveSMSS - fetch_phones()' + str(e))
             raise Exception('ReceiveSMSS - fetch_phones()') from e
 
     def fetch_smss(self):
         # Send all parallel requests
-        results = grequests.map((grequests.get(self.base_url + u, headers={'User-Agent':'toto'}) for u in self.phone_urls), size=5)
+        headers = {'User-Agent': self.user_agent}
+        results = grequests.map((grequests.get(self.base_url + u, headers=headers) for u in self.phone_urls), size=5)
 
         # Handle all results
         try:
-            Logger.log('ReceiveSMSS - fetch_smss')
+            Logger.log('ReceiveSMSS - fetch_smss' + self.user_agent)
             for result in results:
                 # Get phone number
                 # and parse all results
+                DatabaseInterface.log(result)
                 phone_num = result.request.path_url.split('/')[-2]
                 smss_temp = self.browser.parse_sms(result)
 
@@ -82,7 +87,6 @@ class ReceiveSMSS:
                 for sms in self.smss_new[phone_num]:
                     DatabaseInterface.sms_insert(sms)
         except Exception as e:
-            Logger.log('ReceiveSMSS - populate_database()' + str(e))
             raise Exception('ReceiveSMSS - populate_database()') from e
 
 class Browser:
@@ -103,9 +107,10 @@ class Browser:
     def http_get(self, url, allow_redirects=True):
         Logger.log('Browser - http_get')
         headers = {
-            'User-Agent':'toto'
+            'User-Agent': str(uuid.uuid4())
         }
         r = requests.get(url, headers=headers, allow_redirects=allow_redirects)
+        DatabaseInterface.log(r)
         return r
 
     def fetch_phones(self):
@@ -121,7 +126,7 @@ class Browser:
                 sender = a.get('href')
                 phone_urls.append(sender)
             except Exception as e:
-                Logger.log('EXCEPTION BROWSER FETCH PHONE - ' + str(e))
+                raise Exception('fetch_phones') from e
 
         return phone_urls
 
@@ -151,7 +156,7 @@ class Browser:
             receiver = r.request.path_url
             soup = BeautifulSoup(r.text, features="lxml")
         except Exception as e:
-            print('FETCH SMS - HTTP Get - ' + str(e))
+            raise Exception('fetch_phones') from e
 
         # Initialize next SMS
         sender  = None
