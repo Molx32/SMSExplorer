@@ -18,6 +18,8 @@ Is it legal?
 - When running passively, yes!
 - When running agressively, probably not.
 
+⚠️ MY ~1 MILLION SMS INSTANCE WILL BE RELEASED SOON AS A PUBLIC DEMO ⚠️
+
 ### Supported PSS
 
 | PSS                      | Legal    | State |  
