@@ -28,7 +28,6 @@ Is it legal?
 ### Supported data collectors
 | Target        | Domain                   | Legal    | State |  
 |---------------|--------------------------|----------|-------|
-| AirIndia      | https://nps.airindia.com | Probably |  ✅   |
 | Ukrwds        | https://ukrwds.com/      | Probably |  ✅   |
 | JobLogic      | TODO                     | No       |  🛠️   |
 | FreeAds       | TODO                     | No       |  🛠️   |
