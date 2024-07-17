@@ -26,30 +26,65 @@ Is it legal?
 | More to come             |   N/A    | 🛠️    |
 
 ### Supported data collectors
-| Target        | Legal    | State |  
-|---------------|----------|-------|
-| AirIndia      | Probably |  ✅   |
-| JobLogic      | No       |  🛠️   |
-| FreeAds       | No       |  🛠️   |
-| Payfone       | No       |  🛠️   |
-| TextsFromMyEx | No       |  🛠️   |
-| Instagram     | No       |  ❌   |
-| ValidaHealth  | No       |  ❌   |
-| StickerMule   | No       |  🛠️   |
-| BankInter     | No       |  🛠️   |
-| Experian      | No       |  ❌   |
-
-  
+| Target        | Domain                   | Legal    | State |  
+|---------------|--------------------------|----------|-------|
+| AirIndia      | https://nps.airindia.com | Probably |  ✅   |
+| Ukrwds        | https://ukrwds.com/      | Probably |  ✅   |
+| JobLogic      | TODO                     | No       |  🛠️   |
+| FreeAds       | TODO                     | No       |  🛠️   |
+| Payfone       | TODO                     | No       |  🛠️   |
+| TextsFromMyEx | TODO                     | No       |  🛠️   |
+| Instagram     | TODO                     | No       |  ❌   |
+| ValidaHealth  | TODO                     | No       |  ❌   |
+| StickerMule   | TODO                     | No       |  🛠️   |
+| BankInter     | TODO                     | No       |  🛠️   |
+| Experian      | TODO                     | No       |  ❌   |
 
 ## Use
 
 ### Run the app
-```bash
+#### Windows (local)
+```PowerShell
+git clone https://github.com/Molx32/SMSExplorer.git
+cd SMSExplorer/
 docker  compose  build
 docker  compose  up
+# Web server runs on 127.0.0.1:80
 ```
-### Access the website
-Navigate to 127.0.0.1.
+
+#### Linux (local)
+```bash
+git clone https://github.com/Molx32/SMSExplorer.git
+cd SMSExplorer/
+docker  compose  build
+docker  compose  up
+# Web server runs on 127.0.0.1:80
+```
+
+#### Linux (local)
+```bash
+# Docker install
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo install -m 0755 -d /etc/apt/keyrings
+
+# Add Docker's official GPG key and repo
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+$(. /etc/os-release && echo "$VERSION_CODENAME") stable" |   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Update repo and install docker
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+git clone https://github.com/Molx32/SMSExplorer.git
+cd SMSExplorer/
+docker  compose  build
+docker  compose  up
+# Web server runs on 127.0.0.1:80
+```
 
 ### Access database
 On the database container, access the terminal and type the following.
@@ -75,46 +110,10 @@ psql -u postgres
 # SELECT * FROM DATA;
 ```
 
-### TODO
-✅
-🛠️
-❌
+### Backlog
+Coming soon...
 
-- Everything
-    - Add proper data handling (reassigned values e.g. 'YES' becomes True) - In progress
-    - Add security for every endpoint - In progress
-- Home
-    - Finish page
-- Data statistics - TODO
-    - 'Contains URLs'     --> Display statistics with only SMSs with URLs
-    - 'Known valid URLs'  --> Display statistics with only SMSs with URLs known to hide data
-    - 'Data URL'          --> Display statistics with only SMSs with URLs with automated data collection
-- Collection
-  - Add new data sources
-- RESOLVE THE RACE CONDITION CASE...
 
-### Set up
-Deploy on VPC : 
-```
-# Docker install
-# Add Docker's official GPG key:
-sudo apt-get update
-sudo apt-get install ca-certificates curl
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-$(. /etc/os-release && echo "$VERSION_CODENAME") stable" |   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo docker run hello-world
-
-git clone https://github.com/Molx32/SMSExplorer.git
-cd SMSExplorer/
-sudo docker compose build
-sudo docker compose up
-```
 
 ### Authors
 Molx32
