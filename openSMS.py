@@ -103,7 +103,7 @@ def home():
     top_errors              = DatabaseInterface.logs_get_errors()
 
     # Load forms
-    return render_template('home.html',
+    return render_template('home.html', active_tab='Home',
         count_messages=count_messages, count_urls=count_urls,
         count_data=count_data, count_unknown=count_unknown,
         targets_count_known=targets_count_known, targets_count_interesting=targets_count_interesting, targets_count_automated=targets_count_automated,
@@ -127,7 +127,8 @@ def search():
     total_count     = DatabaseInterface.sms_count()
     select_count    = len(data)
 
-    return render_template('search.html', data=data, total_count=total_count, select_count=select_count)
+    return render_template('search.html', active_tab='Search',
+        data=data, total_count=total_count, select_count=select_count)
 
 # ---------------------------------------------------------------- #
 # -                      AUTOMATION ENDPOINT                     - #
@@ -150,7 +151,8 @@ def automation():
     data    = DatabaseInterface.automation_get_targets(search, legal, automated)
     count   = DatabaseInterface.targets_count()
 
-    return render_template('automation.html', data=data, count=count)
+    return render_template('automation.html', active_tab='Automate',
+        data=data, count=count)
 
 @app.route("/automation/target/update", methods = ['POST'])
 def targets_update_automation():
@@ -194,7 +196,8 @@ def categorize():
     data    = DatabaseInterface.sms_get_targets(input_search, input_unqualified)
     count   = len(data)
 
-    return render_template('categorize.html', data=data, count=count,
+    return render_template('categorize.html', active_tab='Categorize', 
+        data=data, count=count,
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
 @app.route("/categorize/target/update", methods = ['POST'])
@@ -250,7 +253,7 @@ def statistics_telemetry():
     san_sms_get_top_ten_countries_values = [str(row[1]) for row in san_sms_get_top_ten_countries]
 
 
-    return render_template('statistics_telemetry.html',
+    return render_template('statistics_telemetry.html', active_tab='Telemetry',
         sms_get_count_by_day_values=sms_get_count_by_day_values, sms_get_count_by_day_labels=sms_get_count_by_day_labels,
         sms_get_top_ten_domains_labels=sms_get_top_ten_domains_labels, sms_get_top_ten_domains_values=sms_get_top_ten_domains_values,
         sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values,
@@ -296,7 +299,7 @@ def statistics_data():
     data_sms_get_top_ten_countries_labels = [str(row[0]) for row in data_sms_get_top_ten_countries]
     data_sms_get_top_ten_countries_values = [str(row[1]) for row in data_sms_get_top_ten_countries]
 
-    return render_template('statistics_data.html', 
+    return render_template('statistics_data.html', active_tab='Data',
         data_sms_get_count_by_day_values=data_sms_get_count_by_day_values, data_sms_get_count_by_day_labels=data_sms_get_count_by_day_labels,
         data_sms_get_url_count_by_hour_labels=data_sms_get_url_count_by_hour_labels, data_sms_get_url_count_by_hour_values=data_sms_get_url_count_by_hour_values,
         count_by_category_labels=count_by_category_labels, count_by_category_values=count_by_category_values,
@@ -309,7 +312,7 @@ def statistics_data():
 @app.route("/settings", methods = ['GET'])
 def settings():
     mode = DatabaseInterface.get_mode()
-    return render_template('settings.html', mode=mode)
+    return render_template('settings.html', active_tab='Settings', mode=mode)
 
 @app.route("/settings/update_mode", methods = ['POST'])
 def settings_update_mode():
@@ -429,7 +432,8 @@ def audit_logs():
     next_start  = start + 50
     next_end    = next_start + 50
 
-    return render_template('audit_logs.html', input_search=input_search, data=audit_logs,
+    return render_template('audit_logs.html', active_tab='AuditLogs',
+        input_search=input_search, data=audit_logs,
         start=start, end=end,
         prev_start=prev_start, prev_end=prev_end,
         next_start=next_start, next_end=next_end)
@@ -437,10 +441,10 @@ def audit_logs():
 # ----------------------------------------------------------------- #
 # -                       ABOUT ENDPOINT                          - #
 # ----------------------------------------------------------------- #
-@app.route("/about", methods = ['GET'])
+@app.route("/settings/about", methods = ['GET'])
 def about():
     supported_targets = DatabaseInterface.sms_get_supported_targets()
-    return render_template('about.html', targets=supported_targets)
+    return render_template('about.html', active_tab='About', targets=supported_targets)
 
 
 # ------------------------------------------------------- #

@@ -125,10 +125,20 @@ a, a:visited, a:hover, a:active {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  flex-direction: column;
 }
 
 .navbar .logo img {
-  max-width: 70px;
+  max-width: 200  px;
+}
+
+.navbar .title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2e4765;
+  font-family: rajdhani,sans-serif;
+  padding: 15px 25px 5px 30px;
+  display: block;
 }
 
 
@@ -281,6 +291,8 @@ div.stat_desc{
   font-family: sans-serif;
   min-width: 400px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  table-layout: fixed;
+  width: 100%;
 }
 
 .styled-table thead tr {

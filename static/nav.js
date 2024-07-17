@@ -54,7 +54,7 @@ function smsSearchDisplayToggleButtonInteresting(filter){
 		selector.style.left = 0;
 		selector.style.width = all.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
-		selector.innerHTML = "ALL";
+		selector.innerHTML = "🚫";
 	}else if(filter.toUpperCase() === "YES"){
 		selector.style.left = all.clientWidth + "px";
 		selector.style.width = yes.clientWidth + "px";
@@ -83,7 +83,7 @@ function smsSearchDisplayToggleButtonData(filter){
 		selector.style.left = 0;
 		selector.style.width = none.clientWidth + "px";
 		selector.style.backgroundColor = "#2daab8";
-		selector.innerHTML = "NONE";
+		selector.innerHTML = "🚫";
 	}else if(filter.toUpperCase() === "YES"){
 		selector.style.left = none.clientWidth + "px";
 		selector.style.width = yes.clientWidth + "px";
@@ -102,6 +102,15 @@ function smsSearchSendSearchForm() {
 	param_search 		= document.getElementById('smssearch_search_button').value;
 	param_include 		= document.getElementById('smssearch_toggle_data_selector').innerText;
 	param_interesting 	= document.getElementById('smssearch_toggle_interesting_selector').innerText;
+
+	if (param_include == '🚫'){
+		param_include = 'NONE'
+	}
+
+	if (param_interesting == '🚫'){
+		param_interesting = 'ALL'
+	}
+
 	// Update form
 	document.getElementById('smssearch_form_search').value		= param_search;
 	document.getElementById('smssearch_form_data').value 		= param_include;

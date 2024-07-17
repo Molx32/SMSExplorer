@@ -25,7 +25,7 @@
                         <div class="switch_parent">
                             <span class="filter-label">Data</span>
                             <div class="switch_3_ways">
-                                <div id="smssearch_toggle_data_none" class="switch none" onclick="smsSearchDisplayToggleButtonData('none')">NONE</div>
+                                <div id="smssearch_toggle_data_none" class="switch none" onclick="smsSearchDisplayToggleButtonData('none')">🚫</div>
                                 <div id="smssearch_toggle_data_yes" class="switch yes" onclick="smsSearchDisplayToggleButtonData('yes')">YES</div>
                                 <div id="smssearch_toggle_data_no" class="switch no" onclick="smsSearchDisplayToggleButtonData('no')">NO</div>
                                 <div id="smssearch_toggle_data_selector" class="selector"></div>
@@ -34,9 +34,9 @@
                         </th>
                         <th>
                         <div class="switch_parent">
-                            <span class="filter-label">Interesting?</span>
+                            <span class="filter-label">Labels</span>
                             <div class="switch_3_ways">
-                                <div id="smssearch_toggle_interesting_all" class="switch all" onclick="smsSearchDisplayToggleButtonInteresting('all')">ALL</div>
+                                <div id="smssearch_toggle_interesting_all" class="switch all" onclick="smsSearchDisplayToggleButtonInteresting('all')">🚫</div>
                                 <div id="smssearch_toggle_interesting_yes" class="switch yes" onclick="smsSearchDisplayToggleButtonInteresting('yes')">YES</div>
                                 <div id="smssearch_toggle_interesting_no" class="switch no" onclick="smsSearchDisplayToggleButtonInteresting('no')">NO</div>
                                 <div id="smssearch_toggle_interesting_none" class="switch none" onclick="smsSearchDisplayToggleButtonInteresting('none')">NONE</div>
@@ -76,13 +76,13 @@
                 <tbody>
                 {% for row in data %}
                     <tr>
-                        <td>{{ row[1] }}</td>
-                        <td>{{ row[2] | decode}}</td>
-                        <td>{{ row[3] | decode}}</td>
-                        <td>{{ row[4] | decode}}</td>
-                        <td>{{ row[5] }}</td>
-                        <td>{{ row[6] }}</td>
-                        <td>{{ row[7] }}</td>
+                        <td style="word-wrap: break-word">{{ row[1] }}</td>
+                        <td style="word-wrap: break-word">{{ row[2] | decode}}</td>
+                        <td style="word-wrap: break-word">{{ row[3] | decode}}</td>
+                        <td style="word-wrap: break-word">{{ row[4] | decode}}</td>
+                        <td style="word-wrap: break-word">{{ row[5] }}</td>
+                        <td style="word-wrap: break-word">{{ row[6] }}</td>
+                        <td style="word-wrap: break-word">{{ row[7] }}</td>
                         <td>
                             {%- if row[8] == True -%}
                             <button {{'id=file_classification_button_' ~ row[0]}} class='databtnenabled' onclick="displayData(this.id)">Get data</button>

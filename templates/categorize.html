@@ -47,21 +47,30 @@
         <thead>
             <tr onclick="window.location='#';">
                 <!-- smss.id, smss.url, smss.msg, smss.domain, targets.is_interesting, targets.is_interesting_desc  -->
-                <th style="width: 15%;">URL</th>
+                <!-- <th style="width: 15%;">URL</th>
                 <th style="width: 40%;">SMS</th>
                 <th style="width: 10%;">Domain</th>
                 <th style="width: 5%;">#</th>
                 <th style="width: 10%;">Interesting</th>
                 <th style="width: 18%;">Interesting desc</th>
                 <th style="width: 1%;">Save</th>
-                <th style="width: 1%;">Link</th>
+                <th style="width: 1%;">Link</th> -->
+
+                <th>URL</th>
+                <th>SMS</th>
+                <th>Domain</th>
+                <th>#</th>
+                <th>Interesting</th>
+                <th>Interesting desc</th>
+                <th>Save</th>
+                <th>Link</th>
             </tr>
         </thead>
         <tbody>
         {% for row in data %}
             <tr>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2] | decode}}</td>
+                <td style="word-wrap: break-word">{{ row[1] }}</td>
+                <td style="word-wrap: break-word">{{ row[2] | decode}}</td>
                 <td>
                     <div class="table-search">
                         <button class='icon-automation' onclick="window.open('/search?search={{row[3]}}', '_blank').focus();">

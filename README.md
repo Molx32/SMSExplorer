@@ -1,11 +1,16 @@
 
- # PROJECT NAME
+# SMS Explorer
+
+![alt text](static/readme.jpg?raw=true)
+
+## Warning
+The use of this repository is limited to research purposes only, and the owner does not encourage nor approves illegal activities.
 
 ## About
-TODO was designed to fecth publicly available SMSs received on Public SMS Services (PSS) platforms. It can be run with two modes : 
+*SMS Explorer* was designed to fecth publicly available SMSs received on Public SMS Services (PSS) platforms. It can be run with two modes : 
 - **Passive mode** - SMSs collected are simply stored in a local database, and can be explored in the web interface. 
 - **Agressive mode** - When running agressively, an additional process runs and tries to identify if any URL is present in SMSs. If an URL is found, it will try to access it and according to the use case it will result in :
-  -  *Access user account compromission* - Information is  PII (Personal Identifiable Information).
+  - *Access user account compromission* - Information is  PII (Personal Identifiable Information).
   - *Fulfill password reset procedures* - Informations added are login/password.
   - *Collect personal data with no account compromission* - Information is  PII (Personal Identifiable Information).
 
@@ -44,18 +49,23 @@ docker  compose  build
 docker  compose  up
 ```
 ### Access the website
-Navigate to 127.0.0.1:9000.
+Navigate to 127.0.0.1.
 
 ### Access database
 On the database container, access the terminal and type the following.
 ```
+-- Spawn bash in a container
+-- Get container name and connect to database container (<name> should be smsexplorer-database-1)
+docker container ls 
+sudo docker exec -it <name> bash
+
 -- Connect to database server
 psql -u postgres 
 
 -- List all databases
 # \l
 
--- Connect to a database
+-- Connect to a database (<db_name> should be postres)
 # \c <db_name>
 
 -- List all tables in the database
@@ -64,16 +74,6 @@ psql -u postgres
 -- Dump the entire data table
 # SELECT * FROM DATA;
 ```
-
-## Architecture
-
-The project uses docker to instanciate the following containers :
-
-- Python main code
-- Redis server
-- Redis queue
-- PostgreSQL database
-
 
 ### TODO
 ✅

@@ -2,25 +2,29 @@
     <div>
         <span class="logo">
             <img src="../static/logo.png" width="100%">
-            <span>SMS Explorer</span>
+            <span class="title">SMS Explorer</span>
         </span>
+
         <span class="cat">Dashboard</span>
-        <a id="menu_home" href="/home" class="subcat">Home</a>
+        <a id="menu_home" href="/home" name="Home" class="subcat">Home</a>
+        
         <!-- Search -->
         <span class="cat">Manage</span>
-        <a href="/search" class="subcat">Search</a>
-        <a href="/categorize" class="subcat">Categorize</a>
-        <a href="/automation" class="subcat">Automate</a>
+        <a href="/search"       name="Search"       class="subcat">Search</a>
+        <a href="/categorize"   name="Categorize"   class="subcat">Categorize</a>
+        <a href="/automation"   name="Automate"     class="subcat">Automate</a>
+
         <!-- Statistics -->
         <span class="cat">Statistics</span>
-        <a id="menu_statistics_telemetry" href="/statistics_telemetry" class="subcat">Telemetry</a>
-        <a id="menu_statistics_data" href="/statistics_data" class="subcat">Data</a>
+        <a id="menu_statistics_telemetry"   href="/statistics_telemetry"    name="Telemetry"    class="subcat">Telemetry</a>
+        <a id="menu_statistics_data"        href="/statistics_data"         name="Data"         class="subcat">Data</a>
+
         <!-- Settings -->
         <span class="cat">Settings</span>
-        <a id="menu_settings" href="/settings" class="subcat">Settings</a>
-        <!-- About -->
-        <a id="menu_about" href="/about" class="subcat">About</a>
-        <a id="menu_audit_logs" href="/settings/audit_logs" class="subcat">Audit logs</a>
+        <a id="menu_settings"   href="/settings"            name="Settings"     class="subcat">Settings</a>
+        <a id="menu_audit_logs" href="/settings/audit_logs" name="AuditLogs"    class="subcat">Audit logs</a>
+        <a id="menu_about"      href="/settings/about"      name="About"        class="subcat">About</a>
+        
     </div>
     <div>
         <div id="notification1" class="notification">
@@ -29,3 +33,14 @@
         </div>
     </div>
 </div>
+
+<script defer>
+    // Remove current active-tabs
+    // active_tabs = document.getElementsByClassName('active-tab')
+    // for (tab of active_tabs) {
+    //     tab.classList.toggle('active-tab');
+    // }
+    // Set active tab
+    active_tab = document.getElementsByName('{{active_tab}}')[0]
+    active_tab.style.fontWeight = 'bold'
+</script>
