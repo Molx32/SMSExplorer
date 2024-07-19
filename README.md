@@ -111,10 +111,27 @@ psql -u postgres
 # SELECT * FROM DATA;
 ```
 
+### Migrate database to another VPC
+```bash
+ssh username@host1
+  > sudo docker exec -it smsexplorer-database-1 bash
+    > pg_dump -U postgres postgres > /tmp/dbexport.pgsql
+  > docker cp smsexplorer-database-1:/tmp/dbexport.pgsql /tmp/dbexport.pgsql
+scp username@host1:/tmp/dbexport.pgsql .
+
+scp ./dbexport.pgsql username@host2:/tmp/dbexport.pgsql .
+ssh username@host2
+  > git clone https://github.com/Molx32/SMSExplorer.git
+  > cd SMSExplorer/
+  > sudo docker compose build
+  > sudo docker compose up -d database
+  > sudo docker cp /tmp/dbexport.pgsql smsexplorer-database-1:/tmp/
+  > sudo docker exec -it smsexplorer-database-1 bash
+    > psql -U postgres postgres < /tmp/dbexport.pgsql
+```
+
 ### Backlog
 Coming soon...
-
-
 
 ### Authors
 Molx32
