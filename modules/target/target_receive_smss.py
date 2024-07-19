@@ -66,6 +66,8 @@ class ReceiveSMSS:
                 # Get phone number
                 # and parse all results
                 DatabaseInterface.log(result)
+                if result.status_code != 200:
+                    continue
                 phone_num = result.request.path_url.split('/')[-2]
                 smss_temp = self.browser.parse_sms(result)
 
@@ -97,8 +99,6 @@ class Browser:
 
         # Data
         self.class_a    = "number-boxes1-item-button number-boxess1-item-button button blue stroke rounded tssb"
-        self.class_username = "x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xl565be x1s688f x5n08af x1tu3fi x3x7a5m x10wh9bi x1wdrske x8viiok x18hxmgj"
-
         self.class_sender = "col-md-3 sender"
         self.class_msg    = "col-md-6 msg"
         self.class_time   = "col-md-3 time"
@@ -117,10 +117,12 @@ class Browser:
         Logger.log('Browser - fetch_phones')
         # Fetch
         phone_urls = []
-        source = self.http_get(self.url).text
+        resp = self.http_get(self.url)
+        if resp.status_code != 200:
+            return phone_urls
 
         # Parse
-        soup = BeautifulSoup(source, features="lxml")
+        soup = BeautifulSoup(resp.text, features="lxml")
         for a in soup.find_all('a', class_=self.class_a):
             try:
                 sender = a.get('href')

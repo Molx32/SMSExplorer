@@ -557,9 +557,10 @@ class DatabaseInterface:
         # SELECT
         select  = "SELECT to_char(http_req_date, 'DD/MM/YY HH24:MI:SS'), http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
         where   = "WHERE LOWER(http_req) LIKE LOWER('%{}%') OR http_resp_code LIKE LOWER('%{}%') ".format(search, search)
+        order_by= "ORDER BY 1 DESC "
         limit   = "LIMIT " + str(end) + " "
         offset  = "OFFSET " + str(start) + ";"
-        query   = select + where + limit + offset
+        query   = select + where + order_by + limit + offset
         # WHERE
         cursor = Database().connect()
         cursor.execute(query)
