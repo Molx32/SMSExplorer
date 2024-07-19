@@ -120,6 +120,18 @@ function smsSearchSendSearchForm() {
 	form.submit();
 }
 
+function auditLogsSearchSendSearchForm() {
+	// Retrieve values from buttons
+	param_search 		= document.getElementById('auditlogs_search_button').value;
+
+	// Update form
+	document.getElementById('audit_logs_search_form_search').value		= param_search;
+
+	// Send form
+	form = document.getElementById('audit_logs_search_form');
+	form.submit();
+}
+
 
 /* ***************************************** */
 /*               categorize               */

@@ -1,19 +1,8 @@
 # System
-import requests
-import sys
-from datetime import datetime
+import urllib.parse
 import time
 import json
 import shutil
-
-from config.config import Config
-from modules.interface import TargetInterface, DataInterface, SecurityInterface
-
-# Database
-from database.database import DatabaseInterface
-
-# Temp
-from database.models import SMS
 
 # Flask
 from flask import Flask, abort
@@ -22,54 +11,57 @@ from flask import render_template
 from flask import send_file
 from flask import render_template_string
 from flask import jsonify
-import urllib.parse
-
 
 # Redis
 from redis import Redis
 import rq
-from rq.worker import Worker, WorkerStatus
-from rq.command import send_kill_horse_command
 from rq.command import send_stop_job_command
-from rq.registry import StartedJobRegistry
+
+# SMS Explorer
+from config.config import Config
+from modules.interface import TargetInterface, DataInterface, SecurityInterface
+# Database
+from database.database import DatabaseInterface
+
+
+
+
+
+
+
 
 
 # --------------------------------------------------------------------- #
 # -                            START UP                               - #
 # --------------------------------------------------------------------- #
 # Ensure database is up before running jobs
-is_database_up = False
-while not is_database_up:
-    is_database_up = True
+while 1:
     try:
+        print("****************** Connecting to database... ********************")
         DatabaseInterface.is_database_healthy()
+        break
     except Exception as e:
-        print("******************Database not ready********************")
-        print("******************Waiting for 5 secs********************")
-        is_database_up = False
+        print("****************** Database not ready ********************")
+        print("****************** Waiting for 5 secs ********************")
         time.sleep(5)
-        print("******************Try new connection********************")
 
-# Copy targets base to volumes so that workers
+# Copy targets CSV file to volumes so that workers
 # can access it before adding them to the database
-src = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
-dst = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
-shutil.copyfile(src, dst)
+SRC = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
+DST = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
+shutil.copyfile(SRC, DST)
 
 # Connect to redis and enqueue jobs
-redis_server = Redis.from_url(Config.REDIS_URL)
-task_queue  = rq.Queue(default_timeout=-1, connection=redis_server)
-# task_queue.enqueue(DatabaseInterface.targets_update, dst, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+redis_server    = Redis.from_url(Config.REDIS_URL)
+task_queue      = rq.Queue(default_timeout=-1, connection=redis_server)
+task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
 task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
-
-# This is the aggressive mode and should not be enabled by default
-# task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
 
 # Configure Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = Config.SECRET_KEY
+app.config['SECRET_KEY']                = Config.SECRET_KEY
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
-app.config['UPLOAD_FOLDER'] = Config.FOLDER_UPLOAD
+app.config['UPLOAD_FOLDER']             = Config.FOLDER_UPLOAD
 
 
 
@@ -77,12 +69,10 @@ app.config['UPLOAD_FOLDER'] = Config.FOLDER_UPLOAD
 
 
 
-# ---------------------------------------------------------------------- #
-# -                            WEB PAGES                               - #
-# ---------------------------------------------------------------------- #
-# ----------------------------------------------------------------- #
-# -                            HOME                               - #
-# ----------------------------------------------------------------- #
+# --------------------------------------------------------------------- #
+# -                           WEB SERVER                              - #
+# --------------------------------------------------------------------- #
+# -                              HOME                                 - #
 @app.route("/")
 @app.route("/home", methods = ['GET'])
 def home():
@@ -193,10 +183,10 @@ def categorize():
     tags_interesting        = Config.LIST_METADATA_INTERESTING_YES
 
     # Get SMSs
-    data    = DatabaseInterface.sms_get_targets(input_search, input_unqualified)
+    data    = DatabaseInterface.sms_get_targets(search, unqualified)
     count   = len(data)
 
-    return render_template('categorize.html', active_tab='Categorize', 
+    return render_template('categorize.html', active_tab='Categorize',
         data=data, count=count,
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
@@ -283,7 +273,7 @@ def statistics_data():
     data_get_count_by_category = DatabaseInterface.data_get_count_by_category(sanitized=True)
     for target in data_get_count_by_category:
         count               = target[0]
-        is_interesting      = target[2]
+        # is_interesting      = target[2]
         is_interesting_desc = target[3]
         for cat in Config.LIST_METADATA_INTERESTING_YES + Config.LIST_METADATA_INTERESTING_NO:
             if cat in is_interesting_desc:
@@ -331,7 +321,6 @@ def settings_update_mode():
     current_mode = DatabaseInterface.get_mode()
     if current_mode == mode:
         return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
-    
 
     # Set to passive
     if mode == Config.MODE_AGRESSIVE:
@@ -403,13 +392,11 @@ def settings_lock_app():
     if DatabaseInterface.getLock():
         abort(403)
     DatabaseInterface.setLock()
-    mode  = request.args.get('mode')
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
-    return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
 @app.route("/settings/audit_logs", methods = ['GET'])
 def audit_logs():
-    
+    # Get params
     input_search    = request.args.get('search')
     input_start     = request.args.get('start')
     input_end       = request.args.get('end')
@@ -417,16 +404,12 @@ def audit_logs():
     if not SecurityInterface.controlerAuditLogsSearch(input_search, input_start, input_end):
         abort(403)
     input_search    = SecurityInterface.controlerReassignString(input_search)
+    start, end      = SecurityInterface.controlerReassignDbStartEnd(input_start, input_end)
 
     # Get data
     audit_logs = DatabaseInterface.get_audit_logs(input_search, input_start, input_end)
-
-    try:
-        start       = max(int(input_start), 0)
-        end         = max(int(input_end), 50)
-    except:
-        start       = 0
-        end         = 50
+    
+    # Calculate previous and next pages
     prev_start  = max(start - 50, 0)
     prev_end    = prev_start + 50
     next_start  = start + 50
@@ -477,6 +460,6 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 @app.errorhandler(403)
-def page_not_found(e):
+def page_not_authorized(e):
     # note that we set the 404 status explicitly
     return render_template('403.html'), 403

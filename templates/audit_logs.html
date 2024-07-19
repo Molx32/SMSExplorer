@@ -42,6 +42,12 @@
                                 </div>
                             </div>
                         </th>
+                        <th>
+                            <form id="audit_logs_search_form">
+                                <input hidden id="audit_logs_search_form_search" type="text" name="search" value=""/>
+                                <button type="button" id="form_input_submit" value="Search" onclick="auditLogsSearchSendSearchForm()" class="form_button_search">Search</button>
+                            </form>
+                        </th>
                     </tr>
             </table>
             <table class="styled-table" style="height: 25%; width: 100%; overflow: auto">

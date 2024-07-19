@@ -95,3 +95,12 @@ class SecurityInterface:
         b = sec.filter_auditlogs_start(input_start)
         c = sec.filter_auditlogs_offset(input_offset)
         return all([a, b, c])
+
+    def controlerReassignDbStartEnd(input_start, input_end):
+        try:
+            start       = max(int(input_start), 0)
+            end         = max(int(input_end), 50)
+        except Exception:
+            start       = 0
+            end         = 50
+        return start, end
