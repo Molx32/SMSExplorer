@@ -342,7 +342,7 @@ class StickerMule(DataModule):
     def retrieve_data(self, url, msg):
         self.current_url = url
         self._parse_instagram_transform_url()
-        return self._parse_instagram()
+        return self._parse_stickermule()
     
     def _parse_stickermule(self):
         # Send request and parse it
