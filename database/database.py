@@ -238,17 +238,16 @@ class DatabaseInterface:
     
     def sms_get_top_ten_domains_unique(sanitized=False):
         # Default query
-        query  = "SELECT domain, count(distinct msg) FROM smss WHERE url <> '' GROUP BY domain ORDER BY count DESC;"
+        query  = "SELECT domain, count(distinct msg) FROM smss WHERE url <> '' GROUP BY domain ORDER BY count DESC LIMIT 10;"
 
         # Execute
         cursor  = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
-        
-    
+          
     def data_get_top_ten_countries_ratio(sanitized=False):
         # Default query
-        query = "SELECT country, round(sum(count)/count(*),1) as usage_ratio FROM( SELECT count(*), receiver, country FROM smss GROUP BY receiver,country) GROUP BY country ORDER BY usage_ratio DESC;"
+        query = "SELECT country, round(sum(count)/count(*),1) as usage_ratio FROM( SELECT count(*), receiver, country FROM smss GROUP BY receiver,country) GROUP BY country ORDER BY usage_ratio DESC LIMIT 10;"
 
         # Execute
         cursor  = Database().connect()

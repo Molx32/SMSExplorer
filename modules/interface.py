@@ -32,6 +32,7 @@ class DataInterface:
                 Booksy()
                 Lilly()
                 Rwdsuk()
+                StickerMule()
             except Exception as e:
                 raise e
 
