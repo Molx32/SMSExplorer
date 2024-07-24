@@ -77,6 +77,8 @@ if Config.REDIS_JOB_ID_INITIALIZE_TARGETS not in jobs:
     app.task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
 if Config.REDIS_JOB_ID_FETCHER not in jobs:
     app.task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
+if  Config.MODE_AGRESSIVE == DatabaseInterface.get_mode():
+    app.task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
 
 
 

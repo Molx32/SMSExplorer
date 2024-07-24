@@ -57,22 +57,24 @@ class DataModule:
         return None
 
     def _retrieve_data_redirect(self, url):
-        # Get additional data
-        data = {}
-        resp = requests.get(url, allow_redirects=False, verify=False)
-        DatabaseInterface.log(resp)
-        redirect_url = resp.headers['Location']
-        if redirect_url:
-            params = redirect_url.split('?')[1]
-            for param in params.split('&'):
-                key = param.split('=')[0]
-                val = param.split('=')[1]
-                data[key] = val
-        
-            json_data = json.dumps(data,ensure_ascii=False)
-            return json_data
-        
-        return {"Data":"None"}
+        try:
+            # Get additional data
+            data = {}
+            resp = requests.get(url, allow_redirects=False, verify=False)
+            DatabaseInterface.log(resp)
+            redirect_url = resp.headers['Location']
+            if redirect_url:
+                params = redirect_url.split('?')[1]
+                for param in params.split('&'):
+                    key = param.split('=')[0]
+                    val = param.split('=')[1]
+                    data[key] = val
+            
+                json_data = json.dumps(data,ensure_ascii=False)
+                return json_data
+            return {"Data":"None"}
+        except Exception:
+            return {"Data":"None"}
 
 
 class Instagram(DataModule):
