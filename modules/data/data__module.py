@@ -328,5 +328,35 @@ class NextBike(DataModule):
         json_data = json.dumps(data, ensure_ascii=False)
         return json_data
 
+class StickerMule(DataModule):
+    def __init__(self):
+        name        = 'StickerMule'
+        base_url    = 'https://www.stickermule.com'
 
+        self.current_url = ""
 
+        super().__init__(name, base_url)
+
+    def retrieve_data(self, url, msg):
+        self.current_url = url
+        self._parse_instagram_transform_url()
+        return self._parse_instagram()
+    
+    def _parse_stickermule(self):
+        # Send request and parse it
+        resp = requests.get(self.current_url, allow_redirects=True)
+        DatabaseInterface.log(resp)
+        try:
+            soup = BeautifulSoup(resp.text, features="lxml")
+            stickermule_data = json.loads(soup.find('script', {'id':'__NEXT_DATA__'}).text)
+            user_data = {}
+            user_data['id']                 = stickermule_data['props']['pageProps']['order']['number']
+            user_data['email']              = stickermule_data['props']['pageProps']['order']['email']
+            user_data['businessEntity']     = stickermule_data['props']['pageProps']['order']['businessEntity']
+            user_data['cardDetails']        = stickermule_data['props']['pageProps']['order']['payments'][0]['cardDetails']
+            user_data['shippingAddress']    = stickermule_data['props']['pageProps']['order']['shippingAddress']
+            user_data['billingAddress']     = stickermule_data['props']['pageProps']['order']['billingAddress']
+            user_data['trackingUrl']        = stickermule_data['props']['pageProps']['order']['trackingUrl']
+            return json.dumps(user_data,ensure_ascii=False)
+        except Exception:
+            return None
