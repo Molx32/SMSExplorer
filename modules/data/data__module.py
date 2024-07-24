@@ -238,29 +238,24 @@ class Booksy(DataModule):
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
-        # try:
-        # Init
-        data = {}
-        regex = r"window\.top\.location.*;"
-        # Send request and parse
-        resp = requests.get(url, allow_redirects=False)
-        DatabaseInterface.log(resp)
-        line = re.search(regex, resp.text).group(0)
-        line = line.replace('windows.top.location = ', '')
-        line = line.replace('validateProtocol', '')
-        line = line.replace('("', '')
-        line = line.replace('");', '')
-        params = line.split('?')[1]
-        # Handle params
-        for param in params.split('&'):
-            key = param.split('=')[0]
-            val = param.split('=')[1]
-            data[key] = val
-        
-        json_data = json.dumps(data, ensure_ascii=False)
-        return json_data
-        # except:
-        #     return {"Data":"Error"}
+        try:
+            # Send request and parse
+            resp = requests.get(url, allow_redirects=False)
+            DatabaseInterface.log(resp)
+            
+            # Parse
+            soup = BeautifulSoup(resp.text, features="lxml")
+            metas = soup.find_all('meta', {'property':'og:url'})
+            url_params = metas[0]['content'].split('&')
+            email = {'N/A'}
+            for url_param in url_params:
+                if 'email' in url_param:
+                    email = url_param.split('=')[1].replace('%40','@')
+            
+            json_data = json.dumps({'email':email}, ensure_ascii=False)
+            return json_data
+        except Exception:
+            return None
 
 class Lilly(DataModule):
     def __init__(self):
