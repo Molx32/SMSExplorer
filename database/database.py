@@ -122,6 +122,8 @@ class DatabaseInterface:
 
     def sms_insert_data(sms_id, json_data):
         try:
+            if not json_data:
+                return
             cursor = Database().connect()
             query   = """ INSERT INTO DATA(SMS_DATA,SMS_ID) VALUES('{}', {}); """.format(json_data, sms_id)
             cursor.execute(query)

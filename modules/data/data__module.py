@@ -72,9 +72,9 @@ class DataModule:
             
                 json_data = json.dumps(data,ensure_ascii=False)
                 return json_data
-            return {"Data":"None"}
+            return None
         except Exception:
-            return {"Data":"None"}
+            return None
 
 
 class Instagram(DataModule):
@@ -205,7 +205,7 @@ class Superprof(DataModule):
         DatabaseInterface.log(response)
         if response.json():
             return response.json()
-        return {"Data":"None"}
+        return None
 
 class Konto(DataModule):
     def __init__(self):
