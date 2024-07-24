@@ -229,7 +229,7 @@ class SuitsMeCard(DataModule):
         return self._retrieve_data_in_msg(msg)
 
     def _retrieve_data_in_msg(self, msg):
-        return {"data":msg.split('.')[0].replace('Hi ')}
+        return {"data":msg.split('.')[0].replace('Hi ','')}
 
 class Booksy(DataModule):
     def __init__(self):
