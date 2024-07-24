@@ -22,7 +22,7 @@ class DataInterface:
         while 1:
             try:
                 AirIndia()
-                Instagram()
+                # Instagram()
                 Earnrwds()
                 # Ukrwds() -- Need to execute JS
                 Moj()
