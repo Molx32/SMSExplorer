@@ -96,6 +96,8 @@ class SMS:
     def _parse_msg(self):
         self.msg = self.msg.replace('p***word', 'password')
         self.msg = self.msg.replace('do***ent', 'document')
+        self.msg = self.msg.replace('iden***y', 'identity')
+        self.msg = self.msg.replace('***igned', 'assigned')
 
     def __str__(self):
         keys = ", ".join(list(self.__dict__.keys()))

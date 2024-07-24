@@ -47,7 +47,7 @@ services:
         command: rq worker --name data --url redis://redisserver:6379
 
     # Web server
-    opensms:
+    smsexplorer:
         image: opensms:latest
         depends_on:
             - redisserver

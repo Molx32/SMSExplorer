@@ -2,6 +2,7 @@
 import urllib.parse
 import time
 import json
+import sys
 import shutil
 
 # Flask
@@ -15,6 +16,7 @@ from flask import jsonify
 # Redis
 from redis import Redis
 import rq
+from rq.registry import StartedJobRegistry
 from rq.command import send_stop_job_command
 
 # SMS Explorer
@@ -51,11 +53,9 @@ SRC = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
 DST = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
 shutil.copyfile(SRC, DST)
 
-# Connect to redis and enqueue jobs
-redis_server    = Redis.from_url(Config.REDIS_URL)
-task_queue      = rq.Queue(default_timeout=-1, connection=redis_server)
-task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
+
+
+
 
 # Configure Flask app
 app = Flask(__name__)
@@ -63,6 +63,20 @@ app.config['SECRET_KEY']                = Config.SECRET_KEY
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
 app.config['UPLOAD_FOLDER']             = Config.FOLDER_UPLOAD
 
+# Redis Connection
+redis_server    = Redis.from_url(Config.REDIS_URL)
+registry        = StartedJobRegistry('default', connection=redis_server)
+jobs_running    = registry.get_job_ids()
+jobs_expired    = registry.get_expired_job_ids()
+jobs_queued     = registry.get_queue().job_ids
+
+# Define queue and enqueue jobs
+app.task_queue  = rq.Queue(default_timeout=-1, connection=redis_server)
+jobs = list(set(jobs_running) | set(jobs_queued))
+if Config.REDIS_JOB_ID_INITIALIZE_TARGETS not in jobs:
+    app.task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+if Config.REDIS_JOB_ID_FETCHER not in jobs:
+    app.task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
 
 
 
@@ -98,6 +112,14 @@ def home():
         count_data=count_data, count_unknown=count_unknown,
         targets_count_known=targets_count_known, targets_count_interesting=targets_count_interesting, targets_count_automated=targets_count_automated,
         activities_last_data=activities_last_data, top_domains=top_domains, top_errors=top_errors)
+
+@app.route("/test", methods= ['GET'])
+def test():
+    print(app.task_queue)
+    job = rq.job.Job.fetch(Config.REDIS_JOB_ID_FETCHER, connection=redis_server)
+    print(Config.REDIS_JOB_ID_FETCHER + ' - ' + str(job.get_status()))
+    return render_template('search.html', jobs=Config.REDIS_JOB_ID_FETCHER)
+
 
 
 # ------------------------------------------------------------ #
@@ -178,7 +200,7 @@ def categorize():
         abort(403)
     search      = SecurityInterface.controlerReassignString(input_search)
     unqualified = SecurityInterface.controlerReassignBoolean(input_unqualified)
-
+    print(unqualified)
     tags_not_interesting    = Config.LIST_METADATA_INTERESTING_NO
     tags_interesting        = Config.LIST_METADATA_INTERESTING_YES
 
@@ -234,13 +256,13 @@ def statistics_telemetry():
     san_sms_get_count_by_day_labels = [str(row[0]) for row in san_sms_get_count_by_day]
     san_sms_get_count_by_day_values = [str(row[1]) for row in san_sms_get_count_by_day]
 
-    san_sms_get_top_ten_domains = DatabaseInterface.sms_get_top_ten_domains(sanitized=True)
-    san_sms_get_top_ten_domains_labels = [str(row[0]) for row in san_sms_get_top_ten_domains]
-    san_sms_get_top_ten_domains_values = [str(row[1]) for row in san_sms_get_top_ten_domains]
+    sms_get_top_ten_domains_unique = DatabaseInterface.sms_get_top_ten_domains_unique(sanitized=True)
+    sms_get_top_ten_domains_unique_labels = [str(row[0]) for row in sms_get_top_ten_domains_unique]
+    sms_get_top_ten_domains_unique_values = [str(row[1]) for row in sms_get_top_ten_domains_unique]
 
-    san_sms_get_top_ten_countries = DatabaseInterface.sms_get_top_ten_countries(sanitized=True)
-    san_sms_get_top_ten_countries_labels = [str(row[0]) for row in san_sms_get_top_ten_countries]
-    san_sms_get_top_ten_countries_values = [str(row[1]) for row in san_sms_get_top_ten_countries]
+    sms_get_top_ten_countries_ratio = DatabaseInterface.data_get_top_ten_countries_ratio(sanitized=True)
+    sms_get_top_ten_countries_ratio_labels = [str(row[0]) for row in sms_get_top_ten_countries_ratio]
+    sms_get_top_ten_countries_ratio_values = [str(row[1]) for row in sms_get_top_ten_countries_ratio]
 
 
     return render_template('statistics_telemetry.html', active_tab='Telemetry',
@@ -249,19 +271,19 @@ def statistics_telemetry():
         sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values,
 
         san_sms_get_count_by_day_values=san_sms_get_count_by_day_values, san_sms_get_count_by_day_labels=san_sms_get_count_by_day_labels,
-        san_sms_get_top_ten_domains_labels=san_sms_get_top_ten_domains_labels, san_sms_get_top_ten_domains_values=san_sms_get_top_ten_domains_values,
-        san_sms_get_top_ten_countries_labels=san_sms_get_top_ten_countries_labels, san_sms_get_top_ten_countries_values=san_sms_get_top_ten_countries_values)
+        sms_get_top_ten_domains_unique_labels=sms_get_top_ten_domains_unique_labels, sms_get_top_ten_domains_unique_values=sms_get_top_ten_domains_unique_values,
+        sms_get_top_ten_countries_ratio_labels=sms_get_top_ten_countries_ratio_labels, sms_get_top_ten_countries_ratio_values=sms_get_top_ten_countries_ratio_values)
 
 @app.route("/statistics_data", methods = ['GET'])
 def statistics_data():
     # GET SANITIZED DATA
-    data_sms_get_count_by_day = DatabaseInterface.data_get_count_by_hour(sanitized=True)
+    data_sms_get_count_by_day = DatabaseInterface.data_get_count_by_day(sanitized=True)
     data_sms_get_count_by_day_labels = [str(row[0]) for row in data_sms_get_count_by_day]
     data_sms_get_count_by_day_values = [str(row[1]) for row in data_sms_get_count_by_day]
 
-    data_sms_get_url_count_by_hour = DatabaseInterface.data_get_url_count_by_hour(sanitized=True)
-    data_sms_get_url_count_by_hour_labels = [str(row[0]) for row in data_sms_get_url_count_by_hour]
-    data_sms_get_url_count_by_hour_values = [str(row[1]) for row in data_sms_get_url_count_by_hour]
+    data_sms_get_url_count_by_day = DatabaseInterface.data_get_url_count_by_day(sanitized=True)
+    data_sms_get_url_count_by_day_labels = [str(row[0]) for row in data_sms_get_url_count_by_day]
+    data_sms_get_url_count_by_day_values = [str(row[1]) for row in data_sms_get_url_count_by_day]
 
     # Get URL per cat - Init
     count_by_category = {}
@@ -291,7 +313,7 @@ def statistics_data():
 
     return render_template('statistics_data.html', active_tab='Data',
         data_sms_get_count_by_day_values=data_sms_get_count_by_day_values, data_sms_get_count_by_day_labels=data_sms_get_count_by_day_labels,
-        data_sms_get_url_count_by_hour_labels=data_sms_get_url_count_by_hour_labels, data_sms_get_url_count_by_hour_values=data_sms_get_url_count_by_hour_values,
+        data_sms_get_url_count_by_day_labels=data_sms_get_url_count_by_day_labels, data_sms_get_url_count_by_day_values=data_sms_get_url_count_by_day_values,
         count_by_category_labels=count_by_category_labels, count_by_category_values=count_by_category_values,
         data_sms_get_top_ten_domains_labels=data_sms_get_top_ten_domains_labels, data_sms_get_top_ten_domains_values=data_sms_get_top_ten_domains_values,
         data_sms_get_top_ten_countries_labels=data_sms_get_top_ten_countries_labels, data_sms_get_top_ten_countries_values=data_sms_get_top_ten_countries_values)
@@ -326,7 +348,7 @@ def settings_update_mode():
     if mode == Config.MODE_AGRESSIVE:
         DatabaseInterface.switch_mode(mode)
         print("Set to aggressive")
-        task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
+        app.task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
     # Set to agressive
     if mode == Config.MODE_PASSIVE:
         DatabaseInterface.switch_mode(mode)
