@@ -80,7 +80,7 @@ class DataModule:
 class Instagram(DataModule):
     def __init__(self):
         name        = 'Instagram'
-        base_url    = 'https://ig.me/'
+        base_url    = 'ig.me/'
 
         self.current_url = ""
         self.rate_limit = 20  # Equiv. 200 req/hour
@@ -130,7 +130,7 @@ class Instagram(DataModule):
 class Ukrwds(DataModule):
     def __init__(self):
         name        = 'Ukrwds'
-        base_url    = 'https://ukrwds.com/'
+        base_url    = 'ukrwds.com/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -140,7 +140,7 @@ class Ukrwds(DataModule):
 class Rwdsuk(DataModule):
     def __init__(self):
         name        = 'Rwdsuk'
-        base_url    = 'https://rwdsuk.com/'
+        base_url    = 'rwdsuk.com/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -149,7 +149,7 @@ class Rwdsuk(DataModule):
 class Earnrwds(DataModule):
     def __init__(self):
         name        = 'Earnrwds'
-        base_url    = 'https://earnrwds.com/'
+        base_url    = 'earnrwds.com/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -159,7 +159,7 @@ class Earnrwds(DataModule):
 class AirIndia(DataModule):
     def __init__(self):
         name        = 'AirIndia'
-        base_url    = 'https://nps.airindia.in/'
+        base_url    = 'nps.airindia.in/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -169,7 +169,7 @@ class AirIndia(DataModule):
 class Moj(DataModule):
     def __init__(self):
         name        = 'Moj'
-        base_url    = 'https://force-us-app.moj.io/'
+        base_url    = 'force-us-app.moj.io/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -179,7 +179,7 @@ class Moj(DataModule):
 class Superprof(DataModule):
     def __init__(self):
         name        = 'Superprof'
-        base_url    = 'https://www.superprof.es/'
+        base_url    = 'superprof.es/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -210,7 +210,7 @@ class Superprof(DataModule):
 class Konto(DataModule):
     def __init__(self):
         name        = 'Konto'
-        base_url    = 'https://app.konto.com/'
+        base_url    = 'app.konto.com/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -222,7 +222,7 @@ class Konto(DataModule):
 class SuitsMeCard(DataModule):
     def __init__(self):
         name        = 'SuitsMeCard'
-        base_url    = 'https://suitsmecard.com/'
+        base_url    = 'suitsmecard.com/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -234,7 +234,7 @@ class SuitsMeCard(DataModule):
 class Booksy(DataModule):
     def __init__(self):
         name        = 'Boosky'
-        base_url    = 'https://boosky.com/'
+        base_url    = 'boosky.com/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -265,7 +265,7 @@ class Booksy(DataModule):
 class Lilly(DataModule):
     def __init__(self):
         name        = 'Lilly'
-        base_url    = 'https://e.lilly/'
+        base_url    = 'e.lilly/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -318,7 +318,7 @@ class Lilly(DataModule):
 class NextBike(DataModule):
     def __init__(self):
         name        = 'NextBike'
-        base_url    = 'https://www.nextbike.de/'
+        base_url    = 'nextbike.de'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -333,7 +333,7 @@ class NextBike(DataModule):
 class StickerMule(DataModule):
     def __init__(self):
         name        = 'StickerMule'
-        base_url    = 'https://www.stickermule.com'
+        base_url    = 'stickermule.com'
 
         self.current_url = ""
 

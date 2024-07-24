@@ -365,8 +365,9 @@ class DatabaseInterface:
         # SELECT
         select  = "SELECT http_req_date, http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
         where   = "WHERE http_resp_code <> '200 OK' "
+        orderby = "ORDER BY 1 DESC "
         limit   = "LIMIT 5;"
-        query   = select + where + limit
+        query   = select + where + orderby + limit
         # WHERE
         cursor = Database().connect()
         cursor.execute(query)
@@ -404,7 +405,7 @@ class DatabaseInterface:
     # DATA HANDLERS
     def get_sms_by_url(url):
         cursor = Database().connect()
-        cursor.execute("""SELECT id,url,msg FROM SMSS WHERE URL LIKE '{}%' AND DATA_HANDLED=False;""".format(url))
+        cursor.execute("""SELECT id,url,msg FROM SMSS WHERE URL LIKE '%{}%' AND DATA_HANDLED=False;""".format(url))
         return cursor.fetchall()
 
 
