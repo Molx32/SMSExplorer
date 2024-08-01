@@ -59,7 +59,7 @@ class DatabaseInterface:
         # SELECT 
         select  = ""
         select  = select + "SELECT "
-        select  = select + "smss.id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country, url, smss.domain, data_handled, is_interesting, is_automated, is_interesting_desc """
+        select  = select + "smss.id, smss.receive_date, sender, receiver, msg, country, url, smss.domain, data_handled, is_interesting, is_automated, is_interesting_desc """
         select  = select + "FROM smss "
 
         # JOIN
@@ -122,6 +122,8 @@ class DatabaseInterface:
 
     def sms_insert_data(sms_id, json_data):
         try:
+            if not json_data:
+                return
             cursor = Database().connect()
             query   = """ INSERT INTO DATA(SMS_DATA,SMS_ID) VALUES('{}', {}); """.format(json_data, sms_id)
             cursor.execute(query)
@@ -141,26 +143,9 @@ class DatabaseInterface:
         cursor.execute("""SELECT COUNT(id) FROM SMSS;""")
         return cursor.fetchone()
 
-    def sms_get_count_by_hour(sanitized=False):
-        # Default query
-        select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM SMSS"
-        where   = ""
-        end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
-
-        # Sanitized query
-        if sanitized:
-            excluded_domains = "'" + "','".join(Config.EXCLUDED_DOMAINS) + "'"
-            where = where + """ WHERE smss.domain NOT IN ({})""".format(excluded_domains)
-
-        # Execute
-        query   = select + where + end
-        cursor  = Database().connect()
-        cursor.execute(query)
-        return cursor.fetchall()
-
     def sms_get_count_by_day(sanitized=False):
         # Default query
-        select  = "SELECT to_char(DATE_TRUNC('day', receive_date), 'DD/MM/YY') as day, COUNT(id) FROM SMSS"
+        select  = "SELECT DATE_TRUNC('day', receive_date) as day, COUNT(id) FROM SMSS"
         where   = ""
         end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 365;"
 
@@ -209,9 +194,9 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
-    def data_get_count_by_hour(sanitized=False):
+    def data_get_count_by_day(sanitized=False):
         # Default query
-        select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM smss"
+        select  = "SELECT DATE_TRUNC('day', receive_date) as hour, COUNT(id) FROM smss"
         where   = " WHERE data_handled = True"
         end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
 
@@ -221,9 +206,9 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
-    def data_get_url_count_by_hour(sanitized=False):
+    def data_get_url_count_by_day(sanitized=False):
         # Default query
-        select  = "SELECT to_char(DATE_TRUNC('hour', receive_date), 'DD/MM/YY HH24:MI:SS') as hour, COUNT(id) FROM smss"
+        select  = "SELECT DATE_TRUNC('day', receive_date) as hour, COUNT(id) FROM smss"
         where   = " WHERE url <> '' and url IS NOT NULL"
         end     = " GROUP BY 1 ORDER BY 1 ASC LIMIT 744;"
 
@@ -249,6 +234,24 @@ class DatabaseInterface:
 
         # Execute
         query   = select + where + end
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+    
+    def sms_get_top_ten_domains_unique(sanitized=False):
+        # Default query
+        query  = "SELECT domain, count(distinct msg) FROM smss WHERE url <> '' GROUP BY domain ORDER BY count DESC LIMIT 10;"
+
+        # Execute
+        cursor  = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()
+          
+    def data_get_top_ten_countries_ratio(sanitized=False):
+        # Default query
+        query = "SELECT country, round(sum(count)/count(*),1) as usage_ratio FROM( SELECT count(*), receiver, country FROM smss GROUP BY receiver,country) GROUP BY country ORDER BY usage_ratio DESC LIMIT 10;"
+
+        # Execute
         cursor  = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
@@ -306,7 +309,7 @@ class DatabaseInterface:
 
     def sms_activities_last_data():
         cursor = Database().connect()
-        cursor.execute("SELECT id, to_char(smss.receive_date, 'DD/MM/YY HH24:MI:SS'), sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' ORDER BY smss.receive_date DESC LIMIT 5;")
+        cursor.execute("SELECT id, smss.receive_date, sender, receiver, msg, country FROM SMSS WHERE data_handled = 't' ORDER BY smss.receive_date DESC LIMIT 5;")
         return cursor.fetchall()
 
     def sms_activities_top_domains():
@@ -360,10 +363,11 @@ class DatabaseInterface:
 
     def logs_get_errors():
         # SELECT
-        select  = "SELECT to_char(http_req_date, 'DD/MM/YY HH24:MI:SS'), http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
+        select  = "SELECT http_req_date, http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
         where   = "WHERE http_resp_code <> '200 OK' "
+        orderby = "ORDER BY 1 DESC "
         limit   = "LIMIT 5;"
-        query   = select + where + limit
+        query   = select + where + orderby + limit
         # WHERE
         cursor = Database().connect()
         cursor.execute(query)
@@ -382,7 +386,7 @@ class DatabaseInterface:
             search = ''
 
         # Handled 'where'
-        if unqualified == 'YES':
+        if unqualified:
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND (is_interesting IS NULL or is_interesting_desc = '') AND url <> '' """.format(search)
         else:
             where = "WHERE LOWER(smss.domain) LIKE LOWER('%{}%') AND url <> '' """.format(search)
@@ -401,7 +405,7 @@ class DatabaseInterface:
     # DATA HANDLERS
     def get_sms_by_url(url):
         cursor = Database().connect()
-        cursor.execute("""SELECT id,url,msg FROM SMSS WHERE URL LIKE '{}%' AND DATA_HANDLED=False;""".format(url))
+        cursor.execute("""SELECT id,url,msg FROM SMSS WHERE URL LIKE '%{}%' AND DATA_HANDLED=False;""".format(url))
         return cursor.fetchall()
 
 
@@ -555,7 +559,7 @@ class DatabaseInterface:
         if not search:
             search = ""
         # SELECT
-        select  = "SELECT to_char(http_req_date, 'DD/MM/YY HH24:MI:SS'), http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
+        select  = "SELECT http_req_date, http_verb, http_req, http_resp_code, http_resp_content FROM AuditLogs "
         where   = "WHERE LOWER(http_req) LIKE LOWER('%{}%') OR http_resp_code LIKE LOWER('%{}%') ".format(search, search)
         order_by= "ORDER BY 1 DESC "
         limit   = "LIMIT " + str(end) + " "
@@ -567,18 +571,19 @@ class DatabaseInterface:
         return cursor.fetchall()
 
     def log(resp):
-        http_req_date       = datetime.now()
-        http_req_date       = http_req_date.strftime("%m/%d/%Y %H:%M:%S")
-        http_verb           = resp.request.method
-        http_resp_code      = str(resp.status_code) + " " + resp.reason
-        http_resp_content   = ""
-        http_req            = resp.url
-        
-        # SELECT
-        query  = "INSERT INTO AUDITLOGS(http_req_date, http_verb, http_req, http_resp_code, http_resp_content) VALUES('{}' ,'{}','{}','{}','{}');".format(http_req_date, http_verb, http_req, http_resp_code, http_resp_content)
-        # WHERE
-        cursor = Database().connect()
-        cursor.execute(query)
+        if resp:
+            http_req_date       = datetime.now()
+            http_req_date       = http_req_date.strftime("%m/%d/%Y %H:%M:%S")
+            http_verb           = resp.request.method
+            http_resp_code      = str(resp.status_code) + " " + resp.reason
+            http_resp_content   = ""
+            http_req            = resp.url
+            
+            # SELECT
+            query  = "INSERT INTO AUDITLOGS(http_req_date, http_verb, http_req, http_resp_code, http_resp_content) VALUES('{}' ,'{}','{}','{}','{}');".format(http_req_date, http_verb, http_req, http_resp_code, http_resp_content)
+            # WHERE
+            cursor = Database().connect()
+            cursor.execute(query)
 
 ############################### SETTINGS ###################################
 # Well, all options accessible using the settings page.                    #

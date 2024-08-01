@@ -4,6 +4,7 @@ gevent.monkey.patch_all()
 import urllib.parse
 import time
 import json
+import sys
 import shutil
 import requests
 
@@ -107,6 +108,14 @@ def home():
         targets_count_known=targets_count_known, targets_count_interesting=targets_count_interesting, targets_count_automated=targets_count_automated,
         activities_last_data=activities_last_data, top_domains=top_domains, top_errors=top_errors)
 
+@app.route("/test", methods= ['GET'])
+def test():
+    print(app.task_queue)
+    job = rq.job.Job.fetch(Config.REDIS_JOB_ID_FETCHER, connection=redis_server)
+    print(Config.REDIS_JOB_ID_FETCHER + ' - ' + str(job.get_status()))
+    return render_template('search.html', jobs=Config.REDIS_JOB_ID_FETCHER)
+
+
 
 # ------------------------------------------------------------ #
 # -                      SMS ENDPOINT                        - #
@@ -186,7 +195,7 @@ def categorize():
         abort(403)
     search      = SecurityInterface.controlerReassignString(input_search)
     unqualified = SecurityInterface.controlerReassignBoolean(input_unqualified)
-
+    print(unqualified)
     tags_not_interesting    = Config.LIST_METADATA_INTERESTING_NO
     tags_interesting        = Config.LIST_METADATA_INTERESTING_YES
 
@@ -242,13 +251,13 @@ def statistics_telemetry():
     san_sms_get_count_by_day_labels = [str(row[0]) for row in san_sms_get_count_by_day]
     san_sms_get_count_by_day_values = [str(row[1]) for row in san_sms_get_count_by_day]
 
-    san_sms_get_top_ten_domains = DatabaseInterface.sms_get_top_ten_domains(sanitized=True)
-    san_sms_get_top_ten_domains_labels = [str(row[0]) for row in san_sms_get_top_ten_domains]
-    san_sms_get_top_ten_domains_values = [str(row[1]) for row in san_sms_get_top_ten_domains]
+    sms_get_top_ten_domains_unique = DatabaseInterface.sms_get_top_ten_domains_unique(sanitized=True)
+    sms_get_top_ten_domains_unique_labels = [str(row[0]) for row in sms_get_top_ten_domains_unique]
+    sms_get_top_ten_domains_unique_values = [str(row[1]) for row in sms_get_top_ten_domains_unique]
 
-    san_sms_get_top_ten_countries = DatabaseInterface.sms_get_top_ten_countries(sanitized=True)
-    san_sms_get_top_ten_countries_labels = [str(row[0]) for row in san_sms_get_top_ten_countries]
-    san_sms_get_top_ten_countries_values = [str(row[1]) for row in san_sms_get_top_ten_countries]
+    sms_get_top_ten_countries_ratio = DatabaseInterface.data_get_top_ten_countries_ratio(sanitized=True)
+    sms_get_top_ten_countries_ratio_labels = [str(row[0]) for row in sms_get_top_ten_countries_ratio]
+    sms_get_top_ten_countries_ratio_values = [str(row[1]) for row in sms_get_top_ten_countries_ratio]
 
 
     return render_template('statistics_telemetry.html', active_tab='Telemetry',
@@ -257,19 +266,19 @@ def statistics_telemetry():
         sms_get_top_ten_countries_labels=sms_get_top_ten_countries_labels, sms_get_top_ten_countries_values=sms_get_top_ten_countries_values,
 
         san_sms_get_count_by_day_values=san_sms_get_count_by_day_values, san_sms_get_count_by_day_labels=san_sms_get_count_by_day_labels,
-        san_sms_get_top_ten_domains_labels=san_sms_get_top_ten_domains_labels, san_sms_get_top_ten_domains_values=san_sms_get_top_ten_domains_values,
-        san_sms_get_top_ten_countries_labels=san_sms_get_top_ten_countries_labels, san_sms_get_top_ten_countries_values=san_sms_get_top_ten_countries_values)
+        sms_get_top_ten_domains_unique_labels=sms_get_top_ten_domains_unique_labels, sms_get_top_ten_domains_unique_values=sms_get_top_ten_domains_unique_values,
+        sms_get_top_ten_countries_ratio_labels=sms_get_top_ten_countries_ratio_labels, sms_get_top_ten_countries_ratio_values=sms_get_top_ten_countries_ratio_values)
 
 @app.route("/statistics_data", methods = ['GET'])
 def statistics_data():
     # GET SANITIZED DATA
-    data_sms_get_count_by_day = DatabaseInterface.data_get_count_by_hour(sanitized=True)
+    data_sms_get_count_by_day = DatabaseInterface.data_get_count_by_day(sanitized=True)
     data_sms_get_count_by_day_labels = [str(row[0]) for row in data_sms_get_count_by_day]
     data_sms_get_count_by_day_values = [str(row[1]) for row in data_sms_get_count_by_day]
 
-    data_sms_get_url_count_by_hour = DatabaseInterface.data_get_url_count_by_hour(sanitized=True)
-    data_sms_get_url_count_by_hour_labels = [str(row[0]) for row in data_sms_get_url_count_by_hour]
-    data_sms_get_url_count_by_hour_values = [str(row[1]) for row in data_sms_get_url_count_by_hour]
+    data_sms_get_url_count_by_day = DatabaseInterface.data_get_url_count_by_day(sanitized=True)
+    data_sms_get_url_count_by_day_labels = [str(row[0]) for row in data_sms_get_url_count_by_day]
+    data_sms_get_url_count_by_day_values = [str(row[1]) for row in data_sms_get_url_count_by_day]
 
     # Get URL per cat - Init
     count_by_category = {}
@@ -299,7 +308,7 @@ def statistics_data():
 
     return render_template('statistics_data.html', active_tab='Data',
         data_sms_get_count_by_day_values=data_sms_get_count_by_day_values, data_sms_get_count_by_day_labels=data_sms_get_count_by_day_labels,
-        data_sms_get_url_count_by_hour_labels=data_sms_get_url_count_by_hour_labels, data_sms_get_url_count_by_hour_values=data_sms_get_url_count_by_hour_values,
+        data_sms_get_url_count_by_day_labels=data_sms_get_url_count_by_day_labels, data_sms_get_url_count_by_day_values=data_sms_get_url_count_by_day_values,
         count_by_category_labels=count_by_category_labels, count_by_category_values=count_by_category_values,
         data_sms_get_top_ten_domains_labels=data_sms_get_top_ten_domains_labels, data_sms_get_top_ten_domains_values=data_sms_get_top_ten_domains_values,
         data_sms_get_top_ten_countries_labels=data_sms_get_top_ten_countries_labels, data_sms_get_top_ten_countries_values=data_sms_get_top_ten_countries_values)

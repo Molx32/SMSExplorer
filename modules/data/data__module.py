@@ -57,28 +57,30 @@ class DataModule:
         return None
 
     def _retrieve_data_redirect(self, url):
-        # Get additional data
-        data = {}
-        resp = requests.get(url, allow_redirects=False, verify=False)
-        DatabaseInterface.log(resp)
-        redirect_url = resp.headers['Location']
-        if redirect_url:
-            params = redirect_url.split('?')[1]
-            for param in params.split('&'):
-                key = param.split('=')[0]
-                val = param.split('=')[1]
-                data[key] = val
-        
-            json_data = json.dumps(data,ensure_ascii=False)
-            return json_data
-        
-        return {"Data":"None"}
+        try:
+            # Get additional data
+            data = {}
+            resp = requests.get(url, allow_redirects=False, verify=False)
+            DatabaseInterface.log(resp)
+            redirect_url = resp.headers['Location']
+            if redirect_url:
+                params = redirect_url.split('?')[1]
+                for param in params.split('&'):
+                    key = param.split('=')[0]
+                    val = param.split('=')[1]
+                    data[key] = val
+            
+                json_data = json.dumps(data,ensure_ascii=False)
+                return json_data
+            return None
+        except Exception:
+            return None
 
 
 class Instagram(DataModule):
     def __init__(self):
         name        = 'Instagram'
-        base_url    = 'https://ig.me/'
+        base_url    = 'ig.me/'
 
         self.current_url = ""
         self.rate_limit = 20  # Equiv. 200 req/hour
@@ -128,7 +130,7 @@ class Instagram(DataModule):
 class Ukrwds(DataModule):
     def __init__(self):
         name        = 'Ukrwds'
-        base_url    = 'https://ukrwds.com/'
+        base_url    = 'ukrwds.com/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -138,7 +140,7 @@ class Ukrwds(DataModule):
 class Rwdsuk(DataModule):
     def __init__(self):
         name        = 'Rwdsuk'
-        base_url    = 'https://rwdsuk.com/'
+        base_url    = 'rwdsuk.com/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -147,7 +149,7 @@ class Rwdsuk(DataModule):
 class Earnrwds(DataModule):
     def __init__(self):
         name        = 'Earnrwds'
-        base_url    = 'https://earnrwds.com/'
+        base_url    = 'earnrwds.com/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -157,7 +159,7 @@ class Earnrwds(DataModule):
 class AirIndia(DataModule):
     def __init__(self):
         name        = 'AirIndia'
-        base_url    = 'https://nps.airindia.in/'
+        base_url    = 'nps.airindia.in/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -167,7 +169,7 @@ class AirIndia(DataModule):
 class Moj(DataModule):
     def __init__(self):
         name        = 'Moj'
-        base_url    = 'https://force-us-app.moj.io/'
+        base_url    = 'force-us-app.moj.io/'
         super().__init__(name, base_url)
     
     def retrieve_data(self, url, msg):
@@ -177,7 +179,7 @@ class Moj(DataModule):
 class Superprof(DataModule):
     def __init__(self):
         name        = 'Superprof'
-        base_url    = 'https://www.superprof.es/'
+        base_url    = 'superprof.es/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -203,16 +205,16 @@ class Superprof(DataModule):
         DatabaseInterface.log(response)
         if response.json():
             return response.json()
-        return {"Data":"None"}
+        return None
 
 class Konto(DataModule):
     def __init__(self):
         name        = 'Konto'
-        base_url    = 'https://app.konto.com/'
+        base_url    = 'app.konto.com/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
-        return _retrieve_data_in_msg(msg)
+        return self._retrieve_data_in_msg(msg)
 
     def _retrieve_data_in_msg(self, msg):
         return {"data":msg.split('sent you')[0]}
@@ -220,50 +222,45 @@ class Konto(DataModule):
 class SuitsMeCard(DataModule):
     def __init__(self):
         name        = 'SuitsMeCard'
-        base_url    = 'https://suitsmecard.com/'
+        base_url    = 'suitsmecard.com/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
-        return _retrieve_data_in_msg(msg)
+        return self._retrieve_data_in_msg(msg)
 
     def _retrieve_data_in_msg(self, msg):
-        return {"data":msg.split('.')[0].replace('Hi ')}
+        return json.dumps({"data":msg.split('.')[0].replace('Hi ','')})
 
 class Booksy(DataModule):
     def __init__(self):
         name        = 'Boosky'
-        base_url    = 'https://boosky.com/'
+        base_url    = 'boosky.com/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
-        # try:
-        # Init
-        data = {}
-        regex = r"window\.top\.location.*;"
-        # Send request and parse
-        resp = requests.get(url, allow_redirects=False)
-        DatabaseInterface.log(resp)
-        line = re.search(regex, resp.text).group(0)
-        line = line.replace('windows.top.location = ', '')
-        line = line.replace('validateProtocol', '')
-        line = line.replace('("', '')
-        line = line.replace('");', '')
-        params = line.split('?')[1]
-        # Handle params
-        for param in params.split('&'):
-            key = param.split('=')[0]
-            val = param.split('=')[1]
-            data[key] = val
-        
-        json_data = json.dumps(data, ensure_ascii=False)
-        return json_data
-        # except:
-        #     return {"Data":"Error"}
+        try:
+            # Send request and parse
+            resp = requests.get(url, allow_redirects=False)
+            DatabaseInterface.log(resp)
+            
+            # Parse
+            soup = BeautifulSoup(resp.text, features="lxml")
+            metas = soup.find_all('meta', {'property':'og:url'})
+            url_params = metas[0]['content'].split('&')
+            email = {'N/A'}
+            for url_param in url_params:
+                if 'email' in url_param:
+                    email = url_param.split('=')[1].replace('%40','@')
+            
+            json_data = json.dumps({'email':email}, ensure_ascii=False)
+            return json_data
+        except Exception:
+            return None
 
 class Lilly(DataModule):
     def __init__(self):
         name        = 'Lilly'
-        base_url    = 'https://e.lilly/'
+        base_url    = 'e.lilly/'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -316,7 +313,7 @@ class Lilly(DataModule):
 class NextBike(DataModule):
     def __init__(self):
         name        = 'NextBike'
-        base_url    = 'https://www.nextbike.de/'
+        base_url    = 'nextbike.de'
         super().__init__(name, base_url)
 
     def retrieve_data(self, url, msg):
@@ -331,7 +328,7 @@ class NextBike(DataModule):
 class StickerMule(DataModule):
     def __init__(self):
         name        = 'StickerMule'
-        base_url    = 'https://www.stickermule.com'
+        base_url    = 'stickermule.com'
 
         self.current_url = ""
 
@@ -339,8 +336,7 @@ class StickerMule(DataModule):
 
     def retrieve_data(self, url, msg):
         self.current_url = url
-        self._parse_instagram_transform_url()
-        return self._parse_instagram()
+        return self._parse_stickermule()
     
     def _parse_stickermule(self):
         # Send request and parse it

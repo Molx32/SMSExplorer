@@ -71,7 +71,7 @@
                             <li>
                                 <div class="about-row-1">
                                   <div class="chart-container" style="position: relative; width:100%">
-                                    <canvas id="san_sms_get_top_ten_domains"></canvas>
+                                    <canvas id="sms_get_top_ten_domains_unique"></canvas>
                                   </div>
                                 </div>
                             </li>
@@ -109,7 +109,7 @@
               <div class="graph">
                 <div class="about-header about-header-border">
                   <div class="main_title">
-                    <h3>Top country by message number</h3>
+                    <h3>Top country by mean number of message by phone number</h3>
                   </div>
                 </div>
                 <div class="about-content">
@@ -118,7 +118,7 @@
                           <li>
                               <div class="about-row-1">
                                 <div class="chart-container" style="position: relative; width:100%">
-                                  <canvas id="san_sms_get_top_ten_countries"></canvas>
+                                  <canvas id="sms_get_top_ten_countries_ratio"></canvas>
                                 </div>
                               </div>
                               
@@ -137,9 +137,9 @@
         const sms_get_count_by_day     = document.getElementById('sms_get_count_by_day');
         const sms_get_top_ten_domains   = document.getElementById('sms_get_top_ten_domains');
         const sms_get_top_ten_countries = document.getElementById('sms_get_top_ten_countries');
+        const sms_get_top_ten_countries_ratio = document.getElementById('sms_get_top_ten_countries_ratio');
         const san_sms_get_count_by_day     = document.getElementById('san_sms_get_count_by_day');
-        const san_sms_get_top_ten_domains   = document.getElementById('san_sms_get_top_ten_domains');
-        const san_sms_get_top_ten_countries = document.getElementById('san_sms_get_top_ten_countries');
+        const sms_get_top_ten_domains_unique   = document.getElementById('sms_get_top_ten_domains_unique');
 
         new Chart(sms_get_count_by_day, {
           type: 'bar',
@@ -234,13 +234,13 @@
           }
         });
 
-        new Chart(san_sms_get_top_ten_domains, {
+        new Chart(sms_get_top_ten_domains_unique, {
           type: 'bar',
           data: {
-            labels: {{ san_sms_get_top_ten_domains_labels | safe}},
+            labels: {{ sms_get_top_ten_domains_unique_labels | safe}},
             datasets: [{
               label: 'Top domains',
-              data: {{ san_sms_get_top_ten_domains_values | safe}},
+              data: {{ sms_get_top_ten_domains_unique_values | safe}},
               borderWidth: 1
             }]
           },
@@ -254,13 +254,13 @@
           }
         });
 
-        new Chart(san_sms_get_top_ten_countries, {
+        new Chart(sms_get_top_ten_countries_ratio, {
           type: 'bar',
           data: {
-            labels: {{ san_sms_get_top_ten_countries_labels | safe}},
+            labels: {{ sms_get_top_ten_countries_ratio_labels | safe}},
             datasets: [{
               label: 'Top countries',
-              data: {{ san_sms_get_top_ten_countries_values | safe}},
+              data: {{ sms_get_top_ten_countries_ratio_values | safe}},
               borderWidth: 1
             }]
           },

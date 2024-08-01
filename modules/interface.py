@@ -1,4 +1,5 @@
 import sys
+import rq
 from modules.target.target_receive_smss import ReceiveSMSS
 from modules.target.target_mytempsms import MyTempSMS
 from modules.security.security import Security
@@ -21,7 +22,7 @@ class DataInterface:
         while 1:
             try:
                 AirIndia()
-                Instagram()
+                # Instagram()
                 Earnrwds()
                 # Ukrwds() -- Need to execute JS
                 Moj()
@@ -31,6 +32,7 @@ class DataInterface:
                 Booksy()
                 Lilly()
                 Rwdsuk()
+                StickerMule()
             except Exception as e:
                 raise e
 
