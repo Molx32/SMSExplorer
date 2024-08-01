@@ -9,5 +9,7 @@ beautifulsoup4
 Flask==2.0.3
 werkzeug==2.0
 Flask_WTF==1.0.0
-uwsgi
+# uwsgi
+gevent
 grequests
+Flask-RQ2

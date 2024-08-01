@@ -1,8 +1,11 @@
 # System
+import gevent.monkey
+gevent.monkey.patch_all()
 import urllib.parse
 import time
 import json
 import shutil
+import requests
 
 # Flask
 from flask import Flask, abort
@@ -11,24 +14,29 @@ from flask import render_template
 from flask import send_file
 from flask import render_template_string
 from flask import jsonify
+from flask import current_app
 
 # Redis
-from redis import Redis
-import rq
+import redis
+from rq import Queue
+from rq.job import Job
+from rq import push_connection
+from rq import pop_connection
+from rq import Connection
 from rq.command import send_stop_job_command
+# from flask_rq2 import RQ
 
-# SMS Explorer
+# Project - config
 from config.config import Config
+# Project - interfaces
 from modules.interface import TargetInterface, DataInterface, SecurityInterface
-# Database
 from database.database import DatabaseInterface
+# Project - tasks
+from tasks.tasks import init_database,run_sms_collector
 
-
-
-
-
-
-
+app = Flask(__name__)
+r   = redis.from_url(Config.REDIS_URL)
+q   = Queue(connection=r)
 
 
 # --------------------------------------------------------------------- #
@@ -51,29 +59,30 @@ SRC = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
 DST = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
 shutil.copyfile(SRC, DST)
 
-# Connect to redis and enqueue jobs
-redis_server    = Redis.from_url(Config.REDIS_URL)
-task_queue      = rq.Queue(default_timeout=-1, connection=redis_server)
-task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
+q.enqueue(init_database, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+q.enqueue(run_sms_collector, job_id=Config.REDIS_JOB_ID_FETCHER)
+q.enqueue(init_database, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+# task_queue.enqueue(run_data_collector, job_id="DATA")
+# task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+# task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER, job_timeout=-1)
+print(q.job_ids)
 
 # Configure Flask app
-app = Flask(__name__)
 app.config['SECRET_KEY']                = Config.SECRET_KEY
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
 app.config['UPLOAD_FOLDER']             = Config.FOLDER_UPLOAD
-
-
-
-
-
+app.config['JOB_INIT']                  = Config.REDIS_JOB_ID_INITIALIZE_TARGETS
+app.config['JOB_SMSS']                  = Config.REDIS_JOB_ID_FETCHER
+app.config['JOB_DATA']                  = Config.REDIS_JOB_ID_DATA
+app.config['REDIS_URL']                 = Config.REDIS_URL
+app.config['RQ_REDIS_URL']              = Config.REDIS_URL
 
 
 # --------------------------------------------------------------------- #
 # -                           WEB SERVER                              - #
 # --------------------------------------------------------------------- #
 # -                              HOME                                 - #
-@app.route("/")
+@app.route("/", methods = ['GET'])
 @app.route("/home", methods = ['GET'])
 def home():
     # Get statistics
@@ -85,7 +94,6 @@ def home():
     targets_count_known         = DatabaseInterface.targets_count_known()[0]
     targets_count_interesting   = DatabaseInterface.targets_count_interesting()[0]
     targets_count_automated     = DatabaseInterface.targets_count_automated()[0]
-
 
     # Activities
     activities_last_data    = DatabaseInterface.sms_activities_last_data()
@@ -326,13 +334,13 @@ def settings_update_mode():
     if mode == Config.MODE_AGRESSIVE:
         DatabaseInterface.switch_mode(mode)
         print("Set to aggressive")
-        task_queue.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
+        q.enqueue(DataInterface.create_data_fetcher, job_id=Config.REDIS_JOB_ID_DATA)
     # Set to agressive
     if mode == Config.MODE_PASSIVE:
         DatabaseInterface.switch_mode(mode)
         print("Set to passive")
-        send_stop_job_command(redis_server, Config.REDIS_JOB_ID_DATA)
-        # send_kill_horse_command(redis_server, "data")
+        send_stop_job_command(r, Config.REDIS_JOB_ID_DATA)
+        # send_kill_horse_command(r, "data")
 
     # Check database for current mode
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
@@ -429,6 +437,27 @@ def about():
     supported_targets = DatabaseInterface.sms_get_supported_targets()
     return render_template('about.html', active_tab='About', targets=supported_targets)
 
+@app.route("/settings/monitor", methods = ['GET'])
+def monitor():
+    job_ids = [
+        Config.REDIS_JOB_ID_INITIALIZE_TARGETS,
+        Config.REDIS_JOB_ID_DATA,
+        Config.REDIS_JOB_ID_FETCHER
+    ]
+    jobs = Job.fetch_many(job_ids, connection=r)
+    jobs_info = []
+    for job in jobs:
+        if job:
+            info = (
+                job.get_status(),
+                job.worker_name,
+                job.last_heartbeat,
+                job.started_at
+            )
+            jobs_info.append(info)
+
+    return render_template('monitor.html', active_tab='Monitor', jobs=jobs_info)
+
 
 # ------------------------------------------------------- #
 # -                       DATA                          - #
@@ -463,3 +492,6 @@ def page_not_found(e):
 def page_not_authorized(e):
     # note that we set the 404 status explicitly
     return render_template('403.html'), 403
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=9000, debug=True)

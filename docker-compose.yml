@@ -18,12 +18,17 @@ services:
             interval: 30s
             timeout: 10s
             retries: 5
+        networks:
+            - common
 
     # Redis server (queue)
     redisserver:
         image: redis:latest
         ports:
             - 6379:6379
+        command: redis-server --loglevel debug
+        networks:
+            - common
 
     # Redis workers
     fetcher_worker:
@@ -35,6 +40,8 @@ services:
             - redisserver
             - database
         command: rq worker --name fetcher --url redis://redisserver:6379
+        networks:
+            - common
     
     data_worker:
         image: opensms:latest
@@ -45,6 +52,8 @@ services:
             - fetcher_worker
             - database
         command: rq worker --name data --url redis://redisserver:6379
+        networks:
+            - common
 
     # Web server
     opensms:
@@ -59,7 +68,13 @@ services:
         volumes:
             - exports:/etc/data/exports
             - imports:/etc/data/imports
-    
+        networks:
+            - common
+
+networks:
+    common:
+        driver: bridge
+
 volumes:
     exports:
     imports:
