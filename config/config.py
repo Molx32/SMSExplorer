@@ -1,10 +1,35 @@
 import os
 import datetime
 import json
+import shutil
 
 SECRET_KEY = 'development'
 
 class Config:
+
+    def init_app(app):
+        # Configure Flask app
+        app.config['SECRET_KEY']                = Config.SECRET_KEY
+        app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
+        app.config['UPLOAD_FOLDER']             = Config.FOLDER_UPLOAD
+        app.config['JOB_INIT']                  = Config.REDIS_JOB_ID_INITIALIZE_TARGETS
+        app.config['JOB_SMSS']                  = Config.REDIS_JOB_ID_FETCHER
+        app.config['JOB_DATA']                  = Config.REDIS_JOB_ID_DATA
+        app.config['REDIS_URL']                 = Config.REDIS_URL
+        app.config['RQ_REDIS_URL']              = Config.REDIS_URL
+
+        # Copy targets CSV file to volumes so that workers
+        # can access it before adding them to the database
+        # using the REDIS_JOB_ID_INITIALIZE_TARGETS job
+        SRC = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
+        DST = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
+        shutil.copyfile(SRC, DST)
+        
+        app.config['SRC'] = SRC
+        app.config['DST'] = DST
+
+        return app
+
     #####################################################
     # ARCHITECTURE CONFIGURATION
     SECRET_KEY              = 'NationalSecurityUltimateSecretPassword'

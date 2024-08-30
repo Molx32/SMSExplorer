@@ -17,6 +17,7 @@ import requests
 requests.packages.urllib3.disable_warnings()
 from bs4 import BeautifulSoup
 
+
 class DataModule:    
     def __init__(self, name, base_url):
         self.name       = name

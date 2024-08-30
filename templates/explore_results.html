@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .search-terms {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        td button {
+            padding: 5px 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        td button:hover {
+            background-color: #218838;
+        }
+        .json-data {
+            display: none;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-terms" id="search-terms">
+        Search results for {{ filter }} : {{ query }}
+    </div>
+    <table id="results-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>SMS</th>
+                <th>Company</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Search results will be inserted here dynamically -->
+        </tbody>
+    </table>
+    <div id="json-display" class="json-data"></div>
+
+    <script>
+        // Example data to populate the table
+        const searchResults = [
+            {
+                date: '2024-08-01',
+                sms: 'Your package has been shipped.',
+                company: 'Shipping Co.',
+                data: { trackingNumber: '123456', status: 'shipped' }
+            },
+            {
+                date: '2024-08-02',
+                sms: 'Your order has been delivered.',
+                company: 'Delivery Co.',
+                data: { orderId: '78910', status: 'delivered' }
+            }
+        ];
+
+        // Function to populate the table with search results
+        function populateTable(results) {
+            const tbody = document.getElementById('results-table').querySelector('tbody');
+            results.forEach(result => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${result.date}</td>
+                    <td>${result.sms}</td>
+                    <td>${result.company}</td>
+                    <td><button onclick='showJsonData(${JSON.stringify(result.data)})'>View Data</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Function to display JSON data
+        function showJsonData(data) {
+            const jsonData = JSON.stringify(data, null, 2);
+            const jsonDisplay = document.getElementById('json-display');
+            jsonDisplay.innerText = jsonData;
+            jsonDisplay.style.display = 'block';
+        }
+
+        populateTable(searchResults);
+    </script>
+</body>
+</html>

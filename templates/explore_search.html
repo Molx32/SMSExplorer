@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search with Filters</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .search-container input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .search-container .filters {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .filters button {
+            padding: 10px 20px;
+            border: 2px solid #007BFF;
+            background-color: white;
+            color: #007BFF;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            margin-right: 10px;
+        }
+        .filters button:hover, .filters button.active {
+            background-color: #007BFF;
+            color: white;
+        }
+        .search-container input[type="button"] {
+            padding: 10px 20px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .search-container input[type="button"]:hover {
+            background-color: #218838;
+        }
+        .tooltip {
+            display: none;
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .search-container:hover .tooltip {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <div class="tooltip">Please select a filter before searching.</div>
+        <input type="text" id="search-box" placeholder="Search...">
+        <div class="filters">
+            <button id="filter-username" onclick="setFilter('username')">Username</button>
+            <button id="filter-email" onclick="setFilter('email')">Email</button>
+            <button id="filter-company" onclick="setFilter('company')">Company</button>
+        </div>
+        <input type="button" value="Search" onclick="performSearch()">
+
+        <!-- Hidden form -->
+        <form id="search-form" action="/explore" method="post" style="display:none;">
+            <input type="hidden" name="query" id="form-query">
+            <input type="hidden" name="filter" id="form-filter">
+        </form>
+    </div>
+
+    <script>
+        let currentFilter = '';
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filters button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById('filter-' + filter).classList.add('active');
+        }
+
+        function performSearch() {
+            const query = document.getElementById('search-box').value;
+            if (query && currentFilter) {
+                // Set the form values
+                document.getElementById('form-query').value = query;
+                document.getElementById('form-filter').value = currentFilter;
+
+                // Submit the form
+                document.getElementById('search-form').submit();
+            } else if (!currentFilter) {
+                alert('Please select a filter.');
+            } else {
+                alert('Please enter a search term.');
+            }
+        }
+    </script>
+</body>
+</html>

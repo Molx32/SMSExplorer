@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include '_includes.html' %}
+</head>
+<body>
+    {% include '_menu.html' %}
+    <div class="content">
+        <div class="content-inner">
+            <div class="container">
+                <!-- Description -->
+                <div class="row">
+                    <div class="abouts">
+                        <div class="about">
+                            <div class="about-header about-header-border">
+                                <div class="main_title">
+                                    <h3>Project description</h3>
+                                </div>
+                            </div>
+                            <div class="about-content">
+                                <div>
+                                    <ul>
+                                        <li>
+                                            <div class="about-row-1">
+                                                <div>
+                                                    <p>SMS Explorer</b> aims at demonstrating the risk of temporary and public virtual phone numbers by analysing public SMSs and categorizing them (<i>c.f.</i> table below). For more information, take a look at the <a>detailed blog post</a>.
+                                                </div>
+                                                <table class="about-table" style="height: 25%; width: 100%; overflow: auto">
+                                                    <thead>
+                                                        <tr>
+                                                            <td>Status</td>
+                                                            <td>Name</td>
+                                                            <td>Other info</td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for job in jobs %}
+                                                        <tr>
+                                                            <td>{{ job[0] }}</td>
+                                                            <td>{{ job[1] }}</td>
+                                                            <td>{{ job[2] }}</td>
+                                                            <td>{{ job[3] }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

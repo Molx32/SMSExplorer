@@ -1,109 +1,163 @@
 import sys
 import re
 
-# Parse URLs
-# import validator
-# from urllib.parse import urlparse
 
 sys.path.extend(['../'])
 
 import urllib.parse
 from config.config import Connections
+from database.database import DatabaseInterface
+from modules.security_interface import SecurityInterface
+from flask_login import UserMixin
 
 
-class SMS:
-    def __init__(self, sender, receiver, msg, receive_date, country):
-        self.sender         = sender
-        self.receiver       = receiver
-        self.msg            = msg
-        self.receive_date   = receive_date
-        self.country        = country
-        self.url            = ''
-        self.domain         = ''
-        self.source         = ""
-        self.data_handled   = False
+class Model:
+    def __init__(self, pk = None):
+        self.pk = pk
+        self.attributes = {}
 
-        # Parse receiver
-        self.receiver = self.receiver.replace("%2F",'')
-        self.receiver = self.receiver.replace("/",'')
-        self.receiver = self.receiver.replace("sms",'')
-        
-        # Extract URL and domain
-        url_match   = self._parseUrl()
-        dom_match   = self._parseDomain()
-        if url_match:
-            self._sanitizeUrl(url_match)
-            self.domain = self.url.split('/')[2]
-    
-    # Meta handling of attributes and their values
     def getAttributes(self):
-        return ", ".join(list(self.__dict__.keys()))
+        return ", ".join(list(self.attributes.keys()))
     
     def getValues(self):
-        return "'" + "', '".join(list(self.__dict__.values()))  + "'"
+        return "'" + "', '".join(list(self.attributes.values()))  + "'"
+    
+    def insert(self):
+        pass
 
-    def getValuesForDatabase(self):
+class User(UserMixin):
+    id          = None
+    username    = None
+    password    = None
+    role        = None
+
+class Data(Model):
+    def __init__(self, pk, username, email, raw, sms_id):
+        super().__init__(pk)
+        
+        # Database mapping
+        self.attributes['username'] = username
+        self.attributes['email']    = email
+        self.attributes['raw']      = raw
+        self.attributes['sms_id']   = sms_id
+    
+    # Sanitize data to be inserted
+    def security_controler(self):
+        self.attributes['email']     = SecurityInterface.controlerObjectEmail       (self.attributes['email'])
+        self.attributes['username']  = SecurityInterface.controlerObjectUsername    (self.attributes['username'])
+
+    def security_sanitizer(self):
+        self.attributes['email']     = SecurityInterface.sanitizerObjectEmail        (self.attributes['email'])
+        self.attributes['username']  = SecurityInterface.sanitizerObjectUsername     (self.attributes['username'])
+
+    # Insert into database
+    def insert(self):
+        self.security_controler()
+        self.security_sanitizer()
+        DatabaseInterface.data_insert(self)
+
+    
+
+
+class SMS(Model):
+    def __init__(self, pk, sender, receiver, msg, receive_date, country):
+        super().__init__(pk)
+
+        # Parse input
+        msg         = self.parse_msg(msg)
+        receiver    = self.parse_receiver(receiver)
+        url         = self.parse_url(msg)
+        domain      = self.parse_domain(url)
+
+        # Database mapping
+        self.attributes['sender']         = sender
+        self.attributes['receiver']       = receiver
+        self.attributes['msg']            = msg
+        self.attributes['receive_date']   = receive_date
+        self.attributes['country']        = country
+        self.attributes['url']            = url
+        self.attributes['domain']         = domain
+        self.attributes['source']         = ""
+        self.attributes['data_handled']   = False
+
+
+    # Control data to be inserted
+    def security_controler(self):
         try:
-            text = "'" 
-            text = text + urllib.parse.quote_plus(self.sender) + "', '"
-            text = text + urllib.parse.quote_plus(self.receiver) + "', '"
-            text = text + urllib.parse.quote_plus(self.msg) + "', '"
-            text = text + (self.receive_date or "") +  "', '"
-            text = text + (self.country or "") + "', '"
-            text = text + (self.url or "") + "', '"
-            text = text + (self.domain or "") + "', '"
-            text = text + (self.source or "") + "', '"
-            text = text + (str(self.data_handled) or "False")
-            text = text + "'"
-            text.replace('&', '%26')
-            return text
+            controler = True
+            controler = controler and SecurityInterface.controlerObjectSender     (self.attributes['sender'])
+            controler = controler and SecurityInterface.controlerObjectReceiver   (self.attributes['receiver'])
+            controler = controler and SecurityInterface.controlerObjectMessage    (self.attributes['msg'])
+            controler = controler and SecurityInterface.controlerObjectDate       (self.attributes['receive_date'])
+            controler = controler and SecurityInterface.controlerObjectCountry    (self.attributes['country'])
+            controler = controler and SecurityInterface.controlerObjectUrl        (self.attributes['url'])
+            controler = controler and SecurityInterface.controlerObjectDomain     (self.attributes['domain'])
+            controler = controler and SecurityInterface.controlerObjectSource     (self.attributes['source'])
+            controler = controler and SecurityInterface.controlerObjectData       (self.attributes['data_handled'])
+            raise Exception("Security controler : " + str(self))
+            return controler
         except Exception as error:
-            raise Exception("Message content unsafe, don't add to database." + str(self))
-    
-    def getAttributeValue(self, attribute):
-        return self.__dict__['attribute']
+            raise Exception("Security controler : Message content unsafe, don't add to database." + str(self)) from error
 
-    def setAttribute(self, attribute, value):
-        setattr(self, attribute, value)
-    
-    def setAttributes(self, dict):
-        for k, v in dict.items():
-            setattr(self, k, v)
+    # Control data to be inserted
+    def security_sanitizer(self):
+        try:
+            self.attributes['sender']         = SecurityInterface.controlerObjectSender     (self.attributes['sender'])
+            self.attributes['receiver']       = SecurityInterface.controlerObjectReceiver   (self.attributes['receiver'])
+            self.attributes['msg']            = SecurityInterface.controlerObjectMessage    (self.attributes['msg'])
+            self.attributes['receive_date']   = SecurityInterface.controlerObjectDate       (self.attributes['receive_date'])
+            self.attributes['country']        = SecurityInterface.controlerObjectCountry    (self.attributes['country'])
+            self.attributes['url']            = SecurityInterface.controlerObjectUrl        (self.attributes['url'])
+            self.attributes['domain']         = SecurityInterface.controlerObjectDomain     (self.attributes['domain'])
+            self.attributes['source']         = SecurityInterface.controlerObjectSource     (self.attributes['source'])
+            self.attributes['data_handled']   = SecurityInterface.controlerObjectData       (self.attributes['data_handled'])
+        except Exception as error:
+            raise Exception("Security sanitizer : Message content unsafe, don't add to database." + str(self)) from error
+
+    # Insert into database
+    def insert(self):
+        self.security_controler()
+        self.security_sanitizer()
+        DatabaseInterface.sms_insert(self)
 
     # Methods
-    def _parseUrl(self):
-        # # Analyze each word
-        # for word in self.msg.split(" "):
-        #     try:
-        #         if validators.url(word):
-        #             url = word
-        #     except:
-        #         continue
-        # return url
+    def parse_url(self, msg):
         url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
-        return re.findall(url_pattern, self.msg)
-
-    def _sanitizeUrl(self, url_match):
-        self.url = url_match[0]
-        # Remove dot at the end
-        if self.url[-1] == '.':
-            self.url = self.url[:len(self.url)-1]
+        match = re.findall(url_pattern, msg)
+        if match:
+            url = match[0]
+            if url[-1] == '.':
+                return url[:len(url)-1]
+            return url
+        return None
     
-    def _parseDomain(self):
+    def parse_domain(self, url):
+        if url:
+            return url.split('/')[2]
+        return None
         dom_pattern = "^((?!-)[A-Za-z0-9-]" + "{1,63}(?<!-)\\.)" +"+[A-Za-z]{2,6}"
-        return re.findall(dom_pattern, self.msg)
+        match = re.findall(dom_pattern, msg)
+        if match:
+            return match[0]
+        return None
 
-    def _parse_msg(self):
-        self.msg = self.msg.replace('p***word', 'password')
-        self.msg = self.msg.replace('do***ent', 'document')
-        self.msg = self.msg.replace('iden***y', 'identity')
-        self.msg = self.msg.replace('***igned', 'assigned')
+    def parse_msg(self, msg):
+        msg = msg.replace('p***word', 'password')
+        msg = msg.replace('do***ent', 'document')
+        msg = msg.replace('iden***y', 'identity')
+        msg = msg.replace('***igned', 'assigned')
+        return msg
+    
+    def parse_receiver(self, receiver):
+        # Parse receiver
+        receiver = receiver.replace("%2F",'')
+        receiver = receiver.replace("/",'')
+        receiver = receiver.replace("sms",'')
+        return receiver
 
     def __str__(self):
-        keys = ", ".join(list(self.__dict__.keys()))
-        values = ", ".join(list(self.__dict__.values()))
+        values = ", ".join(list(self.attributes.values()))
         return values
-        return keys + '\n' + values
 
     def __eq__(self, obj):
-        return isinstance(obj, SMS) and obj.receiver == self.receiver and obj.sender == self.sender and obj.msg == self.msg
+        return isinstance(obj, SMS) and obj.attributes['receiver'] == self.attributes['receiver'] and obj.attributes['sender'] == self.attributes['sender'] and obj.attributes['msg'] == self.attributes['msg']

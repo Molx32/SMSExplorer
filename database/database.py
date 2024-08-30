@@ -2,6 +2,7 @@
 from datetime import date
 from datetime import datetime, timedelta
 import json
+import time
 import csv
 import sys
 sys.path.extend(['../'])
@@ -12,7 +13,6 @@ from config.config import Logger
 from config.config import Config
 
 # Database imports
-from database.models import SMS
 import psycopg2
 import urllib.parse
 
@@ -41,6 +41,17 @@ class Database:
         self.conn = None
 
 class DatabaseInterface:
+    def wait_for_init():
+        while 1:
+            try:
+                print("****************** Connecting to database... ********************")
+                Database().connect()
+                break
+            except Exception as e:
+                print("****************** Database not ready ********************")
+                print("****************** Waiting for 5 secs ********************")
+                time.sleep(5)
+
     def is_database_healthy():
         try:
             Database().connect()
@@ -595,3 +606,51 @@ class DatabaseInterface:
         cursor = Database().connect()
         cursor.execute(query)
         return cursor.fetchall()
+
+############################### USERS ###################################
+# The user table                                                        #
+#########################################################################
+    def user_create_admin(username, password, role):
+        if not DatabaseInterface.user_check_admin():
+            query  = "INSERT INTO Users(username, password, role) VALUES('{}','{}','{}');".format(username, password, role)
+            cursor = Database().connect()
+            cursor.execute(query)
+
+    def user_check_admin():
+        query  = "SELECT * FROM users WHERE username = 'admin';"
+        cursor = Database().connect()
+        cursor.execute(query)
+        res =  cursor.fetchone()
+        return res
+
+    def user_check(username, password):
+        query  = "SELECT * FROM Users WHERE username='{}' AND password = '{}';".format(username, password)
+        cursor = Database().connect()
+        cursor.execute(query)
+        res = cursor.fetchall()
+        if len(res) == 1:
+            return res[0]
+        return None
+    
+    def user_get(user_id):
+        query  = "SELECT * FROM Users WHERE id='{}';".format(user_id)
+        cursor = Database().connect()
+        cursor.execute(query)
+        res =  cursor.fetchone()
+        print(res)
+        return res
+
+############################# DATA SERACH ###############################
+# Search data by email, name, etc.                                      #
+#########################################################################
+    def data_insert(data):
+        attributes  = data.get_attributes()
+        values      = data.get_values()
+        query   = """ INSERT INTO Data(%s) VALUES(%s); """ % (attributes, values)
+
+        # Database call
+        cursor = Database().connect()
+        try:
+            cursor.execute(query)
+        except Exception as e:
+            raise e

@@ -4,18 +4,14 @@ gevent.monkey.patch_all()
 import urllib.parse
 import time
 import json
-import sys
-import shutil
-import requests
 
 # Flask
 from flask import Flask, abort
 from flask import redirect, url_for, request
 from flask import render_template
 from flask import send_file
-from flask import render_template_string
 from flask import jsonify
-from flask import current_app
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 
 # Redis
 import redis
@@ -25,66 +21,102 @@ from rq import push_connection
 from rq import pop_connection
 from rq import Connection
 from rq.command import send_stop_job_command
-# from flask_rq2 import RQ
 
 # Project - config
 from config.config import Config
 # Project - interfaces
-from modules.interface import TargetInterface, DataInterface, SecurityInterface
+from modules.source_interface import TargetInterface
+from modules.data_interface import DataInterface
+from modules.security_interface import SecurityInterface
 from database.database import DatabaseInterface
+# Project - models
+from database.models import User
 # Project - tasks
 from tasks.tasks import init_database,run_sms_collector
-
-app = Flask(__name__)
-r   = redis.from_url(Config.REDIS_URL)
-q   = Queue(connection=r)
-
 
 # --------------------------------------------------------------------- #
 # -                            START UP                               - #
 # --------------------------------------------------------------------- #
 # Ensure database is up before running jobs
-while 1:
-    try:
-        print("****************** Connecting to database... ********************")
-        DatabaseInterface.is_database_healthy()
-        break
-    except Exception as e:
-        print("****************** Database not ready ********************")
-        print("****************** Waiting for 5 secs ********************")
-        time.sleep(5)
+DatabaseInterface.wait_for_init()
+DatabaseInterface.user_create_admin('admin','password123$', 'ADMIN')
 
-# Copy targets CSV file to volumes so that workers
-# can access it before adding them to the database
-SRC = Config.FOLDER_CONFIG + Config.FILENAME_INIT_TARGETS
-DST = Config.FOLDER_UPLOAD + Config.FILENAME_INIT_TARGETS
-shutil.copyfile(SRC, DST)
+# Instanciate app and queue
+app = Flask(__name__)
+app = Config.init_app(app)
+r   = redis.from_url(Config.REDIS_URL)
+q   = Queue(connection=r)
+# q.enqueue(DatabaseInterface.targets_update, app.config['DST'], job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+q.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER, job_timeout=-1)
 
-q.enqueue(init_database, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-q.enqueue(run_sms_collector, job_id=Config.REDIS_JOB_ID_FETCHER)
-q.enqueue(init_database, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-# task_queue.enqueue(run_data_collector, job_id="DATA")
-# task_queue.enqueue(DatabaseInterface.targets_update, DST, job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-# task_queue.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER, job_timeout=-1)
-print(q.job_ids)
-
-# Configure Flask app
-app.config['SECRET_KEY']                = Config.SECRET_KEY
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
-app.config['UPLOAD_FOLDER']             = Config.FOLDER_UPLOAD
-app.config['JOB_INIT']                  = Config.REDIS_JOB_ID_INITIALIZE_TARGETS
-app.config['JOB_SMSS']                  = Config.REDIS_JOB_ID_FETCHER
-app.config['JOB_DATA']                  = Config.REDIS_JOB_ID_DATA
-app.config['REDIS_URL']                 = Config.REDIS_URL
-app.config['RQ_REDIS_URL']              = Config.REDIS_URL
+# Configure login
+login_manager = LoginManager()
+login_manager.init_app(app)
+@login_manager.user_loader
+def load_user(user_id):
+    infos = DatabaseInterface.user_get(user_id)
+    u = User()
+    u.id        = str(infos[0])
+    u.username  = str(infos[1])
+    u.password  = str(infos[2])
+    u.role      = str(infos[3])
+    return u
 
 
 # --------------------------------------------------------------------- #
-# -                           WEB SERVER                              - #
+# -                     WEB SERVER GENERIC PAGES                      - #
 # --------------------------------------------------------------------- #
-# -                              HOME                                 - #
-@app.route("/", methods = ['GET'])
+# Flask generic pages
+@login_manager.unauthorized_handler
+def unauthorized():
+    return render_template('403.html'), 403
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(403)
+def page_not_authorized(e):
+    return render_template('403.html'), 403
+
+
+# --------------------------------------------------------------------- #
+# -                    WEB SERVER PUBLIC PAGES                        - #
+# --------------------------------------------------------------------- #
+@app.route("/", methods = ['GET','POST'])
+@app.route("/explore", methods = ['GET','POST'])
+def explore():
+    if request.method == 'GET':
+        return render_template('explore_search.html')
+    if request.method == 'POST':
+        pQuery = request.form['query']
+        pFilter = request.form['filter']
+        # DatabaseInterface.explore()
+        return render_template('explore_results.html', query=pQuery, filter=pFilter)
+    return render_template('data_search.html')
+
+@app.route("/login", methods= ['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        creds = request.json
+        username = creds.get('username')
+        password = creds.get('password')
+        user = DatabaseInterface.user_check(username, password)
+        if user:
+            u = User()
+            u.id        = str(user[0])
+            u.username  = str(user[1])
+            u.password  = str(user[2])
+            u.role      = str(user[3])
+            login_user(u)
+            return redirect("/home", code=302)
+    return render_template('login.html')
+
+# --------------------------------------------------------------------- #
+# -                     WEB SERVER ADMIN PAGES                        - #
+# --------------------------------------------------------------------- #
 @app.route("/home", methods = ['GET'])
+@login_required
 def home():
     # Get statistics
     count_messages  = DatabaseInterface.sms_count_all()[0]
@@ -108,19 +140,8 @@ def home():
         targets_count_known=targets_count_known, targets_count_interesting=targets_count_interesting, targets_count_automated=targets_count_automated,
         activities_last_data=activities_last_data, top_domains=top_domains, top_errors=top_errors)
 
-@app.route("/test", methods= ['GET'])
-def test():
-    print(app.task_queue)
-    job = rq.job.Job.fetch(Config.REDIS_JOB_ID_FETCHER, connection=redis_server)
-    print(Config.REDIS_JOB_ID_FETCHER + ' - ' + str(job.get_status()))
-    return render_template('search.html', jobs=Config.REDIS_JOB_ID_FETCHER)
-
-
-
-# ------------------------------------------------------------ #
-# -                      SMS ENDPOINT                        - #
-# ------------------------------------------------------------ #
 @app.route("/search", methods = ['GET'])
+@login_required
 def search():
     input_search        = request.args.get('search')
     input_data          = request.args.get('data')
@@ -137,10 +158,9 @@ def search():
     return render_template('search.html', active_tab='Search',
         data=data, total_count=total_count, select_count=select_count)
 
-# ---------------------------------------------------------------- #
-# -                      AUTOMATION ENDPOINT                     - #
-# ---------------------------------------------------------------- #
+# --- Automation ---- #
 @app.route("/automation", methods = ['GET'])
+@login_required
 def automation():
     # GET INPUTS
     input_search    = request.args.get('search')
@@ -162,7 +182,8 @@ def automation():
         data=data, count=count)
 
 @app.route("/automation/target/update", methods = ['POST'])
-def targets_update_automation():
+@login_required
+def automation_targets_update():
     # Check if app is locked
     if DatabaseInterface.getLock():
         abort(403)
@@ -181,10 +202,9 @@ def targets_update_automation():
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
-# ---------------------------------------------------------------- #
-# -                       INVESTIGATION                          - #
-# ---------------------------------------------------------------- #
+# --- Categorize ---- #
 @app.route("/categorize", methods = ['GET'])
+@login_required
 def categorize():
     # GET INPUTS
     input_search        = request.args.get('search')
@@ -208,7 +228,8 @@ def categorize():
         tags_not_interesting=tags_not_interesting, tags_interesting=tags_interesting)
 
 @app.route("/categorize/target/update", methods = ['POST'])
-def targets_update_categorize():
+@login_required
+def categorize_targets_update():
     # Check if app is locked
     if DatabaseInterface.getLock():
         abort(403)
@@ -228,10 +249,9 @@ def targets_update_categorize():
 
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
-# ----------------------------------------------------------------- #
-# -                    STATISTICS ENDPOINT                        - #
-# ----------------------------------------------------------------- #
+# --- Statistics ---- #
 @app.route("/statistics_telemetry", methods = ['GET'])
+@login_required
 def statistics_telemetry():
     # GET RAW DATA
     sms_get_count_by_day = DatabaseInterface.sms_get_count_by_day()
@@ -270,6 +290,7 @@ def statistics_telemetry():
         sms_get_top_ten_countries_ratio_labels=sms_get_top_ten_countries_ratio_labels, sms_get_top_ten_countries_ratio_values=sms_get_top_ten_countries_ratio_values)
 
 @app.route("/statistics_data", methods = ['GET'])
+@login_required
 def statistics_data():
     # GET SANITIZED DATA
     data_sms_get_count_by_day = DatabaseInterface.data_get_count_by_day(sanitized=True)
@@ -313,15 +334,15 @@ def statistics_data():
         data_sms_get_top_ten_domains_labels=data_sms_get_top_ten_domains_labels, data_sms_get_top_ten_domains_values=data_sms_get_top_ten_domains_values,
         data_sms_get_top_ten_countries_labels=data_sms_get_top_ten_countries_labels, data_sms_get_top_ten_countries_values=data_sms_get_top_ten_countries_values)
 
-# ----------------------------------------------------------------- #
-# -                     SETTINGS ENDPOINT                         - #
-# ----------------------------------------------------------------- #
+# --- Settings ---- #
 @app.route("/settings", methods = ['GET'])
+@login_required
 def settings():
     mode = DatabaseInterface.get_mode()
     return render_template('settings.html', active_tab='Settings', mode=mode)
 
 @app.route("/settings/update_mode", methods = ['POST'])
+@login_required
 def settings_update_mode():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -355,6 +376,7 @@ def settings_update_mode():
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 @app.route("/settings/export_smss", methods = ['GET'])
+@login_required
 def settings_export_smss():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -363,6 +385,7 @@ def settings_export_smss():
     return send_file(Config.EXPORT_SMSS, as_attachment=True)
 
 @app.route("/settings/export_targets", methods = ['GET'])
+@login_required
 def settings_export_targets():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -371,6 +394,7 @@ def settings_export_targets():
     return send_file(Config.EXPORT_TARGETS, as_attachment=True)
 
 @app.route("/settings/export_data", methods = ['GET'])
+@login_required
 def settings_export_data():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -379,6 +403,7 @@ def settings_export_data():
     return send_file(Config.EXPORT_DATA, as_attachment=True)
 
 @app.route("/settings/export_config", methods = ['GET'])
+@login_required
 def settings_export_config():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -387,6 +412,7 @@ def settings_export_config():
     return send_file(Config.EXPORT_CONFIG, as_attachment=True)
 
 @app.route("/settings/targets/upload", methods = ['POST'])
+@login_required
 def settings_upload_targets():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -404,6 +430,7 @@ def settings_upload_targets():
     return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
 @app.route("/settings/lock", methods = ['POST'])
+@login_required
 def settings_lock_app():
     # Check if app is locked
     if DatabaseInterface.getLock():
@@ -412,6 +439,7 @@ def settings_lock_app():
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 @app.route("/settings/audit_logs", methods = ['GET'])
+@login_required
 def audit_logs():
     # Get params
     input_search    = request.args.get('search')
@@ -438,15 +466,14 @@ def audit_logs():
         prev_start=prev_start, prev_end=prev_end,
         next_start=next_start, next_end=next_end)
 
-# ----------------------------------------------------------------- #
-# -                       ABOUT ENDPOINT                          - #
-# ----------------------------------------------------------------- #
 @app.route("/settings/about", methods = ['GET'])
+@login_required
 def about():
     supported_targets = DatabaseInterface.sms_get_supported_targets()
     return render_template('about.html', active_tab='About', targets=supported_targets)
 
 @app.route("/settings/monitor", methods = ['GET'])
+@login_required
 def monitor():
     job_ids = [
         Config.REDIS_JOB_ID_INITIALIZE_TARGETS,
@@ -467,11 +494,16 @@ def monitor():
 
     return render_template('monitor.html', active_tab='Monitor', jobs=jobs_info)
 
+# --- Logout ---- #
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('/explore')
 
-# ------------------------------------------------------- #
-# -                       DATA                          - #
-# ------------------------------------------------------- #
+# --- Settings ---- #
 @app.route("/data/get", methods = ['GET'])
+@login_required
 def data():
 
     # Get searched SMSs
@@ -489,18 +521,6 @@ def decode_msg(encoded):
     decoded = decoded.replace("%26", "&")
     return decoded
 
-# --------------------------------------------------------- #
-# -                       ERRORS                          - #
-# --------------------------------------------------------- #
-@app.errorhandler(404)
-def page_not_found(e):
-    # note that we set the 404 status explicitly
-    return render_template('404.html'), 404
-
-@app.errorhandler(403)
-def page_not_authorized(e):
-    # note that we set the 404 status explicitly
-    return render_template('403.html'), 403
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9000, debug=True)

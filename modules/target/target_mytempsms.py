@@ -187,13 +187,13 @@ class Browser:
             for tr in lines:
                 tds = tr.find_all('td')
                 if tds:
-                    sender = tds[0].get_text().replace('\n','')
-                    msg = tds[1].get_text().replace('\n','')
-                    time_t = tds[2].get_text().replace('\n','')
+                    sender  = tds[0].get_text().replace('\n','')
+                    msg     = tds[1].get_text().replace('\n','')
+                    time_t  = tds[2].get_text().replace('\n','')
 
                 if sender and msg and time_t:
                     date    = self.compute_date(time_t)
-                    sms     = SMS(sender, receiver.replace('.html', '').split('-')[-1], msg, date, self.compute_country(receiver))
+                    sms     = SMS(None, sender, receiver.replace('.html', '').split('-')[-1], msg, date, self.compute_country(receiver))
                     Logger.log('Current SMS - ' + str(sms))
                     smss.append(sms)
 

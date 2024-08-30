@@ -1,4 +1,3 @@
-version: '3'
 services:
     # Database
     database:
@@ -29,6 +28,7 @@ services:
         command: redis-server --loglevel debug
         networks:
             - common
+        dns: 1.1.1.1
 
     # Redis workers
     fetcher_worker:
@@ -42,6 +42,7 @@ services:
         command: rq worker --name fetcher --url redis://redisserver:6379
         networks:
             - common
+        dns: 1.1.1.1
     
     data_worker:
         image: opensms:latest
@@ -54,6 +55,7 @@ services:
         command: rq worker --name data --url redis://redisserver:6379
         networks:
             - common
+        dns: 1.1.1.1
 
     # Web server
     smsexplorer:
@@ -70,10 +72,11 @@ services:
             - imports:/etc/data/imports
         networks:
             - common
+        dns: 1.1.1.1
 
 networks:
     common:
-        driver: bridge
+        driver: host
 
 volumes:
     exports:

@@ -13,3 +13,5 @@ Flask_WTF==1.0.0
 gevent
 grequests
 Flask-RQ2
+asyncpg
+flask-login

@@ -6,7 +6,7 @@ import time
 import uuid
 
 # Project
-from database.database import DatabaseInterface
+# from database.database import DatabaseInterface
 from database.models import SMS
 from config.config import Phone
 from config.config import Logger
@@ -65,7 +65,7 @@ class ReceiveSMSS:
             for result in results:
                 # Get phone number
                 # and parse all results
-                DatabaseInterface.log(result)
+                # DatabaseInterface.log(result)
                 if result.status_code != 200:
                     continue
                 phone_num = result.request.path_url.split('/')[-2]
@@ -87,7 +87,8 @@ class ReceiveSMSS:
             for phone_url in self.phone_urls:
                 phone_num = phone_url.split('/')[-2]
                 for sms in self.smss_new[phone_num]:
-                    DatabaseInterface.sms_insert(sms)
+                    # DatabaseInterface.sms_insert(sms)
+                    sms.insert()
         except Exception as e:
             raise Exception('ReceiveSMSS - populate_database()') from e
 
@@ -109,8 +110,10 @@ class Browser:
         headers = {
             'User-Agent': str(uuid.uuid4())
         }
+        print(url)
+        Logger.log(url)
         r = requests.get(url, headers=headers, allow_redirects=allow_redirects)
-        DatabaseInterface.log(r)
+        # DatabaseInterface.log(r)
         return r
 
     def fetch_phones(self):
@@ -185,7 +188,7 @@ class Browser:
             
             if sender and msg and time_t:
                 date    = self.compute_date(time_t)
-                sms     = SMS(sender, receiver, msg, date, country)
+                sms     = SMS(None, sender, receiver, msg, date, country)
                 smss.append(sms)
 
                 # Reset temporary attributes to None

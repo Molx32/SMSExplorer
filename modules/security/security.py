@@ -1,12 +1,28 @@
 # System
 import string
+import re
+import json
+import urllib.parse
 from config.config import Config
 
 class Security:
     def __init__(self):
-        self.ALLOWED_CHARS_FREE_SEARCH = ':/.-_' + string.ascii_letters + string.digits
-        self.ALLOWED_CHARS_TAGS = ',_' + string.ascii_uppercase
-        self.ALLOWED_CHARS_DOMAIN = ' .-_:@' + string.ascii_letters + string.digits
+        self.ALLOWED_CHARS_FREE_SEARCH      = string.ascii_letters + string.digits + ':/.-_'
+        self.ALLOWED_CHARS_DOMAIN           = string.ascii_letters + string.digits + ' .-_:@'
+        self.ALLOWED_CHARS_USERNAME         = string.ascii_letters + string.digits + '_-.'
+        self.ALLOWED_CHARS_USERNAME_EMAIL   = string.ascii_letters + string.digits + '_-.'
+        self.ALLOWED_CHARS_SENDER           = string.ascii_letters + string.digits + '+ '
+        self.ALLOWED_CHARS_RECEIVER         = string.ascii_letters + string.digits + '+ '
+        self.ALLOWED_CHARS_COUNTRY          = string.ascii_letters
+        self.ALLOWED_CHARS_SOURCE           = string.ascii_letters
+        self.ALLOWED_CHARS_TAGS             = string.ascii_uppercase + ',_'
+        self.URL_PATTERN                    = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
+    
+    def _check_char(self, word, allowed_charset):
+        for char in word:
+            if char not in allowed_charset:
+                return False
+        return True
     
     def is_empty_or_not_set(self, input):
         if input is None:
@@ -25,11 +41,45 @@ class Security:
             return True
         return False
     
-    def is_domain_safe(self, domain):
-        for char in domain:
-            if char not in self.ALLOWED_CHARS_DOMAIN:
-                return False
-        return True
+    def is_safe_domain(self, domain):
+        return self._check_char(domain, self.ALLOWED_CHARS_DOMAIN)
+    
+    def is_safe_username(self, username):
+        return self._check_char(username, self.ALLOWED_CHARS_USERNAME)
+
+    def is_safe_email(self, email):
+        if email.count('@') == 1:
+            username    = email.split('@')[0]
+            domain      = email.split('@')[1]
+            
+            domain      = self._check_char(domain, self.ALLOWED_CHARS_DOMAIN)
+            username    = self._check_char(username, self.ALLOWED_CHARS_USERNAME_EMAIL)
+
+            return domain and username
+            
+        return False
+    
+    def is_safe_sender(self, sender):
+        return self._check_char(sender, self.ALLOWED_CHARS_SENDER)
+    
+    def is_safe_receiver(self, receiver):
+        return self._check_char(receiver, self.ALLOWED_CHARS_SENDER)
+    
+    def is_safe_country(self, country):
+        return self._check_char(country, self.ALLOWED_CHARS_COUNTRY)
+
+    def is_safe_source(self, source):
+        return self._check_char(source, self.ALLOWED_CHARS_SOURCE)
+    
+    def is_safe_url(self, url):
+        return re.findall(self.URL_PATTERN, url)
+        
+    def is_safe_json(self, data):
+        try:
+            json.loads(data)
+            return True
+        except:
+            return False
     
     def is_integer(self, i):
         try:
@@ -41,7 +91,25 @@ class Security:
     def is_multiple_of(self, mod,i):
         return (i % mod) == 0
 
+    # ------------------------------------------------------------ #
+    # -                      SANITIZERS                          - #
+    # ------------------------------------------------------------ #
+    def sanitize_url_remove_end_dot(self, url):
+        if url[-1] == '.':
+            return url[:len(url)-1]
+        return url
 
+    def sanitize_empty_if_null(self, var):
+        return var if var else ""
+    
+    def sanitize_special_char(self, var):
+        var = urllib.parse.quote_plus(var)
+        var = var.replace('&','%26')
+        return var
+    
+    def sanitize_bool_default_false(self, var):
+        return str(var) or "False"
+    
         
 
     # ------------------------------------------------------------ #
@@ -127,7 +195,7 @@ class Security:
         return True
 
     def filter_categorize_update_domain(self, input_domain):
-        return self.is_domain_safe(input_domain)
+        return self.is_safe_domain(input_domain)
 
     def filter_categorize_update_tags(self, input_is_interesting, input_tags):
         if input_tags == '':
@@ -176,7 +244,7 @@ class Security:
         return False
 
     def filter_automation_update_domain(self, input_domain):
-        return self.is_domain_safe(input_domain)
+        return self.is_safe_domain(input_domain)
     
     def filter_automation_update_is_legal(self, input_legal):
         if self.is_empty_or_not_set(input_legal):
