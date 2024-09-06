@@ -119,7 +119,7 @@ class DatabaseInterface:
         # Handle data
         columns = sms.getAttributes()
         try:
-            values  = sms.getValuesForDatabase()
+            values  = sms.getValues()
         except Exception as e:
             raise e
         query   = """ INSERT INTO SMSS(%s) VALUES(%s); """ % (columns, values)

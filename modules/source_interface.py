@@ -1,5 +1,5 @@
-from modules.target.target_receive_smss import ReceiveSMSS
-from modules.target.target_mytempsms import MyTempSMS
+from modules.sources.receive_smss import ReceiveSMSS
+from modules.sources.mytempsms import MyTempSMS
 
 class TargetInterface:
     

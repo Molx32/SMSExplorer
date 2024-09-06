@@ -31,8 +31,6 @@ from modules.security_interface import SecurityInterface
 from database.database import DatabaseInterface
 # Project - models
 from database.models import User
-# Project - tasks
-from tasks.tasks import init_database,run_sms_collector
 
 # --------------------------------------------------------------------- #
 # -                            START UP                               - #
@@ -47,7 +45,7 @@ app = Config.init_app(app)
 r   = redis.from_url(Config.REDIS_URL)
 q   = Queue(connection=r)
 # q.enqueue(DatabaseInterface.targets_update, app.config['DST'], job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-q.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER, job_timeout=-1)
+q.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
 
 # Configure login
 login_manager = LoginManager()

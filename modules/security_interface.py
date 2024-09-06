@@ -136,8 +136,7 @@ class SecurityInterface:
         return sec.sanitize_special_char(message)
     
     def sanitizerObjectDate(date):
-        sec = Security()
-        return sec.sanitize_empty_if_null(date)
+        return date
     
     def sanitizerObjectCountry(country):
         sec = Security()
@@ -146,8 +145,8 @@ class SecurityInterface:
     def sanitizerObjectUrl(url):
         sec = Security()
         ret = url
-        ret = sec.sanitize_empty_if_null(ret)
         ret = sec.sanitize_url_remove_end_dot(ret)
+        ret = sec.sanitize_empty_if_null(ret)
         return ret
 
     def sanitizerObjectDomain(domain):
@@ -167,3 +166,6 @@ class SecurityInterface:
     
     def sanitizerObjectUsername(username):
         return username
+    
+    def sanitizerObjectUsername(data):
+        return data

@@ -20,7 +20,7 @@ class Model:
         return ", ".join(list(self.attributes.keys()))
     
     def getValues(self):
-        return "'" + "', '".join(list(self.attributes.values()))  + "'"
+        return "'" + "', '".join(str(e) for e in list(self.attributes.values()))  + "'"
     
     def insert(self):
         pass
@@ -56,9 +56,6 @@ class Data(Model):
         self.security_sanitizer()
         DatabaseInterface.data_insert(self)
 
-    
-
-
 class SMS(Model):
     def __init__(self, pk, sender, receiver, msg, receive_date, country):
         super().__init__(pk)
@@ -80,6 +77,8 @@ class SMS(Model):
         self.attributes['source']         = ""
         self.attributes['data_handled']   = False
 
+        self.security_sanitizer()
+
 
     # Control data to be inserted
     def security_controler(self):
@@ -94,30 +93,29 @@ class SMS(Model):
             controler = controler and SecurityInterface.controlerObjectDomain     (self.attributes['domain'])
             controler = controler and SecurityInterface.controlerObjectSource     (self.attributes['source'])
             controler = controler and SecurityInterface.controlerObjectData       (self.attributes['data_handled'])
-            raise Exception("Security controler : " + str(self))
-            return controler
+            return True
         except Exception as error:
             raise Exception("Security controler : Message content unsafe, don't add to database." + str(self)) from error
 
     # Control data to be inserted
     def security_sanitizer(self):
         try:
-            self.attributes['sender']         = SecurityInterface.controlerObjectSender     (self.attributes['sender'])
-            self.attributes['receiver']       = SecurityInterface.controlerObjectReceiver   (self.attributes['receiver'])
-            self.attributes['msg']            = SecurityInterface.controlerObjectMessage    (self.attributes['msg'])
-            self.attributes['receive_date']   = SecurityInterface.controlerObjectDate       (self.attributes['receive_date'])
-            self.attributes['country']        = SecurityInterface.controlerObjectCountry    (self.attributes['country'])
-            self.attributes['url']            = SecurityInterface.controlerObjectUrl        (self.attributes['url'])
-            self.attributes['domain']         = SecurityInterface.controlerObjectDomain     (self.attributes['domain'])
-            self.attributes['source']         = SecurityInterface.controlerObjectSource     (self.attributes['source'])
-            self.attributes['data_handled']   = SecurityInterface.controlerObjectData       (self.attributes['data_handled'])
+            self.attributes['sender']         = SecurityInterface.sanitizerObjectSender     (self.attributes['sender'])
+            self.attributes['receiver']       = SecurityInterface.sanitizerObjectReceiver   (self.attributes['receiver'])
+            self.attributes['msg']            = SecurityInterface.sanitizerObjectMessage    (self.attributes['msg'])
+            self.attributes['receive_date']   = SecurityInterface.sanitizerObjectDate       (self.attributes['receive_date'])
+            self.attributes['country']        = SecurityInterface.sanitizerObjectCountry    (self.attributes['country'])
+            self.attributes['url']            = SecurityInterface.sanitizerObjectUrl        (self.attributes['url'])
+            self.attributes['domain']         = SecurityInterface.sanitizerObjectDomain     (self.attributes['domain'])
+            self.attributes['source']         = SecurityInterface.sanitizerObjectSource     (self.attributes['source'])
+            self.attributes['data_handled']   = SecurityInterface.sanitizerObjectDataHandled(self.attributes['data_handled'])
         except Exception as error:
             raise Exception("Security sanitizer : Message content unsafe, don't add to database." + str(self)) from error
 
     # Insert into database
     def insert(self):
-        self.security_controler()
-        self.security_sanitizer()
+        # self.security_controler()
+        # self.security_sanitizer()
         DatabaseInterface.sms_insert(self)
 
     # Methods
@@ -156,7 +154,7 @@ class SMS(Model):
         return receiver
 
     def __str__(self):
-        values = ", ".join(list(self.attributes.values()))
+        values = ", ".join(str(e) for e in list(self.attributes.values()))
         return values
 
     def __eq__(self, obj):

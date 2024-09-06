@@ -75,6 +75,7 @@ class ReceiveSMSS:
                 if phone_num in self.smss_hist.keys():
                     self.smss_new[phone_num] = [e for e in smss_temp if e not in self.smss_hist[phone_num]]
                 else:
+                    print("phone_num NOT in self.smss_hist.keys()", flush=True)
                     self.smss_new[phone_num] = smss_temp
                 self.smss_hist[phone_num] = smss_temp
         except Exception as e:
@@ -110,7 +111,6 @@ class Browser:
         headers = {
             'User-Agent': str(uuid.uuid4())
         }
-        print(url)
         Logger.log(url)
         r = requests.get(url, headers=headers, allow_redirects=allow_redirects)
         # DatabaseInterface.log(r)
@@ -135,24 +135,7 @@ class Browser:
 
         return phone_urls
 
-    def compute_date(self, date_str):
-        date = datetime.now()
-        if re.search("[0-9]+ hour", date_str):
-            date = date - timedelta(hours=int(date_str.split(' ')[0]))
-            return date.strftime("%m/%d/%Y %H:%M:%S")
-        if re.match("[0-9]+ minute", date_str):
-            date = date - timedelta(minutes=int(date_str.split(' ')[0]))
-            return date.strftime("%m/%d/%Y %H:%M:%S")
-        if re.match("[0-9]+ second", date_str):
-            date = date - timedelta(seconds=int(date_str.split(' ')[0]))
-            return date.strftime("%m/%d/%Y %H:%M:%S")
-        return date.strftime("%m/%d/%Y %H:%M:%S")
-            
-    def compute_country(self, receiver):
-        Logger.log('Browser - compute_country')
-        for country in Phone.COUNTRIES:
-            if receiver.startswith(country['code'].replace('+','')):
-                return country['name']
+    
 
     def parse_sms(self, r):
         Logger.log('Browser - parse_sms')
@@ -180,7 +163,6 @@ class Browser:
                     sender = div.get_text().replace("Sender",'')
                 if self.class_msg in " ".join(div.get('class')):
                     msg = div.get_text().replace("Message",'')
-                    msg = sanitize_msg(msg)
                 if self.class_time in " ".join(div.get('class')):
                     time_t = div.get_text().replace("Time",'')
             except:
@@ -198,9 +180,21 @@ class Browser:
 
         return smss
     
-    def sanitize_msg(self, msg):
-        msg = msg.replace('\n',' ')
-        msg = msg.replace('***word', 'assword')
-        msg = msg.replace('iden***y', 'identity')
-        msg = msg.replace('do***ent', 'document')
-        return msg
+    def compute_date(self, date_str):
+        date = datetime.now()
+        if re.search("[0-9]+ hour", date_str):
+            date = date - timedelta(hours=int(date_str.split(' ')[0]))
+            return date.strftime("%m/%d/%Y %H:%M:%S")
+        if re.match("[0-9]+ minute", date_str):
+            date = date - timedelta(minutes=int(date_str.split(' ')[0]))
+            return date.strftime("%m/%d/%Y %H:%M:%S")
+        if re.match("[0-9]+ second", date_str):
+            date = date - timedelta(seconds=int(date_str.split(' ')[0]))
+            return date.strftime("%m/%d/%Y %H:%M:%S")
+        return date.strftime("%m/%d/%Y %H:%M:%S")
+            
+    def compute_country(self, receiver):
+        Logger.log('Browser - compute_country')
+        for country in Phone.COUNTRIES:
+            if receiver.startswith(country['code'].replace('+','')):
+                return country['name']

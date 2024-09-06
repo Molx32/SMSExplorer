@@ -19,9 +19,10 @@ class Security:
         self.URL_PATTERN                    = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)"
     
     def _check_char(self, word, allowed_charset):
-        for char in word:
-            if char not in allowed_charset:
-                return False
+        if word:
+            for char in word:
+                if char not in allowed_charset:
+                    return False
         return True
     
     def is_empty_or_not_set(self, input):
@@ -72,7 +73,9 @@ class Security:
         return self._check_char(source, self.ALLOWED_CHARS_SOURCE)
     
     def is_safe_url(self, url):
-        return re.findall(self.URL_PATTERN, url)
+        if url:
+            return bool(re.findall(self.URL_PATTERN, url))
+        return True
         
     def is_safe_json(self, data):
         try:
@@ -95,8 +98,9 @@ class Security:
     # -                      SANITIZERS                          - #
     # ------------------------------------------------------------ #
     def sanitize_url_remove_end_dot(self, url):
-        if url[-1] == '.':
-            return url[:len(url)-1]
+        if url:
+            if url[-1] == '.':
+                return url[:len(url)-1]
         return url
 
     def sanitize_empty_if_null(self, var):
