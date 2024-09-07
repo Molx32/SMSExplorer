@@ -23,9 +23,14 @@ CREATE TABLE SMSS(
 
 CREATE TABLE DATA(
     ID SERIAL PRIMARY KEY,
-    SMS_DATA VARCHAR(32000),
+    DATA_RAW VARCHAR(32000),
+    DATA_USERNAME VARCHAR(120),
+    DATA_EMAIL VARCHAR(120),
     SMS_ID INT REFERENCES SMSS(ID)
 );
+
+INSERT INTO DATA(data_raw, data_username, data_email) VALUES('{"blabla":"test"}', 'aaa', 'aaa@aaa.aaa');
+INSERT INTO DATA(data_raw, data_username, data_email) VALUES('{"bleble":"test"}', 'eee', 'eee@eee.eee');
 
 CREATE TABLE TARGETS(
     ID SERIAL PRIMARY KEY,

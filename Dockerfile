@@ -14,6 +14,6 @@ EXPOSE 9000
 
 # CMD [ "uwsgi", "--ini", "uwsgi.ini"]
 # CMD [ "python3", "SMSExplorer.py"]
-CMD [ "gunicorn", "--bind", "0.0.0.0:9000", "SMSExplorer:app"]
+CMD [ "gunicorn", "--access-logfile", "-", "--bind", "0.0.0.0:9000", "SMSExplorer:app"]
    
 

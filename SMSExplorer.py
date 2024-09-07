@@ -4,6 +4,7 @@ gevent.monkey.patch_all()
 import urllib.parse
 import time
 import json
+import secrets
 
 # Flask
 from flask import Flask, abort
@@ -35,16 +36,22 @@ from database.models import User
 # --------------------------------------------------------------------- #
 # -                            START UP                               - #
 # --------------------------------------------------------------------- #
+# Set administrator password
+password = secrets.token_urlsafe(20)
+print('# ---------------------------------------------- #', flush=True)
+print('# -     ADMIN PASSWORD ' + password + '    - #', flush=True)
+print('# ---------------------------------------------- #', flush=True)
+
 # Ensure database is up before running jobs
 DatabaseInterface.wait_for_init()
-DatabaseInterface.user_create_admin('admin','password123$', 'ADMIN')
+DatabaseInterface.user_create_admin('admin', password, 'ADMIN')
 
 # Instanciate app and queue
 app = Flask(__name__)
 app = Config.init_app(app)
 r   = redis.from_url(Config.REDIS_URL)
 q   = Queue(connection=r)
-# q.enqueue(DatabaseInterface.targets_update, app.config['DST'], job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
+q.enqueue(DatabaseInterface.targets_update, app.config['DST'], job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
 q.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER, job_timeout=-1)
 
 # Configure login
@@ -67,7 +74,7 @@ def load_user(user_id):
 # Flask generic pages
 @login_manager.unauthorized_handler
 def unauthorized():
-    return render_template('403.html'), 403
+    return render_template('login.html'), 401
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -76,7 +83,6 @@ def page_not_found(e):
 @app.errorhandler(403)
 def page_not_authorized(e):
     return render_template('403.html'), 403
-
 
 # --------------------------------------------------------------------- #
 # -                    WEB SERVER PUBLIC PAGES                        - #
@@ -87,10 +93,12 @@ def explore():
     if request.method == 'GET':
         return render_template('explore_search.html')
     if request.method == 'POST':
-        pQuery = request.form['query']
+        pQuery  = request.form['query']
         pFilter = request.form['filter']
-        # DatabaseInterface.explore()
-        return render_template('explore_results.html', query=pQuery, filter=pFilter)
+        if SecurityInterface.controlerExplore(pQuery, pFilter):
+            rows = DatabaseInterface.data_search(pQuery, pFilter)
+            return render_template('explore_results.html', query=pQuery, filter=pFilter, data=rows)
+        return render_template('explore_search.html')
     return render_template('data_search.html')
 
 @app.route("/login", methods= ['GET', 'POST'])
@@ -117,19 +125,19 @@ def login():
 @login_required
 def home():
     # Get statistics
-    count_messages  = DatabaseInterface.sms_count_all()[0]
-    count_urls      = DatabaseInterface.sms_count_all_urls()[0]
-    count_data      = DatabaseInterface.sms_count_all_data()[0]
-    count_unknown   = DatabaseInterface.sms_count_unknown()[0]
+    count_messages              = DatabaseInterface.sms_count_all()[0]
+    count_urls                  = DatabaseInterface.sms_count_all_urls()[0]
+    count_data                  = DatabaseInterface.sms_count_all_data()[0]
+    count_unknown               = DatabaseInterface.sms_count_unknown()[0]
 
     targets_count_known         = DatabaseInterface.targets_count_known()[0]
     targets_count_interesting   = DatabaseInterface.targets_count_interesting()[0]
     targets_count_automated     = DatabaseInterface.targets_count_automated()[0]
 
     # Activities
-    activities_last_data    = DatabaseInterface.sms_activities_last_data()
-    top_domains             = DatabaseInterface.sms_activities_top_domains()
-    top_errors              = DatabaseInterface.logs_get_errors()
+    activities_last_data        = DatabaseInterface.sms_activities_last_data()
+    top_domains                 = DatabaseInterface.sms_activities_top_domains()
+    top_errors                  = DatabaseInterface.logs_get_errors()
 
     # Load forms
     return render_template('home.html', active_tab='Home',
@@ -351,7 +359,6 @@ def settings_update_mode():
     # Parse inputs
     mode  = request.args.get('mode')
     if not mode in Config.MODES:
-        print("In mode list")
         return json.dumps({'success':False}), 400, {'ContentType':'application/json'}
 
     current_mode = DatabaseInterface.get_mode()

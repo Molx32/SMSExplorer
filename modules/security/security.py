@@ -294,3 +294,15 @@ class Security:
             if self.is_multiple_of(50,int(input_offset)):
                 return True
         return False
+
+    # ------------------------------------------------------------- #
+    # -                        EXPLORE                            - #
+    # ------------------------------------------------------------- #
+    def explore_is_safe_email(self, email):
+        return self.is_safe_email(email)
+
+    def explore_is_safe_username(self, username):
+        return self.is_safe_username(username)
+
+    def explore_is_safe_filter(self, filter):
+        return (filter.upper() == 'EMAIL' or filter.upper() == 'USERNAME')

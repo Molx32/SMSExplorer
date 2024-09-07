@@ -169,3 +169,18 @@ class SecurityInterface:
     
     def sanitizerObjectUsername(data):
         return data
+
+
+########################## EXPLORE CONTROLERS ###########################
+# Control input from public serach                                      #
+#########################################################################
+    def controlerExplore(query, filter):
+        sec = Security()
+        print(query, flush=True)
+        print(filter, flush=True)
+        if sec.explore_is_safe_filter(filter):
+            if filter.upper() == 'EMAIL':
+                return sec.explore_is_safe_email(query)
+            if filter.upper() == 'USERNAME':
+                return sec.explore_is_safe_username(query)
+        return False

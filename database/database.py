@@ -111,7 +111,7 @@ class DatabaseInterface:
     
     def sms_get_data_by_id(sms_id):
         cursor = Database().connect()
-        cursor.execute("""SELECT sms_data FROM Data WHERE sms_id = {};""".format(sms_id))
+        cursor.execute("""SELECT data_raw FROM Data WHERE sms_id = {};""".format(sms_id))
         return cursor.fetchone()
 
     # SETTERS
@@ -581,20 +581,12 @@ class DatabaseInterface:
         cursor.execute(query)
         return cursor.fetchall()
 
-    def log(resp):
-        if resp:
-            http_req_date       = datetime.now()
-            http_req_date       = http_req_date.strftime("%m/%d/%Y %H:%M:%S")
-            http_verb           = resp.request.method
-            http_resp_code      = str(resp.status_code) + " " + resp.reason
-            http_resp_content   = ""
-            http_req            = resp.url
-            
-            # SELECT
-            query  = "INSERT INTO AUDITLOGS(http_req_date, http_verb, http_req, http_resp_code, http_resp_content) VALUES('{}' ,'{}','{}','{}','{}');".format(http_req_date, http_verb, http_req, http_resp_code, http_resp_content)
-            # WHERE
-            cursor = Database().connect()
-            cursor.execute(query)
+    def log(data):
+        attributes  = data.getAttributes()
+        values      = data.getValues()
+        query   = """ INSERT INTO AuditLogs(%s) VALUES(%s); """ % (attributes, values)
+        cursor = Database().connect()
+        cursor.execute(query)
 
 ############################### SETTINGS ###################################
 # Well, all options accessible using the settings page.                    #
@@ -640,7 +632,7 @@ class DatabaseInterface:
         print(res)
         return res
 
-############################# DATA SERACH ###############################
+############################# DATA SEARCH ###############################
 # Search data by email, name, etc.                                      #
 #########################################################################
     def data_insert(data):
@@ -654,3 +646,12 @@ class DatabaseInterface:
             cursor.execute(query)
         except Exception as e:
             raise e
+    
+    def data_search(query, filter):
+        query = """SELECT * FROM Data WHERE data_{} = '{}';""".format(filter, query)
+        # query   = """ SELECT raw, email, username FROM Data WHERE email = '{}' """ % (attributes, values)
+
+        # Database call
+        cursor = Database().connect()
+        cursor.execute(query)
+        return cursor.fetchall()

@@ -8,9 +8,10 @@ import uuid
 # Project
 # from database.database import DatabaseInterface
 from database.models import SMS
+from database.models import AuditLog
 from config.config import Phone
 from config.config import Logger
-from config.config import Config
+
 # Web
 import grequests
 import requests
@@ -37,7 +38,6 @@ class ReceiveSMSS:
                 self.fetch_smss()
                 self.populate_database()
                 end = time.time()
-                Logger.log('MAIN - ' + str(end - start))
             except Exception as e:
                 raise Exception('MAIN') from e
                 continue
@@ -61,11 +61,10 @@ class ReceiveSMSS:
 
         # Handle all results
         try:
-            Logger.log('ReceiveSMSS - fetch_smss' + self.user_agent)
             for result in results:
                 # Get phone number
                 # and parse all results
-                # DatabaseInterface.log(result)
+                AuditLog(None, result).log()
                 if result.status_code != 200:
                     continue
                 phone_num = result.request.path_url.split('/')[-2]
@@ -83,7 +82,6 @@ class ReceiveSMSS:
     def populate_database(self):
         try:
             # Insert new SMSs into database
-            Logger.log('ReceiveSMSS - populate_database')
             for phone_url in self.phone_urls:
                 phone_num = phone_url.split('/')[-2]
                 for sms in self.smss_new[phone_num]:
@@ -106,17 +104,14 @@ class Browser:
         self.smss = []
 
     def http_get(self, url, allow_redirects=True):
-        Logger.log('Browser - http_get')
         headers = {
             'User-Agent': str(uuid.uuid4())
         }
-        Logger.log(url)
         r = requests.get(url, headers=headers, allow_redirects=allow_redirects)
-        # DatabaseInterface.log(r)
+        AuditLog(None, r).log()
         return r
 
     def fetch_phones(self):
-        Logger.log('Browser - fetch_phones')
         # Fetch
         phone_urls = []
         resp = self.http_get(self.url)
@@ -137,7 +132,6 @@ class Browser:
     
 
     def parse_sms(self, r):
-        Logger.log('Browser - parse_sms')
         try:
             smss = []
             receiver = r.request.path_url
@@ -193,7 +187,6 @@ class Browser:
         return date.strftime("%m/%d/%Y %H:%M:%S")
             
     def compute_country(self, receiver):
-        Logger.log('Browser - compute_country')
         for country in Phone.COUNTRIES:
             if receiver.startswith(country['code'].replace('+','')):
                 return country['name']

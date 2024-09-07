@@ -1,5 +1,6 @@
 import sys
 import re
+from datetime import datetime
 
 
 sys.path.extend(['../'])
@@ -36,10 +37,10 @@ class Data(Model):
         super().__init__(pk)
         
         # Database mapping
-        self.attributes['username'] = username
-        self.attributes['email']    = email
-        self.attributes['raw']      = raw
-        self.attributes['sms_id']   = sms_id
+        self.attributes['data_raw']         = username
+        self.attributes['data_username']    = email
+        self.attributes['data_email']       = raw
+        self.attributes['sms_id']           = sms_id
     
     # Sanitize data to be inserted
     def security_controler(self):
@@ -152,6 +153,50 @@ class SMS(Model):
         receiver = receiver.replace("/",'')
         receiver = receiver.replace("sms",'')
         return receiver
+
+    def __str__(self):
+        values = ", ".join(str(e) for e in list(self.attributes.values()))
+        return values
+
+    def __eq__(self, obj):
+        return isinstance(obj, SMS) and obj.attributes['receiver'] == self.attributes['receiver'] and obj.attributes['sender'] == self.attributes['sender'] and obj.attributes['msg'] == self.attributes['msg']
+    
+class AuditLog(Model):
+    def __init__(self, pk, resp):
+        super().__init__(pk)
+        
+        self.attributes['http_req_date']        = self.format_date()
+        self.attributes['http_verb']            = resp.request.method
+        self.attributes['http_resp_code']       = str(resp.status_code) + " " + resp.reason
+        self.attributes['http_resp_content']    = ""
+        self.attributes['http_req']             = resp.url
+
+        self.security_sanitizer()
+
+
+    # Control data to be inserted
+    def security_controler(self):
+        try:
+            controler = True
+            return controler
+        except Exception as error:
+            raise Exception("Security controler : Message content unsafe, don't add to database." + str(self)) from error
+
+    # Control data to be inserted
+    def security_sanitizer(self):
+        try:
+            pass
+        except Exception as error:
+            raise Exception("Security sanitizer : Message content unsafe, don't add to database." + str(self)) from error
+
+    # Insert into database
+    def log(self):
+        DatabaseInterface.log(self)
+
+    def format_date(self):
+        http_req_date       = datetime.now()
+        http_req_date       = http_req_date.strftime("%m/%d/%Y %H:%M:%S")
+        return http_req_date
 
     def __str__(self):
         values = ", ".join(str(e) for e in list(self.attributes.values()))
