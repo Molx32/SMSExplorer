@@ -7,7 +7,7 @@ sys.path.extend(['../'])
 import urllib.parse
 from config.config import Connections
 from database.database import DatabaseInterface
-from modules.security_interface import SecurityInterface
+from interfaces.security_interface import SecurityInterface
 from flask_login import UserMixin
 
 

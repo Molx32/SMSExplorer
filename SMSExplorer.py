@@ -25,9 +25,9 @@ from rq.command import send_stop_job_command
 # Project - config
 from config.config import Config
 # Project - interfaces
-from modules.source_interface import TargetInterface
-from modules.data_interface import DataInterface
-from modules.security_interface import SecurityInterface
+from interfaces.source_interface import TargetInterface
+from interfaces.data_interface import DataInterface
+from interfaces.security_interface import SecurityInterface
 from database.database import DatabaseInterface
 # Project - models
 from database.models import User
@@ -45,7 +45,7 @@ app = Config.init_app(app)
 r   = redis.from_url(Config.REDIS_URL)
 q   = Queue(connection=r)
 # q.enqueue(DatabaseInterface.targets_update, app.config['DST'], job_id=Config.REDIS_JOB_ID_INITIALIZE_TARGETS)
-q.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER)
+q.enqueue(TargetInterface.create_instance_receivesmss, job_id=Config.REDIS_JOB_ID_FETCHER, job_timeout=-1)
 
 # Configure login
 login_manager = LoginManager()

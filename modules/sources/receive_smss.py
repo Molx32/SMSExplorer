@@ -75,7 +75,6 @@ class ReceiveSMSS:
                 if phone_num in self.smss_hist.keys():
                     self.smss_new[phone_num] = [e for e in smss_temp if e not in self.smss_hist[phone_num]]
                 else:
-                    print("phone_num NOT in self.smss_hist.keys()", flush=True)
                     self.smss_new[phone_num] = smss_temp
                 self.smss_hist[phone_num] = smss_temp
         except Exception as e:
