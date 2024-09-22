@@ -62,6 +62,8 @@ class ReceiveSMSS:
         # Handle all results
         try:
             for result in results:
+                if not result:
+                    continue
                 # Get phone number
                 # and parse all results
                 AuditLog(None, result).log()
