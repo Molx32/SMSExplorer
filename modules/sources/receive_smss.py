@@ -33,11 +33,10 @@ class ReceiveSMSS:
         while 1:
             try:
                 self.randomize_user_agent()
-                start = time.time()
                 self.fetch_phones()
                 self.fetch_smss()
                 self.populate_database()
-                end = time.time()
+                time.sleep(600)
             except Exception as e:
                 raise Exception('MAIN') from e
                 continue
