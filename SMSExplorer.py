@@ -38,9 +38,9 @@ from database.models import User
 # --------------------------------------------------------------------- #
 # Set administrator password
 password = secrets.token_urlsafe(20)
-print('# -------------------------------------------- #', flush=True)
-print('# -     ADMIN PASSWORD ' + password +       '- #', flush=True)
-print('# -------------------------------------------- #', flush=True)
+print('# ---------------------' + '-'*len(password) +'------ #', flush=True)
+print('# -     ADMIN PASSWORD ' + password +       '     - #', flush=True)
+print('# ---------------------' + '-'*len(password) +'------ #', flush=True)
 
 # Ensure database is up before running jobs
 DatabaseInterface.wait_for_init()
